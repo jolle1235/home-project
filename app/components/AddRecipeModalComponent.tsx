@@ -1,27 +1,30 @@
+"use client"
 import React, { useEffect, useRef, useState } from "react";
 import { meatCategories } from "../constant/recipeCategories";
 import { Ingredient } from "../model/Ingredient";
 import SearchBar from "./SearchBarComponent";
 import { Recipe } from "../model/Recipe";
 import { AddIngredientComponent } from "./AddIngredientComponent";
+import { Item } from "../model/item";
 
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { recipeSchema } from "../utils/validationSchema";
 
 // API client function
-async function searchItem(searchTerm: string): Promise<string[]> {
+async function searchItem(searchTerm: string): Promise<Item[]> {
   try {
-    const response = await fetch(`/api/ingredient?term=${encodeURIComponent(searchTerm)}`);
+    const response = await fetch(`/api/item?term=${encodeURIComponent(searchTerm)}`);
     if (!response.ok) throw new Error('Failed to fetch ingredients');
-    return response.json();
+    const data = await response.json();
+    return data.map((name: string) => ({ name }));
   } catch (error) {
     console.error('Error fetching ingredients:', error);
     return [];
   }
 }
 
-async function createItem(item: string): Promise<string> {
+async function createItem(item: Item): Promise<Item> {
   try {
     const response = await fetch('/api/ingredient', {
       method: 'POST',
@@ -49,7 +52,7 @@ export const AddRecipeModalComponent: React.FC<Props> = ({ handleClose }) => {
   // Available recipe categories
   const [categories] = useState(meatCategories);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [items, setItems] = useState<string[]>([]);
+  const [items, setItems] = useState<Item[]>([]);
   const [ingredients, setIngredients] = useState<Ingredient[]>([])
 
   // Validation setup
@@ -165,7 +168,7 @@ export const AddRecipeModalComponent: React.FC<Props> = ({ handleClose }) => {
         <div className="flex justify-between items-start py-2">
           <h2 className="text-lg font-bold text-darkText mb-4">Tilføj en opskrift</h2>
           <button onClick={handleClose} className="rounded-full font-bold">
-            <img src="/icon/remove_button.png" alt="remove_ingrediens" className="size-5" />
+            <img src="/icon/remove_button.png" alt="remove_ingresdiens" className="size-5" />
           </button>
         </div>
 
@@ -218,12 +221,12 @@ export const AddRecipeModalComponent: React.FC<Props> = ({ handleClose }) => {
                 />
                 {isDropdownOpen && (
                   <div className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1">
-                    {searchTerm.trim() && !items.some(item => item.toLowerCase() === searchTerm.toLowerCase()) && (
+                    {searchTerm.trim() && !items.some(item => item?.name?.toLowerCase() === searchTerm.toLowerCase()) && (
                       <div
                         className="p-2 hover:bg-gray-100 cursor-pointer bg-gray-50"
                         onClick={async () => {
                           try {
-                            const newItem = searchTerm.trim();
+                            const newItem: Item = { name: searchTerm.trim() }
                             const createdItem = await createItem(newItem);
                             setItems(prev => [...prev, createdItem]);
                             setSearchTerm("");
@@ -236,22 +239,26 @@ export const AddRecipeModalComponent: React.FC<Props> = ({ handleClose }) => {
                         <AddIngredientComponent
                           onAdd={async (newIngredient) => {
                             setIngredients(prev => [...prev, newIngredient]);
+                            setSearchTerm("");
+                            setIsDropdownOpen(false);
                           }}
                           item={searchTerm}
                         />
                       </div>
                     )}
-                    {ingredients.map((ingredient) => (
+                    {items.map((item) => (
                       <div
-                        key={ingredient.name}
+                        key={item.name}
                         className="p-2 hover:bg-gray-100 cursor-pointer"
-                        onClick={() => {
-                          setIngredients(prev => [...prev, ingredient]);
-                          setSearchTerm("");
-                          setIsDropdownOpen(false);
-                        }}
                       >
-                        {ingredient.name}
+                        <AddIngredientComponent
+                          onAdd={async (newIngredient) => {
+                            setIngredients(prev => [...prev, newIngredient]);
+                            setSearchTerm("");
+                            setIsDropdownOpen(false);
+                          }}
+                          item={item.name}
+                        />
                       </div>
                     ))}
                   </div>
