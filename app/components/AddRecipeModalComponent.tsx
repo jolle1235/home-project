@@ -233,9 +233,12 @@ export const AddRecipeModalComponent: React.FC<Props> = ({ handleClose }) => {
                           }
                         }}
                       >
-                        <AddIngredientComponent onAdd={async (newIngredient) => {
-                          setIngredients(prev => [...prev, newIngredient]);
-                        }} />
+                        <AddIngredientComponent
+                          onAdd={async (newIngredient) => {
+                            setIngredients(prev => [...prev, newIngredient]);
+                          }}
+                          item={searchTerm}
+                        />
                       </div>
                     )}
                     {ingredients.map((ingredient) => (

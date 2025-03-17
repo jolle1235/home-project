@@ -4,6 +4,7 @@ import { unitTypes } from "../constant/unitTypes";
 
 interface Props {
   onAdd: (ingredient: Ingredient) => void;
+  item: string;
 }
 export function AddIngredientComponent({ onAdd, item }: Props) {
   const [name, setName] = useState("");
