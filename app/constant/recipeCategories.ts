@@ -1,0 +1,1 @@
+export const meatCategories = ["Vegansk", "Oksekød", "Kylling", "Fisk"];
