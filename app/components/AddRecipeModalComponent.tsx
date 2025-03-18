@@ -17,7 +17,8 @@ async function searchItem(searchTerm: string): Promise<Item[]> {
     const response = await fetch(`/api/item?term=${encodeURIComponent(searchTerm)}`);
     if (!response.ok) throw new Error('Failed to fetch ingredients');
     const data = await response.json();
-    return data.map((name: string) => ({ name }));
+    console.log(data)
+    return data;
   } catch (error) {
     console.error('Error fetching ingredients:', error);
     return [];
