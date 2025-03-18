@@ -1,3 +1,4 @@
+"use client"
 import React, { useState } from "react";
 import { Ingredient } from "../model/Ingredient";
 import { unitTypes } from "../constant/unitTypes";
@@ -29,31 +30,30 @@ export function AddIngredientComponent({ onAdd, item }: Props) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-row space-y-2">
-      <div className="w-1/2">
-        <label className="block text-sm font-medium">
+    <div  className="flex justify-center items-center flex-row p-1">
+      <div className="w-5/12">
+        <label className="block text-lg font-medium">
           {item}
         </label>
       </div>
 
-      <div className="w-1/4">
-        <label className="block text-sm font-medium">Mængde</label>
+      <div className="w-3/12">
         <input
           type="number"
           value={weight}
+          placeholder="Mængde"
           onChange={(e) => setWeight(Number(e.target.value))}
-          className="mt-1 rounded-md border border-gray-300 p-2"
+          className="mt-1 w-full rounded-md border border-gray-300 p-1"
           required
           min="0"
         />
       </div>
 
-      <div className="w-1/6">
-        <label className="block text-sm font-medium">Enhed</label>
+      <div className="w-1/6 min-w-fit">
         <select
           value={unit}
           onChange={(e) => setUnit(e.target.value)}
-          className="mt-1 rounded-md border border-gray-300 p-2"
+          className="mt-1 w-full rounded-md border border-gray-300 py-1"
         >
           {unitTypes.map((unitType) => (
             <option key={unitType} value={unitType}>{unitType}</option>
@@ -62,11 +62,15 @@ export function AddIngredientComponent({ onAdd, item }: Props) {
       </div>
 
       <button
-        type="submit"
-        className="bg-action  hover:bg-actionHover text-darkText rounded-full px-3 py-2 font-bold"
+        onClick={handleSubmit}
+        className="bg-transparent m-1 text-darkText rounded-full font-bold"
       >
-        Tilføj Ingrediens
+        <img
+          className="size-7 bg-action hover:bg-actionHover rounded-full p-1"
+          src="/icon/add_sign.png"
+          alt="add_recipe"
+        />
       </button>
-    </form>
+    </div>
   );
 };

@@ -30,7 +30,7 @@ export function SearchBarComponent({ onChange, placeholder }: SearchBarProps) {
 
   return (
     <div>
-      <div className="relative w-full mx-auto">
+      <div className="w-full min-w-36 max-w-80 rounded-lg p-1">
         <input
           type="text"
           placeholder={placeholder}

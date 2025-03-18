@@ -132,7 +132,6 @@ export const AddRecipeModalComponent: React.FC<Props> = ({ handleClose }) => {
   useEffect(() => {
     const fetchIngredients = async () => {
       if (!searchTerm.trim()) {
-        setIngredients([]);
         setIsDropdownOpen(false);
         return;
       }
@@ -164,7 +163,7 @@ export const AddRecipeModalComponent: React.FC<Props> = ({ handleClose }) => {
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-darkText bg-opacity-50">
-      <div className="flex flex-col w-11/12 h-[90vh] max-w-7xl bg-cyan-200 rounded-lg p-5">
+      <div className="flex flex-col w-fit min-w-44 bg-cyan-200 rounded-lg p-6">
         <div className="flex justify-between items-start py-2">
           <h2 className="text-lg font-bold text-darkText mb-4">Tilføj en opskrift</h2>
           <button onClick={handleClose} className="rounded-full font-bold">
@@ -173,8 +172,7 @@ export const AddRecipeModalComponent: React.FC<Props> = ({ handleClose }) => {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="flex flex-row">
-            <div className="flex flex-col w-1/2 px-1 space-y-2">
+            <div className="flex flex-col justify-center items-center w-full px-1">
               <label className="font-bold">Opskrifts Navn</label>
               <input
                 type="text"
@@ -195,7 +193,7 @@ export const AddRecipeModalComponent: React.FC<Props> = ({ handleClose }) => {
               {getValues("image") && <img src={getValues("image")} alt="Preview" className="size-28 rounded" />}
 
               <label className="font-bold">Antaget tid (min.)</label>
-              <input type="number" className="rounded-lg p-1" {...register("time")} onKeyUp={() => trigger("time")} />
+              <input type="number" className="w-full min-w-36 max-w-80 rounded-lg p-1" {...register("time")} onKeyUp={() => trigger("time")} />
               {errors.time && <p className="text-red-500 text-xs">{errors.time.message}</p>}
 
               <label className="font-bold">Kategorier</label>
@@ -221,26 +219,16 @@ export const AddRecipeModalComponent: React.FC<Props> = ({ handleClose }) => {
                 />
                 {isDropdownOpen && (
                   <div className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1">
-                    {searchTerm.trim() && !items.some(item => item?.name?.toLowerCase() === searchTerm.toLowerCase()) && (
+                    {searchTerm.trim() && (
                       <div
-                        className="p-2 hover:bg-gray-100 cursor-pointer bg-gray-50"
-                        onClick={async () => {
-                          try {
-                            const newItem: Item = { name: searchTerm.trim() }
-                            const createdItem = await createItem(newItem);
-                            setItems(prev => [...prev, createdItem]);
-                            setSearchTerm("");
-                            setIsDropdownOpen(false);
-                          } catch (error) {
-                            console.error('Failed to create ingredient:', error);
-                          }
-                        }}
+                        className="hover:bg-gray-100 cursor-pointer bg-gray-50"
                       >
                         <AddIngredientComponent
                           onAdd={async (newIngredient) => {
+                            //const newItem: Item = { name: searchTerm.trim() }
+                            //const createdItem = await createItem(newItem);
                             setIngredients(prev => [...prev, newIngredient]);
                             setSearchTerm("");
-                            setIsDropdownOpen(false);
                           }}
                           item={searchTerm}
                         />
@@ -255,7 +243,6 @@ export const AddRecipeModalComponent: React.FC<Props> = ({ handleClose }) => {
                           onAdd={async (newIngredient) => {
                             setIngredients(prev => [...prev, newIngredient]);
                             setSearchTerm("");
-                            setIsDropdownOpen(false);
                           }}
                           item={item.name}
                         />
@@ -286,11 +273,11 @@ export const AddRecipeModalComponent: React.FC<Props> = ({ handleClose }) => {
               )}
               </div>
 
-              <button className="bg-action hover:bg-actionHover text-darkText rounded-full px-3 py-2 font-bold" type="submit">
+              <button className="bg-action hover:bg-actionHover text-darkText w-full min-w-36 max-w-80 rounded-lg p-1" type="submit">
                 Tilføj opskrift
               </button>
             </div>
-          </div>
+          
         </form>
       </div>
     </div>
