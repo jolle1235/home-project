@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import clientPromise from '../../lib/mongodb';
 import { ObjectId } from 'mongodb';
 
+const databaseName = process.env.MONGO_DATABASE_NAME
+
 interface Recipe {
   _id?: ObjectId;
   name: string;
@@ -12,8 +14,9 @@ interface Recipe {
 export async function GET() {
   try {
     const client = await clientPromise;
-    const db = client.db("recipe-database");
+    const db = client.db(databaseName);;
     const recipes = await db.collection("recipes").find({}).toArray();
+    console.log(recipes)
     return NextResponse.json(recipes);
   } catch (error) {
     console.error("Failed to fetch recipes:", error);
@@ -25,7 +28,7 @@ export async function POST(request: Request) {
   try {
     const recipe_data: Recipe = await request.json();
     const client = await clientPromise;
-    const db = client.db("recipe-database");
+    const db = client.db(databaseName);;
     
     const result = await db.collection("recipes").insertOne(recipe_data);
     const insertedRecipe = await db.collection("recipes").findOne({ _id: result.insertedId });
@@ -44,7 +47,7 @@ export async function POST(request: Request) {
 export async function getRecipeById(id: string): Promise<Recipe | null> {
   try {
     const client = await clientPromise;
-    const db = client.db("recipe-database");
+    const db = client.db(databaseName);;
     const recipe = await db.collection<Recipe>("recipes").findOne({ _id: new ObjectId(id) }) as Recipe | null;
     return recipe;
   } catch (error) {

@@ -6,10 +6,12 @@ import SearchBar from "./SearchBarComponent";
 import { Recipe } from "../model/Recipe";
 import { AddIngredientComponent } from "./AddIngredientComponent";
 import { Item } from "../model/item";
+import VisibilityToggle from "../components/VisibilityToggleComponent";
 
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { recipeSchema } from "../utils/validationSchema";
+import ImageUploader from "./ImageUploader";
 
 // API client function
 async function searchItem(searchTerm: string): Promise<Item[]> {
@@ -27,7 +29,7 @@ async function searchItem(searchTerm: string): Promise<Item[]> {
 
 async function createItem(item: Item): Promise<Item> {
   try {
-    const response = await fetch('/api/ingredient', {
+    const response = await fetch('/api/item', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(item),
@@ -36,6 +38,20 @@ async function createItem(item: Item): Promise<Item> {
     return response.json();
   } catch (error) {
     console.error('Error creating ingredient:', error);
+    throw error;
+  }
+}
+
+async function getImageFromId(id: number){
+  try {
+    const response = await fetch(`/api/images/${id}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (!response.ok) throw new Error(`Failed to get Image with id: ${id}`);
+    return response.json();
+  } catch (error) {
+    console.error('Error getting image:', error);
     throw error;
   }
 }
@@ -55,6 +71,9 @@ export const AddRecipeModalComponent: React.FC<Props> = ({ handleClose }) => {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   const [ingredients, setIngredients] = useState<Ingredient[]>([])
+  const [isPublic, setIsPublic] = useState(true);
+  const [imageUrl, setImageUrl] = useState<string>('');
+
 
   // Validation setup
   const {
@@ -67,7 +86,12 @@ export const AddRecipeModalComponent: React.FC<Props> = ({ handleClose }) => {
   } = useForm<Recipe>({
     resolver: yupResolver(recipeSchema),
     mode: "onChange",
+
   });
+
+  useEffect(() => {
+      setTimeout(() => { console.log("imageUrl", imageUrl);}, 1000)
+  }, [imageUrl])
 
   useEffect(() => {
     setValue(
@@ -95,11 +119,13 @@ export const AddRecipeModalComponent: React.FC<Props> = ({ handleClose }) => {
       recipeId: null,
       recipeName: data.recipeName,
       description: data.description,
-      image: data.image,
+      image: imageUrl,
       ingredients: data.ingredients,
       time: data.time,
       categories: selectedCategories,
       recommendedPersonAmount: data.recommendedPersonAmount,
+      isPublic: isPublic,
+      author: "unknown"
     };
 
     try {
@@ -121,18 +147,21 @@ export const AddRecipeModalComponent: React.FC<Props> = ({ handleClose }) => {
 
   const handleChangeCategories = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value, checked } = e.target;
+
+    trigger("categories");
+  
     setSelectedCategories((prev) =>
       checked ? [...prev, value] : prev.filter((category) => category !== value)
     );
   };
-
+  
   const removeIngredient = (ingredientToRemove: Ingredient) => {
     setIngredients(ingredients.filter((ingredient) => ingredient.name !== ingredientToRemove.name));
   };
 
   useEffect(() => {
     const fetchIngredients = async () => {
-      if (!searchTerm.trim()) {
+      if (!searchTerm) {
         setIsDropdownOpen(false);
         return;
       }
@@ -163,7 +192,7 @@ export const AddRecipeModalComponent: React.FC<Props> = ({ handleClose }) => {
   }, []);
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-darkText bg-opacity-50">
+    <div className="fixed overflow-y-auto inset-0 flex items-center justify-center bg-darkText bg-opacity-50">
       <div className="flex flex-col w-fit min-w-44 bg-cyan-200 rounded-lg p-6">
         <div className="flex justify-between items-start py-2">
           <h2 className="text-lg font-bold text-darkText mb-4">Tilføj en opskrift</h2>
@@ -172,7 +201,9 @@ export const AddRecipeModalComponent: React.FC<Props> = ({ handleClose }) => {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(onSubmit, (errors) => {
+          console.log("Validation errors:", errors);
+          })}>
             <div className="flex flex-col justify-center items-center w-full px-1">
               <label className="font-bold">Opskrifts Navn</label>
               <input
@@ -184,14 +215,7 @@ export const AddRecipeModalComponent: React.FC<Props> = ({ handleClose }) => {
               {errors.recipeName && <p className="text-red-500 text-xs">{errors.recipeName.message}</p>}
 
               <label className="font-bold">Billede</label>
-              <input
-                type="url"
-                className="w-full min-w-36 max-w-80 rounded-lg p-1"
-                {...register("image")}
-                onKeyUp={() => trigger("image")}
-              />
-              {errors.image && <p className="text-red-500 text-xs">{errors.image.message}</p>}
-              {getValues("image") && <img src={getValues("image")} alt="Preview" className="size-28 rounded" />}
+              <ImageUploader onUploadComplete={setImageUrl} />
 
               <label className="font-bold">Antaget tid (min.)</label>
               <input type="number" className="w-full min-w-36 max-w-80 rounded-lg p-1" {...register("time")} onKeyUp={() => trigger("time")} />
@@ -211,6 +235,21 @@ export const AddRecipeModalComponent: React.FC<Props> = ({ handleClose }) => {
                   </label>
                 ))}
               </div>
+
+
+              <label className="font-bold">antal personer:</label>
+              <input type="number" className="w-full min-w-36 max-w-80 rounded-lg p-1" {...register("recommendedPersonAmount")} onKeyUp={() => trigger("recommendedPersonAmount")} />
+              {errors.recommendedPersonAmount && <p className="text-red-500 text-xs">{errors.recommendedPersonAmount.message}</p>}
+
+              <label className="font-bold">Beskrivelse</label>
+              <input type="text" className="w-full min-w-36 max-w-80 rounded-lg p-1" {...register("description")} onKeyUp={() => trigger("description")} />
+              {errors.description && <p className="text-red-500 text-xs">{errors.description.message}</p>}
+
+
+              <VisibilityToggle
+              isPublic={isPublic}
+              setIsPublic={setIsPublic}
+              ></VisibilityToggle>
               <div>
               <label className="font-bold">Ingredienser</label>
               <div ref={searchBarRef} className="relative">
@@ -226,12 +265,12 @@ export const AddRecipeModalComponent: React.FC<Props> = ({ handleClose }) => {
                       >
                         <AddIngredientComponent
                           onAdd={async (newIngredient) => {
-                            //const newItem: Item = { name: searchTerm.trim() }
-                            //const createdItem = await createItem(newItem);
+                            const newItem: Item = { name: searchTerm.trim() }
+                            const createdItem = await createItem(newItem);
                             setIngredients(prev => [...prev, newIngredient]);
                             setSearchTerm("");
                           }}
-                          item={searchTerm}
+                          itemName={searchTerm}
                         />
                       </div>
                     )}
@@ -245,7 +284,7 @@ export const AddRecipeModalComponent: React.FC<Props> = ({ handleClose }) => {
                             setIngredients(prev => [...prev, newIngredient]);
                             setSearchTerm("");
                           }}
-                          item={item.name}
+                          itemName={item.name}
                         />
                       </div>
                     ))}
@@ -255,11 +294,12 @@ export const AddRecipeModalComponent: React.FC<Props> = ({ handleClose }) => {
 
               {ingredients.length > 0 && (
                 <div className="mt-4">
-                  <h3 className="font-bold mb-2">Valgte ingredienser:</h3>
+                  <h3 className="font-bold mb-2 p-1">Valgte ingredienser:</h3>
                   <div className="space-y-2">
                     {ingredients.map((ingredient) => (
-                      <div key={ingredient.name} className="flex items-center justify-between bg-gray-100 p-2 rounded">
-                        <span>{ingredient.name}</span>
+                      <div key={ingredient.name} className="flex items-center justify-between bg-gray-100 p-2 rounded m-1">
+                        <p className="mx-2 w-1/2">{ingredient.name}</p>
+                        <p className="mx-2">{ingredient.weight} {ingredient.unit}</p>
                         <button
                           type="button"
                           onClick={() => removeIngredient(ingredient)}
@@ -274,7 +314,10 @@ export const AddRecipeModalComponent: React.FC<Props> = ({ handleClose }) => {
               )}
               </div>
 
-              <button className="bg-action hover:bg-actionHover text-darkText w-full min-w-36 max-w-80 rounded-lg p-1" type="submit">
+              <button 
+              className="bg-action hover:bg-actionHover text-darkText w-full min-w-36 max-w-80 rounded-lg p-1 mt-3" 
+              type="submit"
+              >
                 Tilføj opskrift
               </button>
             </div>

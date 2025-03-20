@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '../../lib/mongodb';
 
+const databaseName = process.env.MONGO_DATABASE_NAME
+
 export async function GET(request: NextRequest) {
     try {
       const searchTerm = request.nextUrl.searchParams.get('term') || '';
       const client = await clientPromise;
-      const db = client.db("recipe-database");
+      const db = client.db(databaseName);;
       
       const items = await db.collection("items")
         .find({
@@ -33,7 +35,7 @@ export async function GET(request: NextRequest) {
       }
   
       const client = await clientPromise;
-      const db = client.db("recipe-database");
+      const db = client.db(databaseName);;
   
       // Check if item already exists
       const existingItem = await db.collection("items")

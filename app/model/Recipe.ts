@@ -1,5 +1,6 @@
 import { Ingredient } from "./Ingredient";
 export interface Recipe {
+    _id?: number | undefined,
     recipeId?: number;
     recipeName: string;
     description: string;
@@ -8,4 +9,6 @@ export interface Recipe {
     time: number;
     categories: string[];
     recommendedPersonAmount: number;
+    isPublic: boolean;
+    author: string;
   }

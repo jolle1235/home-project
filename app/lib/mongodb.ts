@@ -1,6 +1,7 @@
 import { MongoClient } from 'mongodb';
 
 const uri: string | undefined = process.env.MONGODB_URI;
+
 const options = {};
 
 if (!uri) {

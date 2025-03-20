@@ -2,13 +2,15 @@
 import React, { useState } from "react";
 import { Ingredient } from "../model/Ingredient";
 import { unitTypes } from "../constant/unitTypes";
+import { Item } from "../model/item";
 
 interface Props {
   onAdd: (ingredient: Ingredient) => void;
-  item: string;
+  itemName: string;
 }
-export function AddIngredientComponent({ onAdd, item }: Props) {
-  const [name, setName] = useState("");
+export function AddIngredientComponent({ onAdd, itemName }: Props) {
+  const [name, setName] = useState(itemName);
+
   const [weight, setWeight] = useState<number>(0);
   const [unit, setUnit] = useState(unitTypes[0]);
 
@@ -33,7 +35,7 @@ export function AddIngredientComponent({ onAdd, item }: Props) {
     <div  className="flex justify-center items-center flex-row p-1">
       <div className="w-5/12">
         <label className="block text-lg font-medium">
-          {item}
+          {itemName}
         </label>
       </div>
 
