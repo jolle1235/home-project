@@ -1,36 +1,20 @@
 
 import { Recipe } from "../model/Recipe";
 
-async function getImageFromId(id: number){
-  try {
-    const response = await fetch(`/api/images/${id}`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-    });
-    if (!response.ok) throw new Error(`Failed to get Image with id: ${id}`);
-    return response.json();
-  } catch (error) {
-    console.error('Error getting image:', error);
-    throw error;
-  }
-}
-
 export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
 
   if (!recipes || recipes.length === 0) {
     return <p>Der er i øjeblikket ingen opskrifter</p>;
   }
 
-
-
   return (
-    <div id="recipes" className="flex flex-row flex-wrap">
+    <div id="recipes" className="flex flex-row flex-wrap space-x-4">
       {recipes.map((recipe) => {
         return (
           <div key={recipe._id}>
             <div
               id="recipe_card"
-              className="flex flex-col transform transition duration-300 hover:scale-105 hover:shadow-2xl cursor-pointer justify-between max-w-md h-96 shadow-even shadow-darkBackground rounded-lg m-5"
+              className="flex flex-col transform transition duration-300 hover:scale-105 hover:shadow-2xl cursor-pointer max-w-md h-fit shadow-even shadow-darkBackground rounded-lg mt-5 bg-neutral-100"
             >
               <img
                 src={recipe.image}
@@ -38,12 +22,12 @@ export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
                 className="object-cover rounded-t-lg h-64 w-80"
               ></img>
 
-              <div className="flex flex-row mt-1">
+              <div className="flex flex-row">
                 {recipe.categories.map((category) => (
                   <span
                     key={category}
                     id="recipe_categories"
-                    className="bg-darkgreyBackground font-bold m-2 p-2 rounded-full text-xs"
+                    className="bg-darkgreyBackground font-bold p-1.5 m-1 rounded-full text-xs"
                   >
                     {category}
                   </span>
@@ -51,7 +35,7 @@ export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
               </div>
 
               <div id="titel_and_price" className="flex flex-row">
-                <p className="flex text-darkText text-lg pl-2 font-bold">
+                <p className="flex text-darkText text-2xl pl-2 font-bold">
                   {recipe.recipeName}
                 </p>
               </div>
@@ -60,13 +44,13 @@ export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
                   <img
                     src="./icon/recipes_page/time.png"
                     alt="time"
-                    className="flex size-5"
+                    className="flex size-5 mx-1"
                   ></img>
                   <p className="flex text-darkgreyText">{recipe.time}</p>
                 </div>
                 <div
                   id="people"
-                  className="flex flex-row space-x-1 ml-auto text-darkgreyText"
+                  className="flex flex-row space-x-2 ml-auto text-darkgreyText"
                 >
                   <p>{recipe.recommendedPersonAmount}</p>
                   <p>personer</p>

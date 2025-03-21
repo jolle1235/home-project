@@ -10,7 +10,7 @@ interface SearchBarProps {
 
 export function SearchBarComponent({ onChange, placeholder }: SearchBarProps) {
   const {
-    setValue, // Add setValue to manage the value in React Hook Form
+    setValue, // Manage value in React Hook Form
     formState: { errors },
     trigger,
     getValues,
@@ -29,8 +29,8 @@ export function SearchBarComponent({ onChange, placeholder }: SearchBarProps) {
   }
 
   return (
-    <div>
-      <div className="w-full min-w-36 max-w-80 rounded-lg p-1">
+    <div className="w-full min-w-36 max-w-80">
+      <div className="relative w-full">
         <input
           type="text"
           placeholder={placeholder}
@@ -39,10 +39,7 @@ export function SearchBarComponent({ onChange, placeholder }: SearchBarProps) {
           className={`w-full p-3 pl-4 pr-12 border rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 
             ${errors.itemSearch ? "focus:ring-cancel" : ""}`}
         />
-        {errors.itemSearch && getValues("itemSearch") && (
-          <p className="text-red-500 absolute">{errors.itemSearch.message}</p>
-        )}
-        <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+        <div className="absolute inset-y-0 right-3 flex items-center">
           <svg
             className="h-5 w-5 text-gray-400"
             xmlns="http://www.w3.org/2000/svg"
@@ -59,6 +56,9 @@ export function SearchBarComponent({ onChange, placeholder }: SearchBarProps) {
           </svg>
         </div>
       </div>
+      {errors.itemSearch && getValues("itemSearch") && (
+        <p className="text-red-500 mt-1">{errors.itemSearch.message}</p>
+      )}
     </div>
   );
 }

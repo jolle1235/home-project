@@ -114,30 +114,36 @@ export default function RecipePage() {
           </RecipeCategoryButtonComponent>
         ))}
       </div>
-      <div className="ms-2 flex flex-row space-x-3 justify-center items-center w-4/12">
-        <Slider
-          getAriaLabel={() => "time"}
-          value={timeRange}
-          onChange={handleSliderChange}
-          valueLabelDisplay="off"
-          valueLabelFormat={TimeValueFormat}
-          min={0}
-          max={60}
-          step={15}
-        />
-        <img
-          src="./icon/recipes_page/time.png"
-          alt="time_filter"
-          className="size-6"
-        />
-      </div>
+      <div className="">
+        <div className="ms-2 flex flex-row space-x-3 justify-center items-center w-96 px-2">
+          <Slider
+            getAriaLabel={() => "time"}
+            value={timeRange}
+            onChange={handleSliderChange}
+            valueLabelDisplay="off"
+            valueLabelFormat={TimeValueFormat}
+            min={0}
+            max={120}
+            step={15}
+            />
+          <img
+            src="./icon/recipes_page/time.png"
+            alt="time_filter"
+            className="size-6"
+            />
+        </div>
 
-      <div className="flex justify-between w-4/12">
-        <span>0</span>
-        <span>15</span>
-        <span>30</span>
-        <span>45</span>
-        <span>60+</span>
+        <div className="flex justify-between w-96">
+          <span> 0:00 |</span>
+          <span> 0:15 |</span>
+          <span> 0:30 |</span>
+          <span> 0:45 |</span>
+          <span> 1:00 |</span>
+          <span> 1:15 |</span>
+          <span> 1:30 |</span>
+          <span> 1:45 |</span>
+          <span> 2:00+ |</span>
+        </div>
       </div>
 
       <div>
