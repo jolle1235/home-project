@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function NavBar() {
   return (
-    <nav className="bg-gray-900 p-4 shadow-md">
+    <nav className="bg-gray-900 p-4 shadow-md sticky">
       <div className="container mx-auto flex justify-between items-center">
         <div className="flex space-x-4">
           <Link className="text-white" href="/recipes">Opskrifter</Link>

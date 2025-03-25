@@ -1,33 +1,38 @@
 "use client"
 import React, { useState } from "react";
-import { Ingredient } from "../model/Ingredient";
+import { Item } from "../model/Item";
 import { unitTypes } from "../constant/unitTypes";
-import { Item } from "../model/item";
+import { RemoveButton } from "./smallComponent/removeBtn";
+import { removeItem } from "../utils/apiHelperFunctions";
 
 interface Props {
-  onAdd: (ingredient: Ingredient) => void;
+  onAdd: (Item: Item) => void;
   itemName: string;
 }
 export function AddIngredientComponent({ onAdd, itemName }: Props) {
   const [name, setName] = useState(itemName);
 
-  const [weight, setWeight] = useState<number>(0);
+  const [quantity, setQuantity] = useState<number>(0);
   const [unit, setUnit] = useState(unitTypes[0]);
+  const [category, setCategory] = useState<string>("")
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    const newIngredient: Ingredient = {
+    const newItem: Item = {
+      _id: 0,
       name,
-      weight,
-      unit
+      quantity,
+      unit,
+      marked: false,
+      category,
+
     };
     
-    onAdd(newIngredient)
+    onAdd(newItem)
 
-    // Reset form
     setName("");
-    setWeight(0);
+    setQuantity(0);
     setUnit(unitTypes[0]);
   };
 
@@ -42,9 +47,9 @@ export function AddIngredientComponent({ onAdd, itemName }: Props) {
       <div className="w-3/12">
         <input
           type="number"
-          value={weight}
+          value={quantity}
           placeholder="Mængde"
-          onChange={(e) => setWeight(Number(e.target.value))}
+          onChange={(e) => setQuantity(Number(e.target.value))}
           className="mt-1 w-full rounded-md border border-gray-300 p-1"
           required
           min="0"
@@ -61,6 +66,13 @@ export function AddIngredientComponent({ onAdd, itemName }: Props) {
             <option key={unitType} value={unitType}>{unitType}</option>
           ))}
         </select>
+      </div>
+      <div>
+      <RemoveButton
+        itemName={itemName} // Pass name instead of ID
+        onRemove={async () => removeItem(itemName)}
+      />
+
       </div>
 
       <button

@@ -7,22 +7,31 @@ const databaseName = process.env.MONGO_DATABASE_NAME
 interface Recipe {
   _id?: ObjectId;
   name: string;
-  ingredients: string;
+  Items: string;
   instructions?: string;
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const url = new URL(request.url);
+    const userName = url.searchParams.get("userName");
+
     const client = await clientPromise;
-    const db = client.db(databaseName);;
-    const recipes = await db.collection("recipes").find({}).toArray();
-    console.log(recipes)
+    const db = client.db(databaseName);
+
+    // Build the query: if a userName is provided, return all recipes that are public or have that author.
+    const query = userName
+      ? { $or: [{ isPublic: true }, { author: userName }] }
+      : { isPublic: true };
+
+    const recipes = await db.collection("recipes").find(query).toArray();
     return NextResponse.json(recipes);
   } catch (error) {
     console.error("Failed to fetch recipes:", error);
     return NextResponse.json({ error: "Failed to fetch recipes" }, { status: 500 });
   }
 }
+
 
 export async function POST(request: Request) {
   try {

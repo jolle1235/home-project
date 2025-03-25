@@ -1,7 +1,11 @@
 
+"use client"
 import { Recipe } from "../model/Recipe";
+import { useRecipeContext } from "../context/RecipeContext";
+import ActionBtn from "./smallComponent/actionBtn"
 
 export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
+  const { addRecipeToTempWeekPlan } = useRecipeContext();
 
   if (!recipes || recipes.length === 0) {
     return <p>Der er i øjeblikket ingen opskrifter</p>;
@@ -19,7 +23,7 @@ export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
               <img
                 src={recipe.image}
                 alt={recipe.recipeName}
-                className="object-cover rounded-t-lg h-64 w-80"
+                className="object-cover rounded-t-lg h-44 w-64"
               ></img>
 
               <div className="flex flex-row">
@@ -35,7 +39,7 @@ export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
               </div>
 
               <div id="titel_and_price" className="flex flex-row">
-                <p className="flex text-darkText text-2xl pl-2 font-bold">
+                <p className="flex text-darkText text-xl pl-2 font-bold">
                   {recipe.recipeName}
                 </p>
               </div>
@@ -55,21 +59,10 @@ export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
                   <p>{recipe.recommendedPersonAmount}</p>
                   <p>personer</p>
                 </div>
-                <div
-                  id="price_per_person"
-                  className="flex px-2 pl-5 text-darkgreyText items-center"
-                >
-                  <img
-                    src="./icon/recipes_page/person.png"
-                    alt="person"
-                    className="flex size-5"
-                  ></img>
-                  <div
-                    id="price_per_person_text"
-                    className="flex flex-row space-x-1"
-                  >
-                  </div>
-                </div>
+              </div>
+              <div className="flex justify-center items-center p-1 ">
+                <ActionBtn onClickF={() => addRecipeToTempWeekPlan(recipe)} Itext="Tilføj til madplan" />
+
               </div>
             </div>
           </div>

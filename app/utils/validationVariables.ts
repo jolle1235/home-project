@@ -25,4 +25,4 @@ export const maxRecipePersons = 50;
 export const maxRecipeDescriptionLength = 5000;
 export const minRecipeDescriptionLength = 20;
 
-export const minRecipeIngredients = 1;
+export const minRecipeItems = 1;

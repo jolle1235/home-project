@@ -1,78 +1,92 @@
 "use client"
 import Slider from "@mui/material/Slider";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { AddRecipeButtonComponent } from "../components/AddRecipeButtonComponent";
 import { RecipeCardComponent } from "../components/RecipeCardComponent";
 import { RecipeCategoryButtonComponent } from "../components/RecipeCategoryButtonComponent";
 import { Recipe } from "../model/Recipe";
 import { meatCategories } from "../constant/recipeCategories";
+import { useSession, signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import VisibilityToggle from "../components/smallComponent/VisibilityToggleComponent";
+import Image from "next/image";
 
 export default function RecipePage() {
+  // Authentication
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (status !== "loading" && !session) {
+      router.push("/signin");
+    }
+  }, [status, session, router]);
+  //----------------------------------//
+
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [timeRange, setTimeRange] = useState<number[]>([0, 60]);
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [filteredRecipes, setFilteredRecipes] = useState<Recipe[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [categories] = useState(meatCategories);
+  const [showMyRecipes, setShowMyRecipes] = useState<boolean>(true)
+
+  if (status === "loading") {
+    return <p>Loading...</p>; // Keeps the hook order intact
+  }
+
+  if (!session) {
+    return null; // Component will still render hooks
+  }
+
+  const currentUser = session.user.name;
+
 
   // Fetch recipes
   useEffect(() => {
     const fetchRecipes = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch("/api/recipe");
+        const userName = session?.user?.name; // Adjust this based on how you store the user data
+        const url = userName ? `/api/recipe?userName=${encodeURIComponent(userName)}` : "/api/recipe";
+        const response = await fetch(url);
         if (!response.ok) throw new Error("Failed to fetch recipes");
         const data = await response.json();
         setRecipes(data);
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "An unknown error occurred"
-        );
+        setError(err instanceof Error ? err.message : "An unknown error occurred");
       } finally {
         setIsLoading(false);
       }
     };
-    fetchRecipes();
-  }, []);
+    fetchRecipes();    
+  }, [session?.user?.name]);
 
   // Filter recipes
-  useEffect(() => {
-    const updateFilteredRecipes = () => {
-      const filtered = recipes.filter((recipe) => {
-        if (!recipe) return false;
-
-        const matchesCategories =
-          selectedCategories.length === 0 ||
-          selectedCategories.some((category) =>
-            recipe.categories?.includes(category)
-          );
-
-        let matchesTimeRange = recipe.time
-          ? recipe.time >= timeRange[0]
-          : false;
-
-        if (timeRange[1] === 60) {
-          matchesTimeRange =
-            matchesTimeRange || (recipe.time ? recipe.time > 60 : false);
-        } else {
-          matchesTimeRange =
-            matchesTimeRange &&
-            (recipe.time ? recipe.time <= timeRange[1] : false);
-        }
-
-        const lowerCaseSearchTerm = searchTerm.toLowerCase();
-        const matchesName = recipe.recipeName
-          ? recipe.recipeName.toLowerCase().includes(lowerCaseSearchTerm)
-          : false;
-
-        return matchesCategories && matchesTimeRange && matchesName;
-      });
-      setFilteredRecipes(filtered);
-    };
-    updateFilteredRecipes();
-  }, [recipes, selectedCategories, timeRange, searchTerm]);
+  const filteredRecipes = useMemo(() => {
+    const lowerCaseSearchTerm = searchTerm.toLowerCase();
+    
+    return recipes.filter((recipe) => {
+      if (!recipe || !recipe.recipeName || !recipe.time) return false;
+      
+      const matchesCategory =
+        selectedCategories.length === 0 ||
+        selectedCategories.some((category) => recipe.categories?.includes(category));
+  
+      const matchesTime =
+        recipe.time >= timeRange[0] &&
+        (timeRange[1] === 60 ? true : recipe.time <= timeRange[1]);
+  
+      const matchesSearch = recipe.recipeName.toLowerCase().includes(lowerCaseSearchTerm);
+      const matchesUser = showMyRecipes || recipe.author === currentUser;
+  
+      return matchesCategory && matchesTime && matchesSearch && matchesUser;
+    });
+  }, [recipes, selectedCategories, timeRange, searchTerm, showMyRecipes, currentUser]);
+  
+  
+  
 
   const handleSliderChange = (event: Event, newValue: number | number[]) => {
     setTimeRange(newValue as number[]);
@@ -126,11 +140,7 @@ export default function RecipePage() {
             max={120}
             step={15}
             />
-          <img
-            src="./icon/recipes_page/time.png"
-            alt="time_filter"
-            className="size-6"
-            />
+          <Image src="/icon/recipes_page/time.png" alt="time_filter" width={24} height={24} />
         </div>
 
         <div className="flex justify-between w-96">
@@ -145,7 +155,13 @@ export default function RecipePage() {
           <span> 2:00+ |</span>
         </div>
       </div>
+      <div>
 
+      </div>
+        <VisibilityToggle
+          booleanValue={showMyRecipes}
+          setBooleanValue={setShowMyRecipes}
+        ></VisibilityToggle>
       <div>
         {isLoading ? (
           <div className="mt-4">Loading recipes...</div>

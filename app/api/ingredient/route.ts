@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '../../lib/mongodb';
-import { Ingredient } from '@/app/model/Ingredient';
+import { Item } from '@/app/model/Item';
 
 const databaseName = process.env.MONGO_DATABASE_NAME
 
@@ -10,25 +10,25 @@ export async function GET(request: NextRequest) {
     const client = await clientPromise;
     const db = client.db(databaseName);;
     
-    const ingredients = await db.collection<Ingredient>("ingredients")
+    const Items = await db.collection<Item>("Items")
       .find({
         name: { $regex: searchTerm, $options: 'i' }
       })
       .toArray();
       
-    return NextResponse.json(ingredients);
+    return NextResponse.json(Items);
   } catch (error) {
-    console.error("Failed to fetch ingredients:", error);
-    return NextResponse.json({ error: "Failed to fetch ingredients" }, { status: 500 });
+    console.error("Failed to fetch Items:", error);
+    return NextResponse.json({ error: "Failed to fetch Items" }, { status: 500 });
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const ingredient = await request.json();
+    const Item = await request.json();
     
-    // Validate the ingredient data
-    if (!ingredient.name || !ingredient.unit) {
+    // Validate the Item data
+    if (!Item.name || !Item.unit) {
       return NextResponse.json(
         { error: "Name and unit are required fields" },
         { status: 400 }
@@ -38,30 +38,30 @@ export async function POST(request: NextRequest) {
     const client = await clientPromise;
     const db = client.db(databaseName);;
 
-    // Check if ingredient already exists
-    const existingIngredient = await db.collection("ingredients")
-      .findOne({ name: ingredient.name });
+    // Check if Item already exists
+    const existingItem = await db.collection("Items")
+      .findOne({ name: Item.name });
 
-    if (existingIngredient) {
+    if (existingItem) {
       return NextResponse.json(
-        { error: "Ingredient already exists" },
+        { error: "Item already exists" },
         { status: 409 }
       );
     }
 
-    // Insert the new ingredient
-    const result = await db.collection("ingredients")
-      .insertOne(ingredient);
+    // Insert the new Item
+    const result = await db.collection("Items")
+      .insertOne(Item);
 
     return NextResponse.json(
-      { id: result.insertedId, ...ingredient },
+      { id: result.insertedId, ...Item },
       { status: 201 }
     );
 
   } catch (error) {
-    console.error("Failed to add ingredient:", error);
+    console.error("Failed to add Item:", error);
     return NextResponse.json(
-      { error: "Failed to add ingredient" },
+      { error: "Failed to add Item" },
       { status: 500 }
     );
   }

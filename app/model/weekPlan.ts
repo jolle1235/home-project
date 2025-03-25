@@ -1,5 +1,6 @@
 import { Recipe } from "./Recipe";
 
 export interface WeekPlan {
-    [date: string]: Recipe[];
+    date: string,
+    recipe: Recipe,
   }

@@ -1,24 +1,26 @@
 "use client"
 import React, { useEffect, useRef, useState } from "react";
 import { meatCategories } from "../constant/recipeCategories";
-import { Ingredient } from "../model/Ingredient";
+import { Item } from "../model/Item";
 import SearchBar from "./SearchBarComponent";
 import { Recipe } from "../model/Recipe";
 import { AddIngredientComponent } from "./AddIngredientComponent";
-import { Item } from "../model/item";
-import VisibilityToggle from "../components/VisibilityToggleComponent";
+import VisibilityToggle from "./smallComponent/VisibilityToggleComponent";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { recipeSchema } from "../utils/validationSchema";
 import ImageUploader from "./ImageUploader";
 import { createItem } from "../utils/apiHelperFunctions";
 import { searchItem } from "../utils/apiHelperFunctions";
+import { useSession } from "next-auth/react";
 
 interface Props {
   handleClose: () => void;
 }
 
 export const AddRecipeModalComponent: React.FC<Props> = ({ handleClose }) => {
+  const { data: session } = useSession();
+
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const searchBarRef = useRef<HTMLDivElement>(null);
@@ -27,7 +29,6 @@ export const AddRecipeModalComponent: React.FC<Props> = ({ handleClose }) => {
   const [categories] = useState(meatCategories);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [items, setItems] = useState<Item[]>([]);
-  const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [isPublic, setIsPublic] = useState(true);
   const [imageUrl, setImageUrl] = useState<string>('');
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -46,17 +47,21 @@ export const AddRecipeModalComponent: React.FC<Props> = ({ handleClose }) => {
 
   useEffect(() => {
     setValue(
-      "ingredients",
-      ingredients.map((ingredient) => ({
-        name: ingredient.name,
-        weight: ingredient.weight,
-        unit: ingredient.unit,
+      "Items",
+      items.map((item: Item) => ({
+        _id: 0,
+        name: item.name,
+        quantity: item.quantity, 
+        unit: item.unit,
+        marked: item.marked,
+        category: item.category,
       }))
     );
-    if (errors.ingredients) {
-      trigger("ingredients");
+    if (errors.Items) {
+      trigger("Items");
     }
-  }, [ingredients, setValue, trigger, errors.ingredients]);
+  }, [items, setValue, trigger, errors.Items]);
+  
 
   const clearState = (setState: React.Dispatch<React.SetStateAction<any>>, initialState: any) => {
     setState(initialState);
@@ -90,12 +95,12 @@ export const AddRecipeModalComponent: React.FC<Props> = ({ handleClose }) => {
       recipeName: data.recipeName,
       description: data.description,
       image: uploadedImageUrl,
-      ingredients: data.ingredients,
+      Items: data.Items,
       time: data.time,
       categories: selectedCategories,
       recommendedPersonAmount: data.recommendedPersonAmount,
       isPublic: isPublic,
-      author: "unknown",
+      author: session?.user.name,
     };
 
     try {
@@ -106,7 +111,7 @@ export const AddRecipeModalComponent: React.FC<Props> = ({ handleClose }) => {
         body: JSON.stringify(updatedFormData),
       });
       if (res.ok) {
-        clearState(setIngredients, []);
+        clearState(setItems, []);
         handleClose();
       }
     } catch (error) {
@@ -122,12 +127,12 @@ export const AddRecipeModalComponent: React.FC<Props> = ({ handleClose }) => {
     );
   };
 
-  const removeIngredient = (ingredientToRemove: Ingredient) => {
-    setIngredients(ingredients.filter((ingredient) => ingredient.name !== ingredientToRemove.name));
+  const removeItem = (ItemToRemove: Item) => {
+    setItems(items.filter((Item) => Item.name !== ItemToRemove.name));
   };
 
   useEffect(() => {
-    const fetchIngredients = async () => {
+    const fetchItems = async () => {
       if (!searchTerm) {
         setIsDropdownOpen(false);
         return;
@@ -137,11 +142,11 @@ export const AddRecipeModalComponent: React.FC<Props> = ({ handleClose }) => {
         setItems(data);
         setIsDropdownOpen(true);
       } catch (error) {
-        console.error("Failed to fetch ingredients");
+        console.error("Failed to fetch Items");
         setIsDropdownOpen(false);
       }
     };
-    const debounceTimeout = setTimeout(fetchIngredients, 500);
+    const debounceTimeout = setTimeout(fetchItems, 500);
     return () => clearTimeout(debounceTimeout);
   }, [searchTerm]);
 
@@ -167,7 +172,7 @@ export const AddRecipeModalComponent: React.FC<Props> = ({ handleClose }) => {
         <form onSubmit={handleSubmit(onSubmit, (errors) => console.log("Validation errors:", errors))}>
           {/* Container for two columns, responsive with flexbox */}
           <div className="flex flex-col md:flex-row gap-4">
-            {/* Right Column: Most fields and ingredient search */}
+            {/* Right Column: Most fields and Item search */}
             <div className="w-full md:w-1/2 flex flex-col gap-4">
               <div>
                 <label className="font-bold">Opskrifts Navn</label>
@@ -224,7 +229,7 @@ export const AddRecipeModalComponent: React.FC<Props> = ({ handleClose }) => {
                   ))}
                 </div>
               </div>
-              <VisibilityToggle isPublic={isPublic} setIsPublic={setIsPublic} />
+              <VisibilityToggle booleanValue={isPublic} setBooleanValue={setIsPublic} />
             </div>
 
             
@@ -249,10 +254,10 @@ export const AddRecipeModalComponent: React.FC<Props> = ({ handleClose }) => {
                     {searchTerm.trim() && (
                       <div className="hover:bg-gray-100 cursor-pointer bg-gray-50 p-2">
                         <AddIngredientComponent
-                          onAdd={async (newIngredient) => {
-                            const newItem: Item = { name: searchTerm.trim() };
+                          onAdd={async (returnItem) => {
+                            const newItem: Item = returnItem
                             await createItem(newItem);
-                            setIngredients((prev) => [...prev, newIngredient]);
+                            setItems((prev) => [...prev, returnItem]);
                             setSearchTerm("");
                           }}
                           itemName={searchTerm}
@@ -262,8 +267,8 @@ export const AddRecipeModalComponent: React.FC<Props> = ({ handleClose }) => {
                     {items.map((item) => (
                       <div key={item.name} className="p-2 hover:bg-gray-100 cursor-pointer">
                         <AddIngredientComponent
-                          onAdd={async (newIngredient) => {
-                            setIngredients((prev) => [...prev, newIngredient]);
+                          onAdd={async (newItem) => {
+                            setItems((prev) => [...prev, newItem]);
                             setSearchTerm("");
                           }}
                           itemName={item.name}
@@ -274,22 +279,22 @@ export const AddRecipeModalComponent: React.FC<Props> = ({ handleClose }) => {
                 )}
               </div>
 
-              {ingredients.length > 0 && (
+              {items.length > 0 && (
                 <div className="mt-4">
                   <h3 className="font-bold mb-2">Valgte ingredienser:</h3>
                   <div className="space-y-2">
-                    {ingredients.map((ingredient) => (
-                      <div key={ingredient.name} className="flex items-center justify-between bg-gray-100 p-2 rounded">
-                        <p className="w-1/2">{ingredient.name}</p>
+                    {items.map((Item) => (
+                      <div key={Item.name} className="flex items-center justify-between bg-gray-100 p-2 rounded">
+                        <p className="w-1/2">{Item.name}</p>
                         <p>
-                          {ingredient.weight} {ingredient.unit}
+                          {Item.quantity} {Item.unit}
                         </p>
                         <button
                           type="button"
-                          onClick={() => removeIngredient(ingredient)}
+                          onClick={() => removeItem(Item)}
                           className="text-red-500 hover:text-red-700"
                         >
-                          <img src="/icon/remove_button.png" alt="remove_ingredient" className="w-4 h-4" />
+                          <img src="/icon/remove_button.png" alt="remove_Item" className="w-4 h-4" />
                         </button>
                       </div>
                     ))}

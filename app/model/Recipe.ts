@@ -1,11 +1,11 @@
-import { Ingredient } from "./Ingredient";
+import { Item } from "./Item";
 export interface Recipe {
-    _id?: number | undefined,
+    _id: number
     recipeId?: number;
     recipeName: string;
     description: string;
     image: string;
-    ingredients: Ingredient[];
+    Items: Item[];
     time: number;
     categories: string[];
     recommendedPersonAmount: number;
