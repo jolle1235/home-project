@@ -3,12 +3,21 @@
 import { Recipe } from "../model/Recipe";
 import { useRecipeContext } from "../context/RecipeContext";
 import ActionBtn from "./smallComponent/actionBtn"
+import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
   const { addRecipeToTempWeekPlan } = useRecipeContext();
+  const router = useRouter();
 
   if (!recipes || recipes.length === 0) {
     return <p>Der er i øjeblikket ingen opskrifter</p>;
+  }
+
+  function handleRouter(id?: number) {
+    if (id) {
+      router.push(`/recipes/${id}`);
+    }
   }
 
   return (
@@ -18,13 +27,16 @@ export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
           <div key={recipe._id}>
             <div
               id="recipe_card"
-              className="flex flex-col transform transition duration-300 hover:scale-105 hover:shadow-2xl cursor-pointer max-w-md h-fit shadow-even shadow-darkBackground rounded-lg mt-5 bg-neutral-100"
+              className="flex flex-col cursor-pointer max-w-md h-fit shadow-even shadow-darkBackground rounded-lg mt-5 bg-neutral-100"
             >
-              <img
+              <Image
                 src={recipe.image}
                 alt={recipe.recipeName}
-                className="object-cover rounded-t-lg h-44 w-64"
-              ></img>
+                width={270}
+                height={270} 
+                className="object-cover rounded-t-lg"
+                priority 
+              />
 
               <div className="flex flex-row">
                 {recipe.categories.map((category) => (
@@ -39,12 +51,12 @@ export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
               </div>
 
               <div id="titel_and_price" className="flex flex-row">
-                <p className="flex text-darkText text-xl pl-2 font-bold">
+                <p className="truncate max-w-64 text-darkText text-xl pl-2 font-bold">
                   {recipe.recipeName}
                 </p>
               </div>
-              <div id="recipe_description" className="flex flex-row pb-2">
-                <div id="time" className="flex flex-row items-center px-2">
+              <div id="recipe_description" className="flex flex-row justify-between p-1 mx-2">
+                <div id="time" className="flex flex-row items-center">
                   <img
                     src="./icon/recipes_page/time.png"
                     alt="time"
@@ -54,15 +66,18 @@ export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
                 </div>
                 <div
                   id="people"
-                  className="flex flex-row space-x-2 ml-auto text-darkgreyText"
+                  className="flex flex-row space-x-2 text-darkgreyText"
                 >
                   <p>{recipe.recommendedPersonAmount}</p>
                   <p>personer</p>
                 </div>
               </div>
-              <div className="flex justify-center items-center p-1 ">
+              <div className="flex flex-row justify-center items-center p-1 ">
                 <ActionBtn onClickF={() => addRecipeToTempWeekPlan(recipe)} Itext="Tilføj til madplan" />
-
+                <ActionBtn onClickF={() => handleRouter(recipe._id)}
+                        Itext="Se opskrift"
+                      >
+                      </ActionBtn>
               </div>
             </div>
           </div>

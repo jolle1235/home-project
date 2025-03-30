@@ -99,6 +99,13 @@ export const recipeDescriptionSchema = Yup.string()
 // ---------------------------------------------------- //
 // SCHEMAS //
 // ---------------------------------------------------- //
+const addIngredientSchema = Yup.object().shape({
+  quantity: Yup.number()
+    .min(1, "Mængden skal være mindst 1")
+    .required("Mængde er påkrævet"),
+  unit: Yup.string().required("Enhed er påkrævet"),
+  category: Yup.string().required("Kategori er påkrævet"),
+});
 
 export const loginSchema = Yup.object({
   email: emailSchema,
@@ -113,15 +120,18 @@ export const recipeSchema = Yup.object({
   recommendedPersonAmount: recipePersonAmountSchema,
   description: recipeDescriptionSchema,
   categories: Yup.array().of(Yup.string().required()).default([]),
-  Items: Yup.array()
+  ingredients: Yup.array()
     .of(
       Yup.object({
         _id: Yup.number().default(0),
-        name: Yup.string().required("Ingrediens er påkrævet"),
+        item: Yup.object({
+          _id: Yup.number().default(0),
+          name: Yup.string().required(),
+          category: Yup.string().required(),
+        }).required(),
         quantity: quantitySchema,
         unit: Yup.string().required("Enhed er påkrævet"),
-        marked: Yup.boolean().default(false),
-        category: Yup.string().default(""),      
+        marked: Yup.boolean().default(false),    
       })
     )
     .required("Ingredienser er påkrævet")

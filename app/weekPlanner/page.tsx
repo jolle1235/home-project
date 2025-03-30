@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { useRecipeContext } from "../context/RecipeContext";
 import CalendarDialog from "../components/CalenderDialog";
 import ActionBtn from "../components/smallComponent/actionBtn";
+import { RemoveButton } from "../components/smallComponent/removeBtn";
+import Image from "next/image";
 
 export default function WeeklyRecipePlanner() {
   const router = useRouter();
@@ -12,11 +14,11 @@ export default function WeeklyRecipePlanner() {
     tempWeekPlan,
     addRecipeToWeekPlan,
     removeRecipeFromTempWeekPlan,
+    removeRecipeFromWeekPlan,
     getDatesForNext4Weeks,
   } = useRecipeContext();
   const availableDates = getDatesForNext4Weeks();
 
-  // State to control the popup and store which recipe is being assigned dates.
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedRecipe, setSelectedRecipe] = useState<any>(null);
 
@@ -36,7 +38,6 @@ export default function WeeklyRecipePlanner() {
     setSelectedRecipe(null);
   };
 
-  // When the dialog is done, add the recipe for each selected date.
   const handleDialogDone = (selectedDates: string[]) => {
     if (selectedRecipe) {
       selectedDates.forEach((dateKey) => {
@@ -47,68 +48,87 @@ export default function WeeklyRecipePlanner() {
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <div>
-        <h5 className="text-2xl font-semibold mb-4">
-          Opskrift der mangler en dato
-        </h5>
-        {tempWeekPlan.length > 0 ? (
-          <div className="space-y-4">
-            {tempWeekPlan.map((recipe) => (
-              <div key={recipe._id} className="max-w-md p-4 border rounded shadow">
-                <div>
-                  <h6 className="text-lg font-medium">{recipe.recipeName}</h6>
-                  <ActionBtn
-                    onClickF={() => openDialogForRecipe(recipe)}
-                    Itext="Tiløj til madplan"
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-gray-500">No recipes added yet.</p>
-        )}
-      </div>
+    <div className="p-4">
+      <h5 className="text-2xl font-semibold mb-4">
+        Opskrift der mangler en dato
+      </h5>
 
-      {/* Display the weekly plan as a grid of day cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-8">
+      {tempWeekPlan.length > 0 ? (
+        <div className="space-y-2">
+          {tempWeekPlan.map((recipe) => (
+            <div
+              key={recipe._id}
+              className="flex items-center justify-between border-b p-2"
+            >
+              <p className="truncate">{recipe.recipeName}</p>
+              <ActionBtn
+                onClickF={() => openDialogForRecipe(recipe)}
+                Itext="Tilføj til madplan"
+              />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-gray-500">No recipes added yet.</p>
+      )}
+
+      {/* Weekly plan displayed in a list format */}
+      <div className="mt-8">
         {availableDates.map((date) => {
           const dateKey = date.toISOString().split("T")[0];
           const displayText = date.toLocaleDateString("en-US", {
-            weekday: "long",
             month: "short",
             day: "numeric",
+            weekday: "short",
           });
-          const entriesForDate = weekPlan.filter((entry) => entry.date === dateKey);
+          console.log("date:", dateKey)
+          console.log("date:", dateKey);
+            if (weekPlan.length > 0) {
+              console.log("weekplan date:", weekPlan[0].date);
+            }
+
+          const entriesForDate = weekPlan.filter(
+            (entry) => entry.date === dateKey
+          );
+
           return (
-            <div key={dateKey} className="border rounded p-4">
-              <h6 className="text-lg font-semibold mb-2">{displayText}</h6>
+            <div key={dateKey} className="gap-4 my-1 border p-2 rounded flex flex-row items-center">
+              <h6 className="text-base w-3/12 min-w-32 font-semibold">{displayText}</h6>
               {entriesForDate.length === 0 ? (
                 <p className="text-gray-500 text-sm">No recipes planned.</p>
               ) : (
-                <ul>
+                <div className="flex flex-row items-center w-full">
                   {entriesForDate.map((entry) => (
-                    <div className="flex flex-row justify-center items-center " key={entry.recipe._id}>
-                      <p className="w-1/2 borde p-1">{`${entry.recipe.recipeName}`}</p>
-
+                    <div
+                      className="flex items-center justify-between w-full"
+                      key={entry.recipe._id}
+                    >
+                      <p className="truncate flex items-center shrink-0 flex-1">{entry.recipe.recipeName}</p>
+                      <Image
+                        src={entry.recipe.image}
+                        alt={entry.recipe.recipeName} // Provide an alt text for accessibility
+                        width={40} // Increase size for better visibility
+                        height={40}
+                        className="rounded-md object-cover" // Optional: improve styling
+                      />
                       <ActionBtn
                         onClickF={() => handleRouter(entry.recipe._id)}
                         Itext="Se opskrift"
-                        textSize="text-xs"
-                      >
-                      </ActionBtn>
-
+                        textSize="text-base"
+                      />
+                      <div className="flex items-center">
+                        <RemoveButton onRemove={() => removeRecipeFromWeekPlan(entriesForDate[0].date, entry.recipe._id)}></RemoveButton>
+                      </div>
                     </div>
                   ))}
-                </ul>
+                </div>
               )}
             </div>
           );
         })}
       </div>
 
-      {/* Calendar Popup for selecting dates */}
+      {/* Calendar Popup */}
       <CalendarDialog
         open={dialogOpen}
         onClose={handleDialogClose}

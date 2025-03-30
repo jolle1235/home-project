@@ -9,21 +9,39 @@ export default function RecipeDetailsPage() {
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [checkedItems, setCheckedItems] = useState<boolean[]>([]);
   const [recommendedPersonAmount, setRecommendedPersonAmount] = useState(1);
-  const { id } = useParams();
+  const params = useParams();
   const router = useRouter();
 
   // Fetch recipes
   useEffect(() => {
     const fetchRecipe = async () => {
+      // Ensure we have a valid ID
+      const id = Array.isArray(params.id) ? params.id[0] : params.id;
+      console.log(id)
+      
+      if (!id) {
+        setError("No recipe ID provided");
+        console.log("ERROR fetch recipe id")
+        setIsLoading(false);
+        return;
+      }
+
       setIsLoading(true);
       try {
-        const response = await fetch(`/api/recipe/${id}`);
-        if (!response.ok) throw new Error("Failed to fetch recipes");
+        console.log(`Fetching recipe with ID: ${id}`);
+        const response = await fetch(`/api/recipe/${id}`); // Note: changed to plural
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Failed to fetch recipe: ${errorText}`);
+        }
+        
         const data = await response.json();
+        console.log('Fetched recipe data:', data);
         setRecipe(data);
       } catch (err) {
+        console.error('Fetch error:', err);
         setError(
           err instanceof Error ? err.message : "An unknown error occurred"
         );
@@ -31,16 +49,10 @@ export default function RecipeDetailsPage() {
         setIsLoading(false);
       }
     };
-    fetchRecipe();
-  }, [id]);
 
-  const handleCheckboxChange = (index: number) => {
-    setCheckedItems((prev) => {
-      const newChecked = [...prev];
-      newChecked[index] = !newChecked[index];
-      return newChecked;
-    });
-  };
+    fetchRecipe();
+  }, [params.id]);
+
 
   useEffect(() => {
     if (recipe?.recommendedPersonAmount) {
@@ -131,35 +143,37 @@ export default function RecipeDetailsPage() {
           className="flex flex-col w-full h-auto md:h-full justify-between border-t border-darkgreyBackground"
         >
           <div className="flex flex-col w-full h-fit justify-start items-start">
-            {recipe?.Items.map((Item, index) => {
+            {recipe?.ingredients.map((ingredient, index) => {
               // Calculate adjusted weight
               const scalingFactor =
                 recommendedPersonAmount / recipe.recommendedPersonAmount;
-              const adjustedWeight = Item.weight * scalingFactor;
+              const adjustedWeight = ingredient.quantity * scalingFactor;
+
+              console.log("scalingFactor", scalingFactor)
+              console.log("adjustedWeight", adjustedWeight)
 
               return (
                 <div
                   key={index}
                   className="flex flex-row w-full h-fit justify-between items-center p-2 border-b border-darkgreyBackground"
                 >
+                  <input
+                    className="w-6 h-6 mr-4"
+                    type="checkbox"
+                  />
                   <div className="flex justify-start basis-1/4 flex-grow">
-                    <p className="text-lg font-bold">{Item.name}</p>
+                    <p className="text-lg font-bold">{ingredient.item.name}</p>
                   </div>
                   <p className="flex justify-center items-center h-fit w-3/12 text-lg py-2 px-3 mx-2 bg-lightgreyBackground rounded-full">
-                    {adjustedWeight.toFixed(1)} {Item.unit}
+                    {adjustedWeight.toFixed(1)} {ingredient.unit}
                   </p>
-                  <input
-                    className="w-6 h-6"
-                    type="checkbox"
-                    checked={checkedItems[index]}
-                    onChange={() => handleCheckboxChange(index)}
-                  />
+                  
                 </div>
               );
             })}
           </div>
           {/* Portion and Action Buttons */}
-          <div className="flex flex-col md:flex-row justify-between items-center border-darkgreyBackground mt-3">
+          {/* <div className="flex flex-col md:flex-row justify-between items-center border-darkgreyBackground mt-3">
             <div className="flex items-center mb-3 md:mb-0">
               
             </div>
@@ -168,16 +182,17 @@ export default function RecipeDetailsPage() {
             >
               Tilføj til din indkøbsliste
             </button>
-          </div>
+          </div> */}
         </div>
       </div>
       {/* Right column (Description) */}
       <div className="flex flex-col md:w-1/2 w-full h-fit min-h-80 m-2 p-3">
-        <h2 className="font-bold text-center mb-3">Beskrivelse</h2>
+        {/* <h2 className="font-bold text-center mb-3">Beskrivelse</h2> */}
         <div className="flex-1 rounded-lg p-5 bg-lightgreyBackground overflow-y-auto">
-          <p>{recipe?.description}</p>
+          <p className="whitespace-pre-line">{recipe?.description}</p>
         </div>
       </div>
+
     </div>
   );
 }

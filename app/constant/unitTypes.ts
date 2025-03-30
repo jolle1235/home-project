@@ -1,1 +1,1 @@
-export const unitTypes = ["stk", "g", "ml"];
+export const unitTypes = ["stk", "g", "ml", "spsk", "tsk"];

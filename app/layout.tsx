@@ -5,6 +5,7 @@ import NavBar from "./components/smallComponent/Navbar";
 import { RecipeProvider } from "./context/RecipeContext";
 import { ShoppingListProvider } from "./context/ShoppinglistContext";
 import { SessionProviderWrapper } from "./components/authentication/SessionProviderWrapper";
+import ToastProvider from "./components/ToastComponent";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,6 +35,7 @@ export default function RootLayout({
             <ShoppingListProvider>
               <NavBar></NavBar>
               <main>{children}</main> {/* Wrap content in a <main> */}
+              <ToastProvider />
             </ShoppingListProvider>
           </RecipeProvider>
         </SessionProviderWrapper>

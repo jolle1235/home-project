@@ -1,4 +1,7 @@
 import { Item } from "../model/Item";
+import { Ingredient } from "../model/Ingredient";
+import { Recipe } from "../model/Recipe";
+import { WeekPlan } from "../model/weekPlan";
 
 // API client function
 export async function searchItem(searchTerm: string): Promise<Item[]> {
@@ -14,12 +17,17 @@ export async function searchItem(searchTerm: string): Promise<Item[]> {
   }
 }
 
-export async function createItem(item: Item): Promise<Item> {
+export async function createItem(Ingredient: Ingredient): Promise<Item> {
+  const newItem = {
+    name: Ingredient.item.name,
+    category: Ingredient.item.category
+  }
+
   try {
     const response = await fetch('/api/item', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(item),
+      body: JSON.stringify(newItem),
     });
     if (!response.ok) throw new Error('Failed to create Item');
     return await response.json();
@@ -45,6 +53,36 @@ export async function removeItem(itemName: string): Promise<void> {
     throw error;
   }
 }
+export async function saveWeekPlanToDatabase(actualUserId: string, weekPlanData: WeekPlan[]): Promise<void> {
+  const response = await fetch("/api/user", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      userId: actualUserId,
+      weekPlan: weekPlanData, // Ensure this matches the key expected by the API
+    }),
+  });
 
+  if (!response.ok) {
+    throw new Error("Failed to save week plan");
+  }
+}
 
+export async function saveTempWeekPlanToDatabase(actualUserId: string, tempWeekPlan: Recipe[]): Promise<void> {
+  const response = await fetch("/api/user", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      userId: actualUserId,
+      tempWeekPlan: tempWeekPlan, // Ensure this matches the key expected by the API
+    }),
+  });
 
+  if (!response.ok) {
+    throw new Error("Failed to save temporary week plan");
+  }
+}

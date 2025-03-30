@@ -8,7 +8,7 @@ export default function ActionBtn({ onClickF, Itext, textSize = "text-lg" }: Act
   return (
     <button 
       onClick={onClickF} 
-      className={`flex justify-center items-center ${textSize} bg-action py-1 px-2 m-1 rounded-lg`}
+      className={`flex hover:bg-secondaryHover justify-center items-center ${textSize} bg-action py-1 px-2 m-1 rounded-lg`}
     >
       {Itext}
     </button>
