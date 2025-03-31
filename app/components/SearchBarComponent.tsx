@@ -29,7 +29,7 @@ export function SearchBarComponent({ onChange, placeholder }: SearchBarProps) {
   }
 
   return (
-    <div className="w-1/2 min-w-96">
+    <div className="w-full">
       <div className="relative w-full">
         <input
           type="text"

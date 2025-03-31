@@ -101,7 +101,7 @@ export default function RecipePage() {
   };
 
   const TimeValueFormat = (value: number) => {
-    return value >= 60 ? "60+" : value;
+    return value >= 120 ? "120+" : value;
   };
 
   return (
@@ -128,33 +128,41 @@ export default function RecipePage() {
           </RecipeCategoryButtonComponent>
         ))}
       </div>
-      <div className="">
-        <div className="ms-2 flex flex-row space-x-3 justify-center items-center w-96 px-2">
-          <Slider
-            getAriaLabel={() => "time"}
-            value={timeRange}
-            onChange={handleSliderChange}
-            valueLabelDisplay="off"
-            valueLabelFormat={TimeValueFormat}
-            min={0}
-            max={120}
-            step={15}
-            />
-          <Image src="/icon/recipes_page/time.png" alt="time_filter" width={24} height={24} />
-        </div>
+      <div className="p-2">
+  <div className="flex flex-col sm:flex-row items-center justify-center space-y-3 sm:space-y-0 sm:space-x-3 w-full px-2">
+    <Slider
+      getAriaLabel={() => "time"}
+      value={timeRange}
+      onChange={handleSliderChange}
+      valueLabelDisplay="off"
+      valueLabelFormat={TimeValueFormat}
+      min={0}
+      max={120}
+      step={15}
+      className="w-full"
+    />
+    {/* <Image
+      src="/icon/recipes_page/time.png"
+      alt="time_filter"
+      width={24}
+      height={24}
+      className="flex-shrink-0"
+    /> */}
+  </div>
 
-        <div className="flex justify-between w-96">
-          <span> 0:00 |</span>
-          <span> 0:15 |</span>
-          <span> 0:30 |</span>
-          <span> 0:45 |</span>
-          <span> 1:00 |</span>
-          <span> 1:15 |</span>
-          <span> 1:30 |</span>
-          <span> 1:45 |</span>
-          <span> 2:00+ |</span>
-        </div>
-      </div>
+  <div className="flex flex-wrap justify-between w-full text-xs sm:text-sm">
+    <span>00</span>
+    <span>15</span>
+    <span>30</span>
+    <span>45</span>
+    <span>60</span>
+    <span>75</span>
+    <span>90</span>
+    <span>105</span>
+    <span>120+</span>
+  </div>
+</div>
+
       <div>
 
       </div>

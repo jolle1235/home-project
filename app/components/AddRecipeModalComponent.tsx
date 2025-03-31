@@ -163,7 +163,7 @@ export const AddRecipeModalComponent: React.FC<Props> = ({ handleClose }) => {
 
   return (
     <div className="fixed overflow-y-auto inset-0 flex items-center justify-center bg-darkText bg-opacity-50">
-      <div className="flex flex-col w-full max-w-4xl bg-cyan-200 rounded-lg p-6">
+      <div className="flex flex-col w-full max-w-4xl bg-gray-200 rounded-lg p-6">
         <div className="flex justify-between items-start py-2">
           <h2 className="text-lg font-bold text-darkText mb-4">Tilføj en opskrift</h2>
           <button onClick={handleClose} className="rounded-full font-bold">

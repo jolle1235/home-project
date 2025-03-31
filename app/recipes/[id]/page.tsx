@@ -68,9 +68,9 @@ export default function RecipeDetailsPage() {
       {/* Left column (Recipe details) */}
       <div className="flex flex-col md:w-1/2 w-full h-auto md:h-full p-3 justify-center items-center">
         {/* Image & Title */}
-        <div className="flex flex-col items-center justify-center md:h-1/2  w-full">
+        <div className="flex flex-col items-center justify-center md:h-1/2  w-full m-2">
           <img
-            className="w-full m-2 max-h-60 object-cover rounded-lg"
+            className="w-full max-h-60 object-cover rounded-lg"
             src={recipe?.image}
             alt={recipe?.recipeName}
           />
@@ -80,7 +80,7 @@ export default function RecipeDetailsPage() {
             </h2>
           </div>
           <div className="flex flex-row w-full justify-around">
-            <div className="flex items-center mt-1">
+            <div className="flex flex-row w-fit justify-center items-center py-1 px-4 m-2 bg-lightgreyBackground h-12 rounded-full">
               <img
                 src="/icon/recipes_page/time.png"
                 alt="Time"
@@ -90,7 +90,7 @@ export default function RecipeDetailsPage() {
             </div>
             <div
               id="portion_div"
-              className="flex flex-row w-fit h-fit justify-center items-center py-1 px-4 m-2 bg-lightgreyBackground space-x-2 rounded-full"
+              className="flex flex-row w-fit h-12 justify-center items-center py-1 px-4 m-2 bg-lightgreyBackground space-x-2 rounded-full"
             >
               <img
                 src="/icon/recipes_page/person.png"
@@ -101,7 +101,7 @@ export default function RecipeDetailsPage() {
                 onClick={() =>
                   setRecommendedPersonAmount((prev) => Math.max(prev - 1, 1))
                 }
-                className="flex justify-center items-center p-1 w-6 bg-cancel rounded-lg"
+                className="flex justify-center items-center p-1 w-7 bg-cancel rounded-lg"
               >
                 <img
                   className="w-full"
@@ -109,24 +109,16 @@ export default function RecipeDetailsPage() {
                   alt="subtract"
                 />
               </button>
-              <input
-                className="w-10 h-full rounded-lg text-center m-0"
-                type="number"
-                value={recommendedPersonAmount}
-                onChange={(e) => {
-                  const value = Number(e.target.value);
-                  setRecommendedPersonAmount(
-                    value > maxRecipePersons ? maxRecipePersons : value > 0 ? value : 1
-                  );
-                }}
-              />
+              <p className="flex w-8 h-8 rounded-lg items-center justify-center m-0 bg-white">
+                  {recommendedPersonAmount}
+              </p>
               <button
                 onClick={() =>
                   setRecommendedPersonAmount((prev) =>
                     prev < maxRecipePersons ? prev + 1 : prev
                   )
                 }
-                className="flex justify-center items-center w-6 p-1 text-lg bg-action rounded-lg"
+                className="flex justify-center items-center w-7 p-1 text-lg bg-action rounded-lg"
               >
                 <img
                   className="w-full"
@@ -164,7 +156,7 @@ export default function RecipeDetailsPage() {
                   <div className="flex justify-start basis-1/4 flex-grow">
                     <p className="text-lg font-bold">{ingredient.item.name}</p>
                   </div>
-                  <p className="flex justify-center items-center h-fit w-3/12 text-lg py-2 px-3 mx-2 bg-lightgreyBackground rounded-full">
+                  <p className="flex justify-center items-center h-fit w-fit text-lg py-2 px-3 mx-2 bg-lightgreyBackground rounded-full">
                     {adjustedWeight.toFixed(1)} {ingredient.unit}
                   </p>
                   
@@ -186,7 +178,7 @@ export default function RecipeDetailsPage() {
         </div>
       </div>
       {/* Right column (Description) */}
-      <div className="flex flex-col md:w-1/2 w-full h-fit min-h-80 m-2 p-3">
+      <div className="flex flex-col md:w-1/2 w-full h-fit min-h-80 p-3">
         {/* <h2 className="font-bold text-center mb-3">Beskrivelse</h2> */}
         <div className="flex-1 rounded-lg p-5 bg-lightgreyBackground overflow-y-auto">
           <p className="whitespace-pre-line">{recipe?.description}</p>
