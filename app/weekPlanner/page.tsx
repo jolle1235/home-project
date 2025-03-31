@@ -54,13 +54,14 @@ export default function WeeklyRecipePlanner() {
       </h5>
 
       {tempWeekPlan.length > 0 ? (
-        <div className="space-y-2">
+        // On mobile: stack vertically; on md+ screens: display in a grid with 3 columns.
+        <div className="space-y-2 md:space-y-0 md:grid md:grid-cols-3 md:gap-4">
           {tempWeekPlan.map((recipe) => (
             <div
               key={recipe._id}
-              className="flex items-center justify-between border-b p-2"
+              className="flex flex-col w-full items-center justify-between border rounded-lg p-2"
             >
-              <p className="truncate">{recipe.recipeName}</p>
+              <p className="truncate w-full">{recipe.recipeName}</p>
               <ActionBtn
                 onClickF={() => openDialogForRecipe(recipe)}
                 Itext="Tilføj til madplan"
@@ -74,58 +75,61 @@ export default function WeeklyRecipePlanner() {
 
       {/* Weekly plan displayed in a list format */}
       <div className="mt-8">
-        {availableDates.map((date) => {
-          const dateKey = date.toISOString().split("T")[0];
-          const displayText = date.toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-            weekday: "short",
-          });
-          console.log("date:", dateKey)
-          console.log("date:", dateKey);
-            if (weekPlan.length > 0) {
-              console.log("weekplan date:", weekPlan[0].date);
-            }
+        {/* For mobile: single column; for md+: grid with 2 or 3 columns */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {availableDates.map((date) => {
+            const dateKey = date.toISOString().split("T")[0];
+            const displayText = date.toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+              weekday: "short",
+            });
+            const entriesForDate = weekPlan.filter(
+              (entry) => entry.date === dateKey
+            );
 
-          const entriesForDate = weekPlan.filter(
-            (entry) => entry.date === dateKey
-          );
-
-          return (
-            <div key={dateKey} className="gap-4 my-1 border p-2 rounded flex flex-row items-center">
-              <h6 className="text-base w-3/12 min-w-32 font-semibold">{displayText}</h6>
-              {entriesForDate.length === 0 ? (
-                <p className="text-gray-500 text-sm">No recipes planned.</p>
-              ) : (
-                <div className="flex flex-row items-center w-full">
-                  {entriesForDate.map((entry) => (
-                    <div
-                      className="flex items-center justify-between w-full"
-                      key={entry.recipe._id}
-                    >
-                      <p className="truncate flex items-center shrink-0 flex-1">{entry.recipe.recipeName}</p>
-                      <Image
-                        src={entry.recipe.image}
-                        alt={entry.recipe.recipeName} // Provide an alt text for accessibility
-                        width={40} // Increase size for better visibility
-                        height={40}
-                        className="rounded-md object-cover" // Optional: improve styling
-                      />
-                      <ActionBtn
-                        onClickF={() => handleRouter(entry.recipe._id)}
-                        Itext="Se opskrift"
-                        textSize="text-base"
-                      />
-                      <div className="flex items-center">
-                        <RemoveButton onRemove={() => removeRecipeFromWeekPlan(entriesForDate[0].date, entry.recipe._id)}></RemoveButton>
+            return (
+              <div key={dateKey} className="border rounded p-4 flex flex-col">
+                <h6 className="text-base font-semibold mb-2">{displayText}</h6>
+                {entriesForDate.length === 0 ? (
+                  <p className="text-gray-500 text-sm">No recipes planned.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {entriesForDate.map((entry) => (
+                      <div
+                        key={entry.recipe._id}
+                        className="bg-gray-100 rounded-lg p-2 flex flex-col md:flex-row items-center md:justify-between"
+                      >
+                        <p className="truncate flex-1 p-1 w-full">
+                          {entry.recipe.recipeName}
+                        </p>
+                        <div className="flex space-x-2">
+                          <ActionBtn
+                            onClickF={() => handleRouter(entry.recipe._id)}
+                            Itext="Se opskrift"
+                            textSize="text-base"
+                          />
+                          <ActionBtn
+                            onClickF={() =>
+                              removeRecipeFromWeekPlan(
+                                entriesForDate[0].date,
+                                entry.recipe._id
+                              )
+                            }
+                            Itext="Slet"
+                            textSize="text-base"
+                            color="bg-red-500"
+                            hover="bg-red-300"
+                          />
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          );
-        })}
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* Calendar Popup */}
