@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { Recipe } from "../../model/Recipe";
 import { maxRecipePersons } from "../../utils/validationVariables";
 import { useParams } from "next/navigation";
-import { useRouter } from "next/navigation";
 
 export default function RecipeDetailsPage() {
   const [recipe, setRecipe] = useState<Recipe | null>(null);
@@ -11,7 +10,6 @@ export default function RecipeDetailsPage() {
   const [error, setError] = useState<string | null>(null);
   const [recommendedPersonAmount, setRecommendedPersonAmount] = useState(1);
   const params = useParams();
-  const router = useRouter();
 
   // Fetch recipes
   useEffect(() => {

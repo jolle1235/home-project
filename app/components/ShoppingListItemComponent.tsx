@@ -1,7 +1,6 @@
 "use client"
 import { useShoppingListContext } from "../context/ShoppinglistContext";
 import { Ingredient } from "../model/Ingredient";
-import { Item } from "../model/Item";
 
 export function ShoppingListItemComponent({ ingredient }: { ingredient: Ingredient }) {
   

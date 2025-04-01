@@ -6,10 +6,9 @@ import { RecipeCardComponent } from "../components/RecipeCardComponent";
 import { RecipeCategoryButtonComponent } from "../components/RecipeCategoryButtonComponent";
 import { Recipe } from "../model/Recipe";
 import { meatCategories } from "../constant/recipeCategories";
-import { useSession, signIn } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import VisibilityToggle from "../components/smallComponent/VisibilityToggleComponent";
-import Image from "next/image";
 
 export default function RecipePage() {
   // Authentication
