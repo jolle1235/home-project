@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '../../lib/mongodb';
-import { Item } from '@/app/model/Item';
 
 const databaseName = process.env.MONGO_DATABASE_NAME
 
@@ -10,7 +9,7 @@ export async function GET(request: NextRequest) {
     const client = await clientPromise;
     const db = client.db(databaseName);;
     
-    const Items = await db.collection<Item>("Items")
+    const Items = await db.collection("Items")
       .find({
         name: { $regex: searchTerm, $options: 'i' }
       })
