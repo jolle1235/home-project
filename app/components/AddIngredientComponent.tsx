@@ -1,6 +1,5 @@
 "use client";
 import React, { useState } from "react";
-import { Item } from "../model/Item";
 import { Ingredient } from "../model/Ingredient";
 import { unitTypes } from "../constant/unitTypes";
 import { RemoveButton } from "./smallComponent/removeBtn";
