@@ -1,15 +1,13 @@
 "use client";
 import React, { createContext, useContext, useState, ReactNode } from "react";
-import { Item } from "../model/Item";
-
-
+import { Ingredient } from "../model/Ingredient";
 
 interface ShoppingListContextProps {
-  shoppingList: Item[];
-  addItem: (item: Item) => void;
-  removeItem: (itemId: number) => void;
-  updateItemQuantity: (itemId: number, quantity: number) => void;
-  toggleMarkedItem: (itemId: number) => void;
+  shoppingList: Ingredient[];
+  addIngredient: (ingredient: Ingredient) => void;
+  removeIngredient: (ingredientId: number) => void;
+  updateIngredientQuantity: (ingredientId: number, quantity: number) => void;
+  toggleMarkedIngredient: (ingredientId: number) => void;
   clearMarked: () => void;
   clearList: () => void;
   isSomethingMarked: () => boolean;
@@ -19,57 +17,58 @@ interface ShoppingListProviderProps {
   children: ReactNode;
 }
 
-export const ShoppingListContext = createContext<ShoppingListContextProps | undefined>(undefined);
+const ShoppingListContext = createContext<ShoppingListContextProps | undefined>(undefined);
 
 export function ShoppingListProvider({ children }: ShoppingListProviderProps) {
-  const [shoppingList, setShoppingList] = useState<Item[]>([]);
+  const [shoppingList, setShoppingList] = useState<Ingredient[]>([]);
 
-  const addItem = (item: Item) => {
-    setShoppingList((prev) => [...prev, item]);
+  const addIngredient = (ingredient: Ingredient) => {
+    setShoppingList((prev) => [...prev, ingredient]);
   };
 
-  const removeItem = (itemId: number) => {
-    setShoppingList((prev) => prev.filter((item) => item._id !== itemId));
+  const removeIngredient = (ingredientId: number) => {
+    setShoppingList((prev) => prev.filter((ingredient) => ingredient._id !== ingredientId));
   };
 
-  const updateItemQuantity = (itemId: number, quantity: number) => {
+  const updateIngredientQuantity = (ingredientId: number, quantity: number) => {
     setShoppingList((prev) =>
-      prev.map((item) =>
-        item._id === itemId ? { ...item, quantity } : item
+      prev.map((ingredient) =>
+        ingredient._id === ingredientId ? { ...ingredient, quantity } : ingredient
       )
     );
   };
 
-  const clearList = () => setShoppingList([]);
+  const toggleMarkedIngredient = (ingredientId: number) => {
+    setShoppingList((prev) =>
+      prev.map((ingredient) =>
+        ingredient._id === ingredientId ? { ...ingredient, marked: !ingredient.marked } : ingredient
+      )
+    );
+  };
 
   const clearMarked = () => {
-    setShoppingList((prevList) => prevList.filter((item) => !item.marked));
+    setShoppingList((prev) => prev.filter((ingredient) => !ingredient.marked));
   };
-  
+
+  const clearList = () => {
+    setShoppingList([]);
+  };
 
   const isSomethingMarked = () => {
-    return shoppingList.some((item) => item.marked);
+    return shoppingList.some((ingredient) => ingredient.marked);
   };
 
-  const toggleMarkedItem = (itemId: number) => {
-    setShoppingList((prevList) =>
-      prevList.map((item) =>
-        item._id === itemId ? { ...item, marked: !item.marked } : item
-      )
-    );
-  };
-  
   return (
     <ShoppingListContext.Provider
       value={{
         shoppingList,
-        addItem,
-        removeItem,
-        updateItemQuantity,
-        toggleMarkedItem,
+        addIngredient,
+        removeIngredient,
+        updateIngredientQuantity,
+        toggleMarkedIngredient,
         clearMarked,
-        isSomethingMarked,
         clearList,
+        isSomethingMarked,
       }}
     >
       {children}

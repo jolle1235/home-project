@@ -1,26 +1,20 @@
-// app/api/images/[id]/route.ts
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { MongoClient, ObjectId } from "mongodb";
 
-// Ensure your environment variable has a valid connection string:
 const MongoUri = process.env.MONGODB_URI ?? "";
 const databaseName = process.env.MONGO_DATABASE_NAME;
 const collectionName = "images";
 
-// Throw an error at startup if the URI is not valid:
 if (!MongoUri.startsWith("mongodb://") && !MongoUri.startsWith("mongodb+srv://")) {
-  throw new Error(
-    'Invalid MongoDB URI. It must start with "mongodb://" or "mongodb+srv://".'
-  );
+  throw new Error('Invalid MongoDB URI. It must start with "mongodb://" or "mongodb+srv://".');
 }
 
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> } // Adjusted to handle Promise
 ) {
-  // Await the params object before using its properties.
-  const resolvedParams = await Promise.resolve(params);
-  const { id } = resolvedParams;
+  const { id } = await context.params; // Await the params to resolve the Promise
+
   if (!id) {
     return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
   }
@@ -36,8 +30,6 @@ export async function GET(
       return NextResponse.json({ error: "Image not found" }, { status: 404 });
     }
 
-    // Depending on how image.data is stored, adjust accordingly.
-    // If image.data is a Binary object, you may need to access its buffer property.
     const buffer = Buffer.isBuffer(image.data) ? image.data : image.data.buffer;
 
     return new Response(buffer, {

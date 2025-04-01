@@ -6,10 +6,11 @@ import { useShoppingListContext } from "../context/ShoppinglistContext";
 import { searchItem, createItem } from "../utils/apiHelperFunctions";
 import { Item } from "../model/Item";
 import { ShoppingListItemComponent } from "../components/ShoppingListItemComponent";
+import { Ingredient } from "../model/Ingredient";
 
 
 export default function ShoppingListPage() {
-  const {addItem, shoppingList, isSomethingMarked, clearMarked} = useShoppingListContext()
+  const {addIngredient, shoppingList, isSomethingMarked, clearMarked} = useShoppingListContext()
 
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -36,6 +37,9 @@ export default function ShoppingListPage() {
     return () => clearTimeout(debounceTimeout);
   }, [searchTerm]);
 
+  function addToShoppinglist(newItem: Ingredient){
+    addIngredient(newItem)
+  }
 
 
   useEffect(() => {
@@ -71,10 +75,10 @@ export default function ShoppingListPage() {
                     {searchTerm.trim() && (
                       <div className="hover:bg-gray-100 cursor-pointer bg-gray-50 p-2">
                         <AddIngredientComponent
-                          onAdd={async (returnItem: Item) => {
-                            const newItem: Item = returnItem
+                          onAdd={async (returnItem: Ingredient) => {
+                            const newItem: Ingredient = returnItem
                             await createItem(newItem);
-                            addItem(newItem)
+                            addToShoppinglist(newItem)
                             setSearchTerm("");
                           }}
                           itemName={searchTerm}
@@ -84,8 +88,8 @@ export default function ShoppingListPage() {
                     {items.map((item) => (
                       <div key={item._id} className="p-2 hover:bg-gray-100 cursor-pointer">
                         <AddIngredientComponent
-                          onAdd={async (returnItem: Item) => {
-                            addItem(returnItem);
+                          onAdd={async (returnItem: Ingredient) => {
+                            addToShoppinglist(returnItem);
                             setSearchTerm("");
                           }}
                           itemName={item.name}
@@ -106,10 +110,10 @@ export default function ShoppingListPage() {
             <p>Der er ikke tilføjet nogle vare endnu</p>
           )}
 
-          {shoppingList.map((item) => (
+          {shoppingList.map((ingredient) => (
             <ShoppingListItemComponent
-              key={item._id}
-              item={item}
+              key={ingredient._id}
+              ingredient={ingredient}
             />
           ))}
           

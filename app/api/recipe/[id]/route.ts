@@ -1,17 +1,15 @@
-// app/api/recipes/[id]/route.ts
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '../../../lib/mongodb';
 import { ObjectId } from 'mongodb';
 
 const databaseName = process.env.MONGO_DATABASE_NAME;
 
 export async function GET(
-  request: Request,
-  context: { params: { id: string } } // Pass context instead of destructuring params directly
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> } // `params` is now a Promise
 ) {
   try {
-    const { params } = context;
-    const { id } = params;
+    const { id } = await context.params; // Await the `params` Promise to extract `id`
 
     const client = await clientPromise;
     const db = client.db(databaseName);
@@ -27,4 +25,3 @@ export async function GET(
     return NextResponse.json({ error: "Failed to fetch recipe" }, { status: 500 });
   }
 }
-
