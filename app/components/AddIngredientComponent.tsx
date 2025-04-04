@@ -53,37 +53,37 @@ export function AddIngredientComponent({ onAdd, itemName, InputCategory=undefine
   }
 
   return (
-    <div className="flex justify-center items-center flex-row p-1 space-x-2">
+    <div className="flex flex-wrap sm:flex-nowrap justify-start sm:justify-center items-center flex-row p-1 space-x-1 sm:space-x-2">
       <button
         onClick={handleSubmit}
         className="bg-transparent text-darkText rounded-full font-bold"
       >
         <img
-          className="size-7 bg-action hover:bg-actionHover rounded-full p-1"
+          className="size-6 sm:size-7 bg-action hover:bg-actionHover rounded-full p-1"
           src="/icon/add_sign.png"
           alt="add_recipe"
         />
       </button>
 
-      <div className="w-5/12">
-        <label className="block text-lg font-medium">{itemName}</label>
+      <div className="w-5/12 sm:w-5/12">
+        <label className="block text-base sm:text-lg font-medium truncate">{itemName}</label>
       </div>
 
-      <div className="w-2/12">
+      <div className="w-2/12 sm:w-2/12">
         <input
           type="number"
           value={quantity}
           placeholder="Mængde"
           onChange={(e) => setQuantity(Number(e.target.value))}
-          className="mt-1 w-full rounded-md border border-gray-300 p-1"
+          className="mt-1 w-full rounded-md border border-gray-300 p-1 text-sm sm:text-base"
         />
       </div>
 
-      <div className="w-1/12 min-w-fit">
+      <div className="w-1/12 sm:w-1/12 min-w-fit">
         <select
           value={unit}
           onChange={(e) => setUnit(e.target.value)}
-          className="mt-1 w-full rounded-md border border-gray-300 py-1"
+          className="mt-1 w-full rounded-md border border-gray-300 py-1 text-sm sm:text-base"
         >
           {unitTypes.map((unitType) => (
             <option key={unitType} value={unitType}>
@@ -94,26 +94,24 @@ export function AddIngredientComponent({ onAdd, itemName, InputCategory=undefine
       </div>
 
       {/* Category selection or display */}
-      <div className="w-1/4">
+      <div className="w-1/4 sm:w-1/4">
         {InputCategory ? (
-          <div className="text-lg font-medium">
+          <div className="text-base sm:text-lg font-medium truncate">
             {shoppinglistCategories[InputCategory as keyof typeof shoppinglistCategories]}
           </div>
         ) : (
-          <div className="mt-2">
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="mt-1 w-full rounded-md border border-gray-300 py-1"
-            >
-              <option value="">Category</option>
-              {Object.entries(shoppinglistCategories).map(([categoryName, emoji]) => (
-                <option key={categoryName} value={categoryName}>
-                  {categoryName}
-                </option>
-              ))}
-            </select>
-          </div>
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="mt-1 w-full rounded-md border border-gray-300 py-1 text-sm sm:text-base"
+          >
+            <option value="">Vælg kategori</option>
+            {Object.entries(shoppinglistCategories).map(([key, value]) => (
+              <option key={key} value={key}>
+                {value}
+              </option>
+            ))}
+          </select>
         )}
       </div>
 

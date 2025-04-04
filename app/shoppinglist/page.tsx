@@ -62,16 +62,16 @@ export default function ShoppingListPage() {
   }, []);
 
   return (
-    <div className="flex flex-col pl-16 bg-lightBackground text-ellipsis whitespace-nowrap w-full h-full justify-between px-10 overflow-x-hidden">
-      <div className="flex flex-row items-center justify-start w-11/12">
-        <h1 className="text-4xl text-darkText mb-10 mt-7 mr-10">
+    <div className="flex flex-col bg-lightBackground w-full h-full justify-between px-4 sm:px-6 md:px-10 overflow-x-hidden">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-start w-full mt-4 sm:mt-7">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl text-darkText mb-4 sm:mb-6 md:mb-10 mr-0 sm:mr-4 md:mr-10">
           Indkøbsliste
         </h1>
 
-        <div ref={searchBarRef} className="relative w-full">
+        <div ref={searchBarRef} className="relative w-full sm:w-2/3 md:w-1/2">
                 <SearchBar onChange={setSearchTerm} placeholder="Søg efter varer" />
                 {isDropdownOpen && (
-                  <div className="absolute z-10 w-1/2 min-w-96 bg-white border border-gray-200 rounded-lg shadow-lg mt-1">
+                  <div className="absolute z-10 w-full sm:w-3/4 md:w-1/2 min-w-0 sm:min-w-96 bg-white border border-gray-200 rounded-lg shadow-lg mt-1">
                     {searchTerm.trim() && (
                       <div className="hover:bg-gray-100 cursor-pointer bg-gray-50 p-2">
                         <AddIngredientComponent
@@ -102,12 +102,12 @@ export default function ShoppingListPage() {
       </div>
       <div
         id="shopping_list"
-        className="flex flex-col relative w-full border-t border-two text-darkText overflow-y-auto"
-        style={{ height: "calc(100vh - 400px)" }}
+        className="flex flex-col relative w-full border-t border-two text-darkText overflow-y-auto mt-4"
+        style={{ height: "calc(100vh - 200px)" }}
       >
         <div className="overflow-y-auto flex-grow flex flex-col w-full">
           {shoppingList.length === 0 && (
-            <p>Der er ikke tilføjet nogle vare endnu</p>
+            <p className="text-center py-4 text-gray-500">Der er ikke tilføjet nogle vare endnu</p>
           )}
 
           {shoppingList.map((ingredient) => (
@@ -118,15 +118,15 @@ export default function ShoppingListPage() {
           ))}
           
         </div>
-        <div className="w-full h-20 flex justify-end">
+        <div className="w-full h-16 sm:h-20 flex justify-end">
           {isSomethingMarked() === true && (
             <button
-              className="bg-cancel text-darkText w-14 h-14 rounded-full flex justify-center items-center p-2 m-2"
+              className="bg-cancel text-darkText w-12 h-12 sm:w-14 sm:h-14 rounded-full flex justify-center items-center p-2 m-2"
               onClick={() => {
                 clearMarked();
               }}
             >
-              <img src="./icon/delete.png" alt="Delete" />
+              <img src="./icon/delete.png" alt="Delete" className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
           )}
         </div>

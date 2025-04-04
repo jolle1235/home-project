@@ -1,33 +1,20 @@
 import { NextResponse } from 'next/server';
-import { getRecipeById } from '../../lib/recipeUtils';
+import { getRecipes } from '../../lib/recipeUtils';
 
 export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
-    const id = url.searchParams.get('id');
+    const author = url.searchParams.get('userName'); // Optional
 
-    if (!id) {
-      return NextResponse.json(
-        { error: 'Recipe ID is required' },
-        { status: 400 }
-      );
-    }
+    const recipes = await getRecipes(author || undefined);
 
-    const recipe = await getRecipeById(id);
-
-    if (!recipe) {
-      return NextResponse.json(
-        { error: 'Recipe not found' },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json(recipe);
+    return NextResponse.json(recipes);
   } catch (error) {
-    console.error('Failed to fetch recipe:', error);
+    console.error('Failed to fetch recipes:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch recipe' },
+      { error: 'Failed to fetch recipes' },
       { status: 500 }
     );
   }
 }
+

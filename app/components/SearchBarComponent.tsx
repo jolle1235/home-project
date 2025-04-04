@@ -36,12 +36,12 @@ export function SearchBarComponent({ onChange, placeholder }: SearchBarProps) {
           placeholder={placeholder}
           onChange={handleInputChange}
           onFocus={(e) => e.target.select()}
-          className={`w-full p-3 pl-4 pr-12 border rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 
+          className={`w-full p-2 sm:p-3 pl-3 sm:pl-4 pr-10 sm:pr-12 border rounded-lg text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 
             ${errors.itemSearch ? "focus:ring-cancel" : ""}`}
         />
-        <div className="absolute inset-y-0 right-3 flex items-center">
+        <div className="absolute inset-y-0 right-2 sm:right-3 flex items-center">
           <svg
-            className="h-5 w-5 text-gray-400"
+            className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
@@ -57,7 +57,7 @@ export function SearchBarComponent({ onChange, placeholder }: SearchBarProps) {
         </div>
       </div>
       {errors.itemSearch && getValues("itemSearch") && (
-        <p className="text-red-500 mt-1">{errors.itemSearch.message}</p>
+        <p className="text-red-500 text-sm sm:text-base mt-1">{errors.itemSearch.message}</p>
       )}
     </div>
   );

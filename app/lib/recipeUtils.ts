@@ -1,25 +1,32 @@
 import clientPromise from './mongodb';
-import { ObjectId } from 'mongodb';
+import { Recipe } from '../model/Recipe';
 
 const databaseName = process.env.MONGO_DATABASE_NAME;
 
-export interface Recipe {
-  _id?: ObjectId;
-  name: string;
-  Items: string;
-  instructions?: string;
-}
-
-export async function getRecipeById(id: string): Promise<Recipe | null> {
+export async function getRecipes(author?: string): Promise<Recipe[]> {
   try {
     const client = await clientPromise;
     const db = client.db(databaseName);
-    const recipe = await db
+
+    // Build the query with $or
+    const query: any = {
+      $or: [{ isPublic: true }],
+    };
+
+    // If an author is provided, add it to the OR condition
+    if (author) {
+      query.$or.push({ author: author });
+    }
+
+    const recipes = await db
       .collection<Recipe>('recipes')
-      .findOne({ _id: new ObjectId(id) });
-    return recipe;
+      .find(query)
+      .toArray();
+
+    return recipes;
   } catch (error) {
-    console.error('Failed to fetch recipe:', error);
-    return null;
+    console.error('Failed to fetch recipes:', error);
+    return [];
   }
 }
+
