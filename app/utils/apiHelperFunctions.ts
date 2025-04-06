@@ -1,3 +1,4 @@
+"use cliet"
 import { Item } from "../model/Item";
 import { Ingredient } from "../model/Ingredient";
 import { Recipe } from "../model/Recipe";
