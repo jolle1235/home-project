@@ -9,6 +9,7 @@ import ToastProvider from "./components/ToastComponent";
 import Script from "next/script";
 import OfflineSyncComponent from "./components/OfflineSyncComponent";
 import type { Metadata, Viewport } from "next";
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -79,6 +80,7 @@ export default function RootLayout({
               <main className="flex-grow container mx-auto px-4 py-6">{children}</main>
               <ToastProvider />
               <OfflineSyncComponent />
+              <SpeedInsights/>
             </ShoppingListProvider>
           </RecipeProvider>
         </SessionProviderWrapper>
