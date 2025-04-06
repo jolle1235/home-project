@@ -15,8 +15,11 @@ import { createItem } from "../utils/apiHelperFunctions";
 import { searchItem } from "../utils/apiHelperFunctions";
 import { useSession } from "next-auth/react";
 
+interface Props {
+  handleClose: () => void;
+}
 
-export function AddRecipeModalComponent(handleClose: () => void) {
+export function AddRecipeModalComponent({ handleClose }: Props) {
   const { data: session } = useSession();
 
   const [searchTerm, setSearchTerm] = useState<string>("");
