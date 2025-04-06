@@ -1,4 +1,3 @@
-
 import GoogleProvider from "next-auth/providers/google";
 import { NextAuthOptions } from "next-auth";
 
@@ -28,5 +27,8 @@ export const authOptions: NextAuthOptions = {
         }
         return session;
       },
+    },
+    pages: {
+      signIn: '/auth/signin',
     },
   };
