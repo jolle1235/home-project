@@ -5,7 +5,15 @@ const databaseName = process.env.MONGO_DATABASE_NAME;
 
 export async function getRecipes(author?: string): Promise<Recipe[]> {
   try {
+
+    if (!databaseName) {
+      throw new Error('MONGO_DATABASE_NAME is not defined');
+    }
+    
+    console.log("Connecting to MongoDB...");
     const client = await clientPromise;
+    console.log("Connected to MongoDB");
+
     const db = client.db(databaseName);
 
     // Build the query with $or
@@ -21,7 +29,9 @@ export async function getRecipes(author?: string): Promise<Recipe[]> {
     const recipes = await db
       .collection<Recipe>('recipes')
       .find(query)
+      .limit(50)
       .toArray();
+
 
     return recipes;
   } catch (error) {
