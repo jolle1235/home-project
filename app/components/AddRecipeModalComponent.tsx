@@ -44,7 +44,7 @@ export function AddRecipeModalComponent({ handleClose }: Props) {
     handleSubmit,
   } = useForm<Recipe>({
     resolver: yupResolver(recipeSchema),
-    mode: "onChange",
+    mode: "onBlur",
   });
 
   useEffect(() => {
@@ -58,10 +58,7 @@ export function AddRecipeModalComponent({ handleClose }: Props) {
         quantity: ingredient.quantity,
       }))
     );
-    if (errors.ingredients) {
-      trigger("ingredients");
-    }
-  }, [items, setValue, trigger, errors.ingredients]);
+  }, [ingredients, setValue]);
 
   const clearState = (
     setState: React.Dispatch<React.SetStateAction<any>>,
