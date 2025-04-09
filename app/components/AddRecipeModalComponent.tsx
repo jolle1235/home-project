@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { meatCategories } from "../constant/recipeCategories";
 import { Item } from "../model/Item";
 import { Ingredient } from "../model/Ingredient";
@@ -166,6 +166,10 @@ export function AddRecipeModalComponent({ handleClose }: Props) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const handleVisibilityChange = useCallback((value: boolean) => {
+    setIsPublic(value);
+  }, []);
+
   return (
     <div className="fixed overflow-y-auto inset-0 flex items-center justify-center bg-darkText bg-opacity-50">
       <div className="flex flex-col w-full max-w-4xl bg-gray-200 rounded-lg p-6">
@@ -259,7 +263,7 @@ export function AddRecipeModalComponent({ handleClose }: Props) {
               </div>
               <VisibilityToggle
                 booleanValue={isPublic}
-                setBooleanValue={setIsPublic}
+                setBooleanValue={handleVisibilityChange}
               />
             </div>
 

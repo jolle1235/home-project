@@ -1,18 +1,18 @@
 "use client";
-import React from "react";
+import React, { useCallback, memo } from "react";
 
 interface VisibilityToggleProps {
   booleanValue: boolean;
   setBooleanValue: (value: boolean) => void;
 }
 
-export default function VisibilityToggle({
+function VisibilityToggle({
   booleanValue,
   setBooleanValue,
 }: VisibilityToggleProps) {
-  const toggleVisibility = () => {
+  const toggleVisibility = useCallback(() => {
     setBooleanValue(!booleanValue);
-  };
+  }, [booleanValue, setBooleanValue]);
 
   return (
     <div className="flex items-center space-x-3">
@@ -34,3 +34,5 @@ export default function VisibilityToggle({
     </div>
   );
 }
+
+export default memo(VisibilityToggle);
