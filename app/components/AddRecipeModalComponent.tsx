@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { useEffect, useRef, useState } from "react";
 import { meatCategories } from "../constant/recipeCategories";
 import { Item } from "../model/Item";
@@ -30,9 +30,9 @@ export function AddRecipeModalComponent({ handleClose }: Props) {
   const [categories] = useState(meatCategories);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [items, setItems] = useState<Item[]>([]);
-  const [ingredients, setIngredients] = useState<Ingredient[]>([])
+  const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [isPublic, setIsPublic] = useState(true);
-  const [imageUrl, setImageUrl] = useState<string>('');
+  const [imageUrl, setImageUrl] = useState<string>("");
   const [imageFile, setImageFile] = useState<File | null>(null);
 
   const {
@@ -51,20 +51,22 @@ export function AddRecipeModalComponent({ handleClose }: Props) {
     setValue(
       "ingredients",
       ingredients.map((ingredient: Ingredient) => ({
-      _id: 0,
+        _id: 0,
         item: ingredient.item,
         unit: ingredient.unit,
         marked: ingredient.marked,
-        quantity: ingredient.quantity, 
+        quantity: ingredient.quantity,
       }))
     );
     if (errors.ingredients) {
       trigger("ingredients");
     }
   }, [items, setValue, trigger, errors.ingredients]);
-  
 
-  const clearState = (setState: React.Dispatch<React.SetStateAction<any>>, initialState: any) => {
+  const clearState = (
+    setState: React.Dispatch<React.SetStateAction<any>>,
+    initialState: any
+  ) => {
     setState(initialState);
   };
 
@@ -153,7 +155,10 @@ export function AddRecipeModalComponent({ handleClose }: Props) {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (searchBarRef.current && !searchBarRef.current.contains(event.target as Node)) {
+      if (
+        searchBarRef.current &&
+        !searchBarRef.current.contains(event.target as Node)
+      ) {
         setIsDropdownOpen(false);
       }
     };
@@ -165,12 +170,22 @@ export function AddRecipeModalComponent({ handleClose }: Props) {
     <div className="fixed overflow-y-auto inset-0 flex items-center justify-center bg-darkText bg-opacity-50">
       <div className="flex flex-col w-full max-w-4xl bg-gray-200 rounded-lg p-6">
         <div className="flex justify-between items-start py-2">
-          <h2 className="text-lg font-bold text-darkText mb-4">Tilføj en opskrift</h2>
+          <h2 className="text-lg font-bold text-darkText mb-4">
+            Tilføj en opskrift
+          </h2>
           <button onClick={handleClose} className="rounded-full font-bold">
-            <img src="/icon/remove_button.png" alt="remove_ingresdiens" className="w-6 h-6" />
-      </button>
+            <img
+              src="/icon/remove_button.png"
+              alt="remove_ingresdiens"
+              className="w-6 h-6"
+            />
+          </button>
         </div>
-        <form onSubmit={handleSubmit(onSubmit, (errors) => console.log("Validation errors:", errors))}>
+        <form
+          onSubmit={handleSubmit(onSubmit, (errors) =>
+            console.log("Validation errors:", errors)
+          )}
+        >
           {/* Container for two columns, responsive with flexbox */}
           <div className="flex flex-col md:flex-row gap-4">
             {/* Right Column: Most fields and Item search */}
@@ -183,24 +198,32 @@ export function AddRecipeModalComponent({ handleClose }: Props) {
                   {...register("recipeName")}
                   onKeyUp={() => trigger("recipeName")}
                 />
-                {errors.recipeName && <p className="text-red-500 text-xs">{errors.recipeName.message}</p>}
+                {errors.recipeName && (
+                  <p className="text-red-500 text-xs">
+                    {errors.recipeName.message}
+                  </p>
+                )}
               </div>
 
               <div>
                 <label className="font-bold">Billede</label>
                 <ImageUploader onFileSelected={setImageFile} />
-      </div>
+              </div>
 
               <div className="flex flex-row space-x-2">
                 <div>
                   <label className="font-bold">Tid (min.)</label>
-        <input
-          type="number"
+                  <input
+                    type="number"
                     className="w-full rounded-lg p-1"
                     {...register("time")}
                     onKeyUp={() => trigger("time")}
-                    />
-                  {errors.time && <p className="text-red-500 text-xs">{errors.time.message}</p>}
+                  />
+                  {errors.time && (
+                    <p className="text-red-500 text-xs">
+                      {errors.time.message}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="font-bold">Antal personer:</label>
@@ -209,10 +232,14 @@ export function AddRecipeModalComponent({ handleClose }: Props) {
                     className="w-full rounded-lg p-1"
                     {...register("recommendedPersonAmount")}
                     onKeyUp={() => trigger("recommendedPersonAmount")}
-        />
-                  {errors.recommendedPersonAmount && <p className="text-red-500 text-xs">{errors.recommendedPersonAmount.message}</p>}
+                  />
+                  {errors.recommendedPersonAmount && (
+                    <p className="text-red-500 text-xs">
+                      {errors.recommendedPersonAmount.message}
+                    </p>
+                  )}
                 </div>
-      </div>
+              </div>
 
               <div>
                 <label className="font-bold">Kategorier</label>
@@ -227,38 +254,50 @@ export function AddRecipeModalComponent({ handleClose }: Props) {
                       />
                       {category}
                     </label>
-          ))}
+                  ))}
                 </div>
               </div>
-              <VisibilityToggle booleanValue={isPublic} setBooleanValue={setIsPublic} />
-      </div>
+              <VisibilityToggle
+                booleanValue={isPublic}
+                setBooleanValue={setIsPublic}
+              />
+            </div>
 
-            
             <div className="w-full md:w-1/2 flex flex-col gap-4">
               <div>
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="beskrivelse">
-                Beskrivelse
-              </label>
-              <textarea
-                id="beskrivelse"
-                placeholder="Skriv en beskrivelse..."
-                {...register("description")}
-                onKeyUp={() => trigger("description")}
-                className="w-full p-3 border rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 h-32"
-              ></textarea>
-                {errors.description && <p className="text-red-500 text-xs">{errors.description.message}</p>}
-          </div>
+                <label
+                  className="block text-gray-700 text-sm font-bold mb-2"
+                  htmlFor="beskrivelse"
+                >
+                  Beskrivelse
+                </label>
+                <textarea
+                  id="beskrivelse"
+                  placeholder="Skriv en beskrivelse..."
+                  {...register("description")}
+                  onKeyUp={() => trigger("description")}
+                  className="w-full p-3 border rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 h-32"
+                ></textarea>
+                {errors.description && (
+                  <p className="text-red-500 text-xs">
+                    {errors.description.message}
+                  </p>
+                )}
+              </div>
 
               <div ref={searchBarRef} className="relative">
                 <label className="font-bold">Ingredienser</label>
-                <SearchBar onChange={setSearchTerm} placeholder="Søg efter ingredienser..." />
+                <SearchBar
+                  onChange={setSearchTerm}
+                  placeholder="Søg efter ingredienser..."
+                />
                 {isDropdownOpen && (
                   <div className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1">
                     {searchTerm.trim() && (
                       <div className="hover:bg-gray-100 cursor-pointer bg-gray-50 p-2">
                         <AddIngredientComponent
                           onAdd={async (returnItem) => {
-                            const newItem: Ingredient = returnItem
+                            const newItem: Ingredient = returnItem;
                             await createItem(newItem);
                             setIngredients((prev) => [...prev, returnItem]);
                             setSearchTerm("");
@@ -268,7 +307,10 @@ export function AddRecipeModalComponent({ handleClose }: Props) {
                       </div>
                     )}
                     {items.map((item) => (
-                      <div key={item.name} className="p-2 hover:bg-gray-100 cursor-pointer">
+                      <div
+                        key={item.name}
+                        className="p-2 hover:bg-gray-100 cursor-pointer"
+                      >
                         <AddIngredientComponent
                           onAdd={async (newItem) => {
                             setIngredients((prev) => [...prev, newItem]);
@@ -279,32 +321,45 @@ export function AddRecipeModalComponent({ handleClose }: Props) {
                         />
                       </div>
                     ))}
-          </div>
-        )}
-      </div>
+                  </div>
+                )}
+              </div>
 
               {ingredients.length > 0 && (
                 <div className="mt-4">
                   <h3 className="font-bold mb-2">Valgte ingredienser:</h3>
                   <div className="space-y-2">
                     {ingredients.map((ingredient) => (
-                      <div key={ingredient.item.name} className="flex items-center justify-between bg-gray-100 p-2 rounded">
+                      <div
+                        key={ingredient.item.name}
+                        className="flex items-center justify-between bg-gray-100 p-2 rounded"
+                      >
                         <p className="w-1/2">{ingredient.item.name}</p>
                         <p>
                           {ingredient.quantity} {ingredient.unit}
                         </p>
                         <button
                           type="button"
-                          onClick={() => removeItem({_id: ingredient.item._id, name: ingredient.item.name, category: ingredient.item.category })}
+                          onClick={() =>
+                            removeItem({
+                              _id: ingredient.item._id,
+                              name: ingredient.item.name,
+                              category: ingredient.item.category,
+                            })
+                          }
                           className="text-red-500 hover:text-red-700"
                         >
-                          <img src="/icon/remove_button.png" alt="remove_Item" className="w-4 h-4" />
+                          <img
+                            src="/icon/remove_button.png"
+                            alt="remove_Item"
+                            className="w-4 h-4"
+                          />
                         </button>
                       </div>
                     ))}
                   </div>
-        </div>
-      )}
+                </div>
+              )}
             </div>
           </div>
 
@@ -314,8 +369,8 @@ export function AddRecipeModalComponent({ handleClose }: Props) {
           >
             Tilføj opskrift
           </button>
-    </form>
+        </form>
       </div>
     </div>
   );
-};
+}

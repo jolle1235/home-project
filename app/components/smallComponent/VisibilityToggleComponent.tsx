@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 
 interface VisibilityToggleProps {
@@ -5,7 +6,10 @@ interface VisibilityToggleProps {
   setBooleanValue: (value: boolean) => void;
 }
 
-export default function VisibilityToggle({ booleanValue, setBooleanValue }: VisibilityToggleProps) {
+export default function VisibilityToggle({
+  booleanValue,
+  setBooleanValue,
+}: VisibilityToggleProps) {
   const toggleVisibility = () => {
     setBooleanValue(!booleanValue);
   };
