@@ -11,15 +11,8 @@ import { useRouter } from "next/navigation";
 import VisibilityToggle from "../components/smallComponent/VisibilityToggleComponent";
 
 export default function RecipePage() {
-  // Authentication
-  const { data: session, status } = useSession();
   const router = useRouter();
-
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/signin");
-    }
-  }, [status]);
+  const { data: session, status } = useSession();
 
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -29,8 +22,25 @@ export default function RecipePage() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [showMyRecipes, setShowMyRecipes] = useState<boolean>(true);
 
-  if (status === "loading") return <p>Loading...</p>;
-  if (!session) return null;
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.replace("/signin");
+    }
+  }, [status, router]);
+
+  // Show loading state while checking authentication
+  if (status === "loading") {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+  // Redirect if not authenticated
+  if (!session) {
+    return null;
+  }
 
   const currentUser = session.user?.name || "";
 
