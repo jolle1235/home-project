@@ -111,8 +111,8 @@ export default function RecipePage() {
           className="border border-gray-300 p-2 rounded-md w-full"
         />
       </div>
-      <div className="flex md:flex-row flex-col space-x-5 divide-x divide-gray-100">
-        <div id="recipe_filter_categories" className="flex pt-5 pb-5 space-x-3">
+      <div className="flex md:flex-row flex-col justify-around divide-x divide-gray-100">
+        <div id="recipe_filter_categories" className="flex py-5 space-x-3 m-2">
           {categories.map((category) => (
             <RecipeCategoryButtonComponent
               key={category}
@@ -126,7 +126,7 @@ export default function RecipePage() {
         </div>
 
         <div className="flex flex-row items-center justify-around m-2">
-          <label className="flex flex-col text-sm">
+          <label className="flex flex-col text-sm m-1">
             Min Time
             <select
               value={timeRange[0]}
@@ -144,7 +144,7 @@ export default function RecipePage() {
             </select>
           </label>
 
-          <label className="flex flex-col text-sm">
+          <label className="flex flex-col text-sm m-1">
             Max Time
             <select
               value={timeRange[1]}
