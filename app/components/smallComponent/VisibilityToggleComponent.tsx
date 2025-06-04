@@ -15,7 +15,7 @@ function VisibilityToggle({
   }, [booleanValue, setBooleanValue]);
 
   return (
-    <div className="flex items-center space-x-3">
+    <div className="flex items-center space-x-3 h-full">
       <span className="text-lg font-medium">
         {booleanValue ? "Public" : "Private"}
       </span>

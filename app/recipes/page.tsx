@@ -1,14 +1,14 @@
 "use client";
-import Slider from "@mui/material/Slider";
 import { useEffect, useState, useMemo } from "react";
 import { AddRecipeButtonComponent } from "../components/AddRecipeButtonComponent";
 import { RecipeCardComponent } from "../components/RecipeCardComponent";
-import { RecipeCategoryButtonComponent } from "../components/RecipeCategoryButtonComponent";
+import { CategoryWheelComponent } from "../components/CategoryWheelComponent";
+import { TimeRangeSelectorComponent } from "../components/TimeRangeSelectorComponent";
+import VisibilityToggle from "../components/smallComponent/VisibilityToggleComponent";
 import { Recipe } from "../model/Recipe";
 import { meatCategories } from "../constant/recipeCategories";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import VisibilityToggle from "../components/smallComponent/VisibilityToggleComponent";
 
 export default function RecipePage() {
   const router = useRouter();
@@ -16,6 +16,7 @@ export default function RecipePage() {
 
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isFilterSettingsOpen, setIsFilterSettingsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [timeRange, setTimeRange] = useState<number[]>([0, 60]);
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -28,31 +29,15 @@ export default function RecipePage() {
     }
   }, [status, router]);
 
-  // Show loading state while checking authentication
-  if (status === "loading") {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p>Loading...</p>
-      </div>
-    );
-  }
-
-  // Redirect if not authenticated
-  if (!session) {
-    return null;
-  }
-
-  const currentUser = session.user?.name || "";
-
-  // Fetch recipes
   useEffect(() => {
     const fetchRecipes = async () => {
+      if (!session?.user?.name) return;
+
       setIsLoading(true);
       try {
-        const url = currentUser
-          ? `/api/recipe?userName=${encodeURIComponent(currentUser)}`
-          : "/api/recipe";
-        const response = await fetch(url);
+        const response = await fetch(
+          `/api/recipe?userName=${encodeURIComponent(session.user.name)}`
+        );
         if (!response.ok) throw new Error("Failed to fetch recipes");
         const data = await response.json();
         setRecipes(data);
@@ -64,17 +49,14 @@ export default function RecipePage() {
         setIsLoading(false);
       }
     };
-    if (currentUser) fetchRecipes();
-  }, [currentUser]);
 
-  // Memoized categories
-  const categories = useMemo(() => meatCategories, []);
+    fetchRecipes();
+  }, [session?.user?.name]);
 
-  // Filter recipes
   const filteredRecipes = useMemo(() => {
     const lowerCaseSearchTerm = searchTerm.toLowerCase();
     return recipes.filter((recipe) => {
-      if (!recipe || !recipe.recipeName || !recipe.time) return false;
+      if (!recipe?.recipeName || !recipe.time) return false;
 
       const matchesCategory =
         selectedCategories.length === 0 ||
@@ -89,7 +71,8 @@ export default function RecipePage() {
       const matchesSearch = recipe.recipeName
         .toLowerCase()
         .includes(lowerCaseSearchTerm);
-      const matchesUser = showMyRecipes || recipe.author === currentUser;
+      const matchesUser =
+        showMyRecipes || recipe.author === session?.user?.name;
 
       return matchesCategory && matchesTime && matchesSearch && matchesUser;
     });
@@ -99,10 +82,8 @@ export default function RecipePage() {
     timeRange,
     searchTerm,
     showMyRecipes,
-    currentUser,
+    session?.user?.name,
   ]);
-
-  const timeOptions = [0, 10, 20, 30, 45, 60, 75, 90, 105, 120];
 
   const handleCategoryToggle = (category: string) => {
     setSelectedCategories((prev) =>
@@ -112,80 +93,63 @@ export default function RecipePage() {
     );
   };
 
+  if (status === "loading") {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return null;
+  }
+
   return (
-    <div id="recipe_page" className="flex flex-col p-1 w-full">
-      <div id="recipe_top" className="flex flex-row w-full">
+    <div className="flex flex-col p-1 w-full">
+      <div className="flex flex-row w-full mb-4">
         <input
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Søg efter opskrifter..."
           className="border border-gray-300 p-2 rounded-md w-full"
         />
-      </div>
-      <div className="flex md:flex-row flex-col justify-around divide-x divide-gray-100">
-        <div id="recipe_filter_categories" className="flex py-5 space-x-3 m-2">
-          {categories.map((category) => (
-            <RecipeCategoryButtonComponent
-              key={category}
-              category={category}
-              onClick={handleCategoryToggle}
-              isSelected={selectedCategories.includes(category)}
-            >
-              {category}
-            </RecipeCategoryButtonComponent>
-          ))}
-        </div>
-
-        <div className="flex flex-row items-center justify-around m-2">
-          <label className="flex flex-col text-sm m-1">
-            Min Time
-            <select
-              value={timeRange[0]}
-              onChange={(e) => {
-                const newMin = parseInt(e.target.value);
-                setTimeRange([newMin, Math.max(newMin, timeRange[1])]);
-              }}
-              className="border border-gray-300 p-2 rounded-md"
-            >
-              {timeOptions.map((val) => (
-                <option key={val} value={val}>
-                  {val} min
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className="flex flex-col text-sm m-1">
-            Max Time
-            <select
-              value={timeRange[1]}
-              onChange={(e) => {
-                const newMax = parseInt(e.target.value);
-                setTimeRange([Math.min(newMax, timeRange[0]), newMax]);
-              }}
-              className="border border-gray-300 p-2 rounded-md"
-            >
-              {timeOptions.map((val) => (
-                <option key={val} value={val}>
-                  {val === 120 ? "120+ min" : `${val} min`}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-
-        <VisibilityToggle
-          booleanValue={showMyRecipes}
-          setBooleanValue={setShowMyRecipes}
-        />
+        <button
+          onClick={() => setIsFilterSettingsOpen(!isFilterSettingsOpen)}
+          className="ml-2 px-4 py-2 bg-gray-500 text-white rounded-md transition-colors hover:bg-gray-400"
+        >
+          {isFilterSettingsOpen ? "Skjul Filter" : "Vis Filter"}
+        </button>
       </div>
 
-      <div>
-        {isLoading ? (
-          <div className="mt-4">Loading recipes...</div>
-        ) : error ? (
-          <div className="mt-4 text-red-500">
-            Error loading recipes: {error}
+      {isFilterSettingsOpen && (
+        <div className="flex md:flex-row flex-col h-fit p-2 rounded-lg bg-gray-200 w-fit items-center md:divide-x md:divide-gray-400">
+          <div className="flex-1 items-center p-1">
+            <CategoryWheelComponent
+              categories={meatCategories}
+              selectedCategories={selectedCategories}
+              onCategoryToggle={handleCategoryToggle}
+            />
           </div>
+          <div className="flex-1 p-1 h-full flex justify-center">
+            <TimeRangeSelectorComponent
+              timeRange={timeRange}
+              setTimeRange={setTimeRange}
+            />
+          </div>
+          <div className="flex-1 flex justify-center p-1 h-full">
+            <VisibilityToggle
+              booleanValue={showMyRecipes}
+              setBooleanValue={setShowMyRecipes}
+            />
+          </div>
+        </div>
+      )}
+
+      <div className="mt-4">
+        {isLoading ? (
+          <div>Loading recipes...</div>
+        ) : error ? (
+          <div className="text-red-500">Error loading recipes: {error}</div>
         ) : (
           <RecipeCardComponent recipes={filteredRecipes} />
         )}
