@@ -7,13 +7,8 @@ import { TimeRangeSelectorComponent } from "../components/TimeRangeSelectorCompo
 import VisibilityToggle from "../components/smallComponent/VisibilityToggleComponent";
 import { Recipe } from "../model/Recipe";
 import { meatCategories } from "../constant/recipeCategories";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
 
 export default function RecipePage() {
-  const router = useRouter();
-  const { data: session, status } = useSession();
-
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isFilterSettingsOpen, setIsFilterSettingsOpen] = useState(false);
@@ -24,20 +19,10 @@ export default function RecipePage() {
   const [showMyRecipes, setShowMyRecipes] = useState<boolean>(true);
 
   useEffect(() => {
-    if (status === "unauthenticated") {
-      router.replace("/signin");
-    }
-  }, [status, router]);
-
-  useEffect(() => {
     const fetchRecipes = async () => {
-      if (!session?.user?.name) return;
-
       setIsLoading(true);
       try {
-        const response = await fetch(
-          `/api/recipe?userName=${encodeURIComponent(session.user.name)}`
-        );
+        const response = await fetch("/api/recipe");
         if (!response.ok) throw new Error("Failed to fetch recipes");
         const data = await response.json();
         setRecipes(data);
@@ -51,7 +36,7 @@ export default function RecipePage() {
     };
 
     fetchRecipes();
-  }, [session?.user?.name]);
+  }, []);
 
   const filteredRecipes = useMemo(() => {
     const lowerCaseSearchTerm = searchTerm.toLowerCase();
@@ -71,19 +56,10 @@ export default function RecipePage() {
       const matchesSearch = recipe.recipeName
         .toLowerCase()
         .includes(lowerCaseSearchTerm);
-      const matchesUser =
-        showMyRecipes || recipe.author === session?.user?.name;
 
-      return matchesCategory && matchesTime && matchesSearch && matchesUser;
+      return matchesCategory && matchesTime && matchesSearch;
     });
-  }, [
-    recipes,
-    selectedCategories,
-    timeRange,
-    searchTerm,
-    showMyRecipes,
-    session?.user?.name,
-  ]);
+  }, [recipes, selectedCategories, timeRange, searchTerm]);
 
   const handleCategoryToggle = (category: string) => {
     setSelectedCategories((prev) =>
@@ -92,18 +68,6 @@ export default function RecipePage() {
         : [...prev, category]
     );
   };
-
-  if (status === "loading") {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p>Loading...</p>
-      </div>
-    );
-  }
-
-  if (!session) {
-    return null;
-  }
 
   return (
     <div className="flex flex-col p-1 w-full">

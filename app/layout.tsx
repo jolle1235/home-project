@@ -1,15 +1,13 @@
-
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import NavBar from "./components/smallComponent/Navbar";
 import { RecipeProvider } from "./context/RecipeContext";
 import { ShoppingListProvider } from "./context/ShoppinglistContext";
-import { SessionProviderWrapper } from "./components/authentication/SessionProviderWrapper";
 import ToastProvider from "./components/ToastComponent";
 import Script from "next/script";
 import OfflineSyncComponent from "./components/OfflineSyncComponent";
 import type { Metadata, Viewport } from "next";
-import { SpeedInsights } from "@vercel/speed-insights/next"
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,12 +19,12 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-
 export const metadata: Metadata = {
   title: "Home Project",
-  description: "A home project application with recipe and shopping list management",
+  description:
+    "A home project application with recipe and shopping list management",
   manifest: "/manifest.json",
-  themeColor: "#000000", 
+  themeColor: "#000000",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -51,7 +49,6 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -68,22 +65,27 @@ export default function RootLayout({
         <meta name="format-detection" content="telephone=no" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="theme-color" content="#000000" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes" />
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes"
+        />
         <meta name="HandheldFriendly" content="true" />
         <link rel="apple-touch-icon" href="/icon/icon-192x192.png" />
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}>
-        <SessionProviderWrapper>
-          <RecipeProvider>
-            <ShoppingListProvider>
-              <NavBar />
-              <main className="flex-grow container mx-auto px-4 py-6">{children}</main>
-              <ToastProvider />
-              <OfflineSyncComponent />
-              <SpeedInsights/>
-            </ShoppingListProvider>
-          </RecipeProvider>
-        </SessionProviderWrapper>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
+      >
+        <RecipeProvider>
+          <ShoppingListProvider>
+            <NavBar />
+            <main className="flex-grow container mx-auto px-4 py-6">
+              {children}
+            </main>
+            <ToastProvider />
+            <OfflineSyncComponent />
+            <SpeedInsights />
+          </ShoppingListProvider>
+        </RecipeProvider>
         <Script src="/sw-register.js" strategy="afterInteractive" />
       </body>
     </html>

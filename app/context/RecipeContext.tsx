@@ -1,10 +1,18 @@
-"use client"
-import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
+"use client";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useEffect,
+} from "react";
 import { Recipe } from "../model/Recipe";
 import { WeekPlan } from "../model/weekPlan";
 import { toast } from "react-toastify";
-import { saveWeekPlanToDatabase, saveTempWeekPlanToDatabase } from "../utils/apiHelperFunctions";
-import { useSession } from "next-auth/react";
+import {
+  saveWeekPlanToDatabase,
+  saveTempWeekPlanToDatabase,
+} from "../utils/apiHelperFunctions";
 
 interface RecipeContextProps {
   weekPlan: WeekPlan[];
@@ -17,109 +25,87 @@ interface RecipeContextProps {
   getDatesForNext4Weeks: () => Date[];
 }
 
-interface RecipeProviderProps {
-  children: ReactNode;
-}
+const RecipeContext = createContext<RecipeContextProps | undefined>(undefined);
 
-export const RecipeContext = createContext<RecipeContextProps | undefined>(undefined);
-
-export function RecipeProvider({ children }: RecipeProviderProps) {
+export function RecipeProvider({ children }: { children: ReactNode }) {
   const [weekPlan, setWeekPlan] = useState<WeekPlan[]>([]);
   const [tempWeekPlan, setTempWeekPlan] = useState<Recipe[]>([]);
-  const { data: session } = useSession();
-  const [localUserId, setLocalUserId] = useState<string>()
-  
 
   useEffect(() => {
-    setLocalUserId(session?.user.id)
-  }, [session]);
+    loadData();
+  }, []);
 
-  useEffect(() => {
-    if(localUserId){
-      loadData(localUserId);
-    }
-  }, [localUserId])
-
-  const loadData = async (userId: string) => {
+  const loadData = async () => {
     // Fetch weekPlan and tempWeekPlan from the database
     try {
-      const response = await fetch(`/api/user?userId=${userId}`);
-      const data = await response.json();
+      const weekPlanResponse = await fetch("/api/weekPlan");
+      const tempWeekPlanResponse = await fetch("/api/tempWeekPlan");
 
-      if (data.weekPlan) setWeekPlan(data.weekPlan);
-      if (data.tempWeekPlan) setTempWeekPlan(data.tempWeekPlan);
+      if (weekPlanResponse.ok && tempWeekPlanResponse.ok) {
+        const weekPlanData = await weekPlanResponse.json();
+        const tempWeekPlanData = await tempWeekPlanResponse.json();
+
+        setWeekPlan(weekPlanData);
+        setTempWeekPlan(tempWeekPlanData);
+      }
     } catch (error) {
-      console.error("Failed to load data:", error);
+      console.error("Error loading data:", error);
     }
   };
 
   const addRecipeToWeekPlan = (date: string, recipe: Recipe) => {
-
-    if(localUserId){
-
-      const newWeekPlan = [...weekPlan, { date, recipe }];
-      setWeekPlan(newWeekPlan);
-      toast.success("Opskrift er nu tilføjet til din madplan");
-
-      saveWeekPlanToDatabase(localUserId, newWeekPlan);
-    }
+    const newWeekPlan = [...weekPlan, { date, recipe }];
+    setWeekPlan(newWeekPlan);
+    toast.success("Opskrift er nu tilføjet til din madplan");
+    saveWeekPlanToDatabase(newWeekPlan);
   };
 
   const removeRecipeFromWeekPlan = (date: string, recipeId: number) => {
-
-
-    if(localUserId){
-      const newWeekPlan = weekPlan.filter((entry) => entry.date !== date || entry.recipe._id !== recipeId);
-      setWeekPlan(newWeekPlan);
-      toast.success("Opskrift er fjernet fra din madplan");
-
-      saveWeekPlanToDatabase(localUserId, newWeekPlan);
-    }
+    const newWeekPlan = weekPlan.filter(
+      (entry) => entry.date !== date || entry.recipe._id !== recipeId
+    );
+    setWeekPlan(newWeekPlan);
+    toast.success("Opskrift er fjernet fra din madplan");
+    saveWeekPlanToDatabase(newWeekPlan);
   };
 
   const addRecipeToTempWeekPlan = (recipe: Recipe) => {
-    const isIdInTempWeekPlan = tempWeekPlan.some((item) => {recipe._id === item._id})
+    const isIdInTempWeekPlan = tempWeekPlan.some(
+      (item) => recipe._id === item._id
+    );
 
-    if(localUserId && !isIdInTempWeekPlan){
-
+    if (!isIdInTempWeekPlan) {
       const newTempWeekPlan = [...tempWeekPlan, recipe];
       setTempWeekPlan(newTempWeekPlan);
       toast.success("Opskrift er nu tilføjet til din midlertidige madplan");
-      
-      saveTempWeekPlanToDatabase(localUserId, newTempWeekPlan);
+      saveTempWeekPlanToDatabase(newTempWeekPlan);
     }
   };
 
   const removeRecipeFromTempWeekPlan = (recipeId: number) => {
-    if(localUserId){
-
-      const newTempWeekPlan = tempWeekPlan.filter((r) => r._id !== recipeId);
-      setTempWeekPlan(newTempWeekPlan);
-      toast.success("Opskrift er fjerne fra din midlertidige madplan");
-      
-      saveTempWeekPlanToDatabase(localUserId, newTempWeekPlan);
-    }
+    const newTempWeekPlan = tempWeekPlan.filter((r) => r._id !== recipeId);
+    setTempWeekPlan(newTempWeekPlan);
+    toast.success("Opskrift er fjerne fra din midlertidige madplan");
+    saveTempWeekPlanToDatabase(newTempWeekPlan);
   };
 
   const clearPlan = () => {
-    if(localUserId){
-
-      setWeekPlan([]);
-      toast.success("Din madplan er nulstillet");
-      
-      saveWeekPlanToDatabase(localUserId, []);
-      saveTempWeekPlanToDatabase(localUserId, []);
-    }
+    setWeekPlan([]);
+    toast.success("Din madplan er nulstillet");
+    saveWeekPlanToDatabase([]);
+    saveTempWeekPlanToDatabase([]);
   };
 
-  const getDatesForNext4Weeks = (): Date[] => {
+  const getDatesForNext4Weeks = () => {
     const dates: Date[] = [];
     const today = new Date();
+
     for (let i = 0; i < 28; i++) {
       const date = new Date(today);
       date.setDate(today.getDate() + i);
       dates.push(date);
     }
+
     return dates;
   };
 
@@ -141,10 +127,10 @@ export function RecipeProvider({ children }: RecipeProviderProps) {
   );
 }
 
-export function useRecipeContext() {
+export function useRecipe() {
   const context = useContext(RecipeContext);
-  if (!context) {
-    throw new Error("useRecipeContext must be used within a RecipeProvider");
+  if (context === undefined) {
+    throw new Error("useRecipe must be used within a RecipeProvider");
   }
   return context;
 }
