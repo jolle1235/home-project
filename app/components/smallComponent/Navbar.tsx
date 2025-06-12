@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -41,42 +41,23 @@ export default function NavBar() {
           <span className="text-white font-semibold">Home Project</span>
         </div>
 
-        {/* Desktop menu */}
-        <div className="hidden md:flex justify-between items-center">
-          <div className="flex space-x-4">
-            <Link className="text-white hover:text-gray-300 transition-colors" href="/recipes">Opskrifter</Link>
-            <Link className="text-white hover:text-gray-300 transition-colors" href="/weekPlanner">Madplan</Link>
-            <Link className="text-white hover:text-gray-300 transition-colors" href="/shoppinglist">Indkøbsliste</Link>
+        <div className={`${isMenuOpen ? "block" : "hidden"} md:block`}>
+          <div className="flex flex-col md:flex-row md:space-x-4 space-y-2 md:space-y-0">
+            <Link
+              className="text-white hover:text-gray-300 transition-colors py-2 md:py-0"
+              href="/recipes"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Opskrifter
+            </Link>
+            <Link
+              className="text-white hover:text-gray-300 transition-colors py-2 md:py-0"
+              href="/weekPlanner"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Madplan
+            </Link>
           </div>
-        </div>
-
-        {/* Mobile menu */}
-        <div
-          className={`${
-            isMenuOpen ? "block" : "hidden"
-          } md:hidden mt-4 space-y-2`}
-        >
-          <Link
-            className="block text-white hover:text-gray-300 transition-colors py-2"
-            href="/recipes"
-            onClick={() => setIsMenuOpen(false)}
-          >
-            Opskrifter
-          </Link>
-          <Link
-            className="block text-white hover:text-gray-300 transition-colors py-2"
-            href="/weekPlanner"
-            onClick={() => setIsMenuOpen(false)}
-          >
-            Madplan
-          </Link>
-          <Link
-            className="block text-white hover:text-gray-300 transition-colors py-2"
-            href="/shoppinglist"
-            onClick={() => setIsMenuOpen(false)}
-          >
-            Indkøbsliste
-          </Link>
         </div>
       </div>
     </nav>
