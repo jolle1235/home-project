@@ -56,8 +56,6 @@ export const recipeNameSchema = Yup.string()
   .min(minRecipeNameLength, `Navn skal være mindst ${minRecipeNameLength} tegn`)
   .required("Navn er påkrævet");
 
-export const isPublicSchema = Yup.boolean().default(false);
-
 export const recipeTimeSchema = Yup.number()
   .transform((value, originalValue) =>
     typeof originalValue === "string" && originalValue.trim() === ""
@@ -68,8 +66,7 @@ export const recipeTimeSchema = Yup.number()
   .max(maxRecipeTime, `Kan ikke være mere end ${maxRecipeTime}`)
   .required("Tid er påkrævet");
 
-export const recipeAuthorSchema = Yup.string()
-  .default("")
+export const recipeAuthorSchema = Yup.string().default("");
 
 export const recipeImgSchema = Yup.string()
   .default("")
@@ -86,10 +83,7 @@ export const recipePersonAmountSchema = Yup.number()
   .required("Antal personer er påkrævet");
 
 export const recipeDescriptionSchema = Yup.string()
-  .max(
-    maxRecipeDescriptionLength,
-    `Max ${maxRecipeDescriptionLength} tegn`
-  )
+  .max(maxRecipeDescriptionLength, `Max ${maxRecipeDescriptionLength} tegn`)
   .min(
     minRecipeDescriptionLength,
     `Beskrivelse skal være mindst ${minRecipeDescriptionLength} tegn`
@@ -131,7 +125,7 @@ export const recipeSchema = Yup.object({
         }).required(),
         quantity: quantitySchema,
         unit: Yup.string().required("Enhed er påkrævet"),
-        marked: Yup.boolean().default(false),    
+        marked: Yup.boolean().default(false),
       })
     )
     .required("Ingredienser er påkrævet")
@@ -139,8 +133,7 @@ export const recipeSchema = Yup.object({
       minRecipeItems,
       `Opskriften skal indeholde mindst ${minRecipeItems} ingrediens`
     ),
-  isPublic: isPublicSchema,
-  author: recipeAuthorSchema, 
+  author: recipeAuthorSchema,
 });
 
 export const addToShoppingListSchema = Yup.object({

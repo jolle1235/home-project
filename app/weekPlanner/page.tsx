@@ -4,8 +4,6 @@ import { useRouter } from "next/navigation";
 import { useRecipeContext } from "../context/RecipeContext";
 import CalendarDialog from "../components/CalenderDialog";
 import ActionBtn from "../components/smallComponent/actionBtn";
-import { RemoveButton } from "../components/smallComponent/removeBtn";
-import Image from "next/image";
 
 export default function WeeklyRecipePlanner() {
   const router = useRouter();

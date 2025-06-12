@@ -100,12 +100,6 @@ export default function RecipePage() {
               setTimeRange={setTimeRange}
             />
           </div>
-          <div className="flex-1 flex justify-center p-1 h-full">
-            <VisibilityToggle
-              booleanValue={showMyRecipes}
-              setBooleanValue={setShowMyRecipes}
-            />
-          </div>
         </div>
       )}
 
