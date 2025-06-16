@@ -107,7 +107,7 @@ export const loginSchema = Yup.object({
 });
 
 export const recipeSchema = Yup.object({
-  _id: Yup.number().default(0),
+  _id: Yup.string().default(""),
   recipeName: recipeNameSchema,
   image: recipeImgSchema,
   time: recipeTimeSchema,
@@ -117,9 +117,9 @@ export const recipeSchema = Yup.object({
   ingredients: Yup.array()
     .of(
       Yup.object({
-        _id: Yup.number().default(0),
+        _id: Yup.string().default(""),
         item: Yup.object({
-          _id: Yup.number().default(0),
+          _id: Yup.string().default(""),
           name: Yup.string().required(),
           category: Yup.string().required(),
         }).required(),

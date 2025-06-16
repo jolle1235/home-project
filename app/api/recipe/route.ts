@@ -23,8 +23,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const data = await request.json();
-    const recipe: Recipe = {
-      _id: 0,
+    const recipe: Omit<Recipe, "_id"> = {
       recipeId: data.recipeId,
       recipeName: data.recipeName,
       description: data.description,
@@ -35,7 +34,7 @@ export async function POST(request: Request) {
       recommendedPersonAmount: data.recommendedPersonAmount,
       author: data.author,
     };
-    const newRecipe = await createRecipe(recipe);
+    const newRecipe = await createRecipe(recipe as Recipe);
     return NextResponse.json(newRecipe);
   } catch (error) {
     console.error("Error creating recipe:", error);

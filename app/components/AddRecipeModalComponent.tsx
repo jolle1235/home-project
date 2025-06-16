@@ -46,7 +46,7 @@ export function AddRecipeModalComponent({ handleClose }: Props) {
     setValue(
       "ingredients",
       ingredients.map((ingredient: Ingredient) => ({
-        _id: 0,
+        _id: "unknown",
         item: ingredient.item,
         unit: ingredient.unit,
         marked: ingredient.marked,

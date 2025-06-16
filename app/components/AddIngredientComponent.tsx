@@ -28,8 +28,12 @@ export function AddIngredientComponent({
     e.preventDefault();
 
     const newItem: Ingredient = {
-      _id: 0,
-      item: { _id: 0, name: itemName, category: InputCategory || "unknown" },
+      _id: "unknown",
+      item: {
+        _id: "unknown",
+        name: itemName,
+        category: InputCategory || "unknown",
+      },
       quantity: quantity === "" ? 0 : quantity,
       unit,
       marked: false,

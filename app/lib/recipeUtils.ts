@@ -1,5 +1,6 @@
 import clientPromise from "./mongodb";
 import { Recipe } from "../model/Recipe";
+import { ObjectId } from "mongodb";
 
 const databaseName = process.env.MONGO_DATABASE_NAME;
 
@@ -21,7 +22,11 @@ export async function getRecipes(): Promise<Recipe[]> {
       .limit(50)
       .toArray();
 
-    return recipes;
+    // Convert ObjectIds to strings
+    return recipes.map((recipe) => ({
+      ...recipe,
+      _id: recipe._id.toString(),
+    }));
   } catch (error) {
     console.error("Failed to fetch recipes:", error);
     return [];
@@ -37,8 +42,18 @@ export async function createRecipe(recipe: Recipe): Promise<Recipe> {
     const client = await clientPromise;
     const db = client.db(databaseName);
 
-    const result = await db.collection<Recipe>("recipes").insertOne(recipe);
-    return { ...recipe, _id: result.insertedId };
+    // Remove the _id field if it exists to let MongoDB generate a new one
+    const { _id, ...recipeWithoutId } = recipe;
+
+    const result = await db
+      .collection<Recipe>("recipes")
+      .insertOne(recipeWithoutId as Recipe);
+
+    // Return the recipe with the new ObjectId converted to string
+    return {
+      ...recipeWithoutId,
+      _id: result.insertedId.toString(),
+    } as Recipe;
   } catch (error) {
     console.error("Failed to create recipe:", error);
     throw error;
@@ -54,9 +69,11 @@ export async function updateRecipe(recipe: Recipe): Promise<Recipe> {
     const client = await clientPromise;
     const db = client.db(databaseName);
 
+    const { _id, ...recipeWithoutId } = recipe;
+
     await db
       .collection<Recipe>("recipes")
-      .updateOne({ _id: recipe._id }, { $set: recipe });
+      .updateOne({ _id: new ObjectId(_id) }, { $set: recipeWithoutId });
 
     return recipe;
   } catch (error) {
@@ -65,7 +82,7 @@ export async function updateRecipe(recipe: Recipe): Promise<Recipe> {
   }
 }
 
-export async function deleteRecipe(id: number): Promise<void> {
+export async function deleteRecipe(id: string): Promise<void> {
   try {
     if (!databaseName) {
       throw new Error("MONGO_DATABASE_NAME is not defined");
@@ -74,7 +91,7 @@ export async function deleteRecipe(id: number): Promise<void> {
     const client = await clientPromise;
     const db = client.db(databaseName);
 
-    await db.collection<Recipe>("recipes").deleteOne({ _id: id });
+    await db.collection<Recipe>("recipes").deleteOne({ _id: new ObjectId(id) });
   } catch (error) {
     console.error("Failed to delete recipe:", error);
     throw error;
