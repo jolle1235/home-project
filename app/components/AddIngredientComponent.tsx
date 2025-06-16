@@ -12,8 +12,12 @@ interface Props {
   InputCategory?: string;
 }
 
-export function AddIngredientComponent({ onAdd, itemName, InputCategory=undefined }: Props) {
-  const [quantity, setQuantity] = useState<number>(0);
+export function AddIngredientComponent({
+  onAdd,
+  itemName,
+  InputCategory = undefined,
+}: Props) {
+  const [quantity, setQuantity] = useState<number | "">("");
   const [unit, setUnit] = useState(unitTypes[0]);
   const [category, setCategory] = useState<string>("");
 
@@ -25,19 +29,19 @@ export function AddIngredientComponent({ onAdd, itemName, InputCategory=undefine
 
     const newItem: Ingredient = {
       _id: 0,
-      item: {_id: 0, name: itemName, category: InputCategory || "unknown"},
-      quantity,
+      item: { _id: 0, name: itemName, category: InputCategory || "unknown" },
+      quantity: quantity === "" ? 0 : quantity,
       unit,
       marked: false,
     };
 
     onAdd(newItem);
-    setQuantity(0);
+    setQuantity("");
     setUnit(unitTypes[0]);
     setCategory("");
   };
 
-  async function handleRemoveItem(itemName: string){
+  async function handleRemoveItem(itemName: string) {
     if (!window.confirm("Are you sure you want to remove this item?")) return;
 
     setLoading(true);
@@ -66,7 +70,9 @@ export function AddIngredientComponent({ onAdd, itemName, InputCategory=undefine
       </button>
 
       <div className="w-5/12 sm:w-5/12">
-        <label className="block text-base sm:text-lg font-medium truncate">{itemName}</label>
+        <label className="block text-base sm:text-lg font-medium truncate">
+          {itemName}
+        </label>
       </div>
 
       <div className="w-2/12 sm:w-2/12">
@@ -74,8 +80,15 @@ export function AddIngredientComponent({ onAdd, itemName, InputCategory=undefine
           type="number"
           value={quantity}
           placeholder="Mængde"
-          onChange={(e) => setQuantity(Number(e.target.value))}
+          onChange={(e) =>
+            setQuantity(e.target.value === "" ? "" : Number(e.target.value))
+          }
           className="mt-1 w-full rounded-md border border-gray-300 p-1 text-sm sm:text-base"
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              handleSubmit(e);
+            }
+          }}
         />
       </div>
 
@@ -97,7 +110,11 @@ export function AddIngredientComponent({ onAdd, itemName, InputCategory=undefine
       <div className="w-1/4 sm:w-1/4">
         {InputCategory ? (
           <div className="text-base sm:text-lg font-medium truncate">
-            {shoppinglistCategories[InputCategory as keyof typeof shoppinglistCategories]}
+            {
+              shoppinglistCategories[
+                InputCategory as keyof typeof shoppinglistCategories
+              ]
+            }
           </div>
         ) : (
           <select
@@ -117,9 +134,7 @@ export function AddIngredientComponent({ onAdd, itemName, InputCategory=undefine
 
       {InputCategory && (
         <div>
-          <RemoveButton
-            onRemove={async () => handleRemoveItem(itemName)}
-          />
+          <RemoveButton onRemove={async () => handleRemoveItem(itemName)} />
         </div>
       )}
     </div>
