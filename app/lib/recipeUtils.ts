@@ -4,6 +4,10 @@ import { ObjectId } from "mongodb";
 
 const databaseName = process.env.MONGO_DATABASE_NAME;
 
+interface RecipeWithObjectId extends Omit<Recipe, "_id"> {
+  _id: ObjectId;
+}
+
 export async function getRecipes(): Promise<Recipe[]> {
   try {
     if (!databaseName) {
@@ -72,7 +76,7 @@ export async function updateRecipe(recipe: Recipe): Promise<Recipe> {
     const { _id, ...recipeWithoutId } = recipe;
 
     await db
-      .collection<Recipe>("recipes")
+      .collection<RecipeWithObjectId>("recipes")
       .updateOne({ _id: new ObjectId(_id) }, { $set: recipeWithoutId });
 
     return recipe;
@@ -91,7 +95,9 @@ export async function deleteRecipe(id: string): Promise<void> {
     const client = await clientPromise;
     const db = client.db(databaseName);
 
-    await db.collection<Recipe>("recipes").deleteOne({ _id: new ObjectId(id) });
+    await db
+      .collection<RecipeWithObjectId>("recipes")
+      .deleteOne({ _id: new ObjectId(id) });
   } catch (error) {
     console.error("Failed to delete recipe:", error);
     throw error;
