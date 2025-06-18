@@ -86,7 +86,6 @@ export function AddRecipeModalComponent({ handleClose }: Props) {
     }
 
     const updatedFormData = {
-      recipeId: null,
       recipeName: data.recipeName,
       description: data.description,
       image: uploadedImageUrl,

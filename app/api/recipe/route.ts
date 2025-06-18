@@ -24,7 +24,6 @@ export async function POST(request: Request) {
   try {
     const data = await request.json();
     const recipe: Omit<Recipe, "_id"> = {
-      recipeId: data.recipeId,
       recipeName: data.recipeName,
       description: data.description,
       image: data.image,
@@ -50,7 +49,6 @@ export async function PUT(request: Request) {
     const data = await request.json();
     const recipe: Recipe = {
       _id: data._id,
-      recipeId: data.recipeId,
       recipeName: data.recipeName,
       description: data.description,
       image: data.image,

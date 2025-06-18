@@ -18,9 +18,9 @@ interface RecipeContextProps {
   weekPlan: WeekPlan[];
   tempWeekPlan: Recipe[];
   addRecipeToWeekPlan: (date: string, recipe: Recipe) => void;
-  removeRecipeFromWeekPlan: (date: string, recipeId: number) => void;
+  removeRecipeFromWeekPlan: (date: string, recipeId: string) => void;
   addRecipeToTempWeekPlan: (recipe: Recipe) => void;
-  removeRecipeFromTempWeekPlan: (recipeId: number) => void;
+  removeRecipeFromTempWeekPlan: (recipeId: string) => void;
   clearPlan: () => void;
   getDatesForNext4Weeks: () => Date[];
 }
@@ -60,7 +60,7 @@ export function RecipeProvider({ children }: { children: ReactNode }) {
     saveWeekPlanToDatabase(newWeekPlan);
   };
 
-  const removeRecipeFromWeekPlan = (date: string, recipeId: number) => {
+  const removeRecipeFromWeekPlan = (date: string, recipeId: string) => {
     const newWeekPlan = weekPlan.filter(
       (entry) => entry.date !== date || entry.recipe._id !== recipeId
     );
@@ -82,10 +82,12 @@ export function RecipeProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const removeRecipeFromTempWeekPlan = (recipeId: number) => {
-    const newTempWeekPlan = tempWeekPlan.filter((r) => r._id !== recipeId);
+  const removeRecipeFromTempWeekPlan = (recipeId: string) => {
+    const newTempWeekPlan = tempWeekPlan.filter(
+      (recipe) => recipe._id !== recipeId
+    );
     setTempWeekPlan(newTempWeekPlan);
-    toast.success("Opskrift er fjerne fra din midlertidige madplan");
+    toast.success("Opskrift er fjernet fra din midlertidige madplan");
     saveTempWeekPlanToDatabase(newTempWeekPlan);
   };
 
