@@ -20,7 +20,7 @@ export default function WeeklyRecipePlanner() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedRecipe, setSelectedRecipe] = useState<any>(null);
 
-  function handleRouter(id?: number) {
+  function handleRouter(id?: string) {
     if (id) {
       router.push(`/recipes/${id}`);
     }
