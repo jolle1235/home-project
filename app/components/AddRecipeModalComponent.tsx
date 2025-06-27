@@ -158,8 +158,8 @@ export function AddRecipeModalComponent({ handleClose }: Props) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-4">
+      <div className="bg-white rounded-lg">
+        <div className="flex justify-between items-center px-6 py-2 bg-lightgreyBackground rounded-t-lg">
           <h2 className="text-2xl font-bold">Tilføj ny opskrift</h2>
           <button
             onClick={handleClose}
@@ -169,7 +169,10 @@ export function AddRecipeModalComponent({ handleClose }: Props) {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-4 p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto"
+        >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="w-full">
               <label
