@@ -1,9 +1,10 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useRecipeContext } from "../context/RecipeContext";
 import CalendarDialog from "../components/CalenderDialog";
 import ActionBtn from "../components/smallComponent/actionBtn";
+import { RemoveButton } from "../components/smallComponent/removeBtn";
 
 export default function WeeklyRecipePlanner() {
   const router = useRouter();
@@ -19,6 +20,51 @@ export default function WeeklyRecipePlanner() {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedRecipe, setSelectedRecipe] = useState<any>(null);
+  const [weekDates, setWeekDates] = useState<(Date | null)[]>([]);
+
+  // Helper to get Monday of the current week
+  function getMonday(d: Date) {
+    const date = new Date(d);
+    const day = date.getDay();
+    const diff = day === 0 ? -6 : 1 - day; // Sunday (0) should go back 6 days
+    date.setDate(date.getDate() + diff);
+    date.setHours(0, 0, 0, 0);
+    return date;
+  }
+
+  // Build a 3-week (21 days) grid, starting from today, always Mon–Sun columns
+  useEffect(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const monday = getMonday(today);
+    const weekDayIdx = today.getDay() === 0 ? 6 : today.getDay() - 1; // 0=Mon, 6=Sun
+    const grid: (Date | null)[] = [];
+    // First week: fill empty for days before today, then fill from today to Sunday
+    for (let i = 0; i < 7; i++) {
+      if (i < weekDayIdx) {
+        grid.push(null);
+      } else {
+        const d = new Date(monday);
+        d.setDate(monday.getDate() + i);
+        if (d >= today) {
+          grid.push(d);
+        } else {
+          grid.push(null);
+        }
+      }
+    }
+    // Next 2 weeks: fill all days
+    let start = new Date(today);
+    start.setDate(today.getDate() + (7 - weekDayIdx));
+    for (let w = 0; w < 2; w++) {
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(start);
+        d.setDate(start.getDate() + w * 7 + i);
+        grid.push(d);
+      }
+    }
+    setWeekDates(grid);
+  }, []);
 
   function handleRouter(id?: string) {
     if (id) {
@@ -70,67 +116,86 @@ export default function WeeklyRecipePlanner() {
       ) : (
         <p className="text-gray-500">No recipes added yet.</p>
       )}
-
-      {/* Weekly plan displayed in a list format */}
       <div className="mt-8">
-        {/* For mobile: single column; for md+: grid with 2 or 3 columns */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {availableDates.map((date) => {
-            const dateKey = date.toISOString().split("T")[0];
-            const displayText = date.toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-              weekday: "short",
-            });
-            const entriesForDate = weekPlan.filter(
-              (entry) => entry.date === dateKey
-            );
-
-            return (
-              <div key={dateKey} className="border rounded p-4 flex flex-col">
-                <h6 className="text-base font-semibold mb-2">{displayText}</h6>
-                {entriesForDate.length === 0 ? (
-                  <p className="text-gray-500 text-sm">No recipes planned.</p>
-                ) : (
-                  <div className="space-y-2">
-                    {entriesForDate.map((entry) => (
+        <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
+          {Array.from({ length: 3 }).map((_, rowIdx) => (
+            <React.Fragment key={rowIdx}>
+              {weekDates
+                .slice(rowIdx * 7, rowIdx * 7 + 7)
+                .map((date, colIdx) => {
+                  if (!date) {
+                    return (
                       <div
-                        key={entry.recipe._id}
-                        className="bg-gray-100 rounded-lg p-2 flex flex-col md:flex-row items-center md:justify-between"
-                      >
-                        <p className="truncate flex-1 p-1 w-full">
-                          {entry.recipe.recipeName}
+                        key={`empty-${rowIdx}-${colIdx}`}
+                        className="border rounded p-4 min-h-[120px] bg-gray-50 opacity-50"
+                      />
+                    );
+                  }
+                  const dateKey = date.toISOString().split("T")[0];
+                  const displayText = date.toLocaleDateString("da-DK", {
+                    month: "short",
+                    day: "numeric",
+                    weekday: "short",
+                  });
+                  const entriesForDate = weekPlan.filter(
+                    (entry) => entry.date === dateKey
+                  );
+                  return (
+                    <div
+                      key={dateKey}
+                      className="border rounded p-4 flex flex-col min-h-[120px]"
+                    >
+                      <h6 className="text-base font-semibold mb-2 text-center">
+                        {displayText}
+                      </h6>
+                      {entriesForDate.length === 0 ? (
+                        <p className="text-gray-500 text-sm text-center">
+                          Ingen opskrifter planlagt.
                         </p>
-                        <div className="flex space-x-2">
-                          <ActionBtn
-                            onClickF={() => handleRouter(entry.recipe._id)}
-                            Itext="Se opskrift"
-                            textSize="text-base"
-                          />
-                          <ActionBtn
-                            onClickF={() =>
-                              removeRecipeFromWeekPlan(
-                                entriesForDate[0].date,
-                                entry.recipe._id
-                              )
-                            }
-                            Itext="Slet"
-                            textSize="text-base"
-                            color="bg-red-500"
-                            hover="bg-red-300"
-                          />
+                      ) : (
+                        <div className="space-y-1">
+                          {entriesForDate.map((entry) => (
+                            <div
+                              key={entry.recipe._id}
+                              className="flex flex-col items-center "
+                            >
+                              <div className="flex flex-row w-full justify-center items-center bg-gray-100 rounded-lg m-1 p-1">
+                                <p className="truncate flex-1 w-10/12">
+                                  {entry.recipe.recipeName}
+                                </p>
+                                <button
+                                  onClick={() => {
+                                    removeRecipeFromWeekPlan(
+                                      entriesForDate[0].date,
+                                      entry.recipe._id
+                                    );
+                                  }}
+                                  className="text-gray-500 hover:text-gray-700"
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                              <div className="flex flex-row justify-evenly w-full gap-1">
+                                <button
+                                  className="text-base p-1 bg-action hover:bg-actionHover rounded-lg w-10/12"
+                                  onClick={() => {
+                                    handleRouter(entry.recipe._id);
+                                  }}
+                                >
+                                  Opskrift
+                                </button>
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+                      )}
+                    </div>
+                  );
+                })}
+            </React.Fragment>
+          ))}
         </div>
       </div>
-
-      {/* Calendar Popup */}
       <CalendarDialog
         open={dialogOpen}
         onClose={handleDialogClose}

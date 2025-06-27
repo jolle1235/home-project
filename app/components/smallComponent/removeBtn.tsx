@@ -1,4 +1,3 @@
-
 import Image from "next/image";
 
 interface RemoveButtonProps {
@@ -6,9 +5,10 @@ interface RemoveButtonProps {
 }
 
 export function RemoveButton({ onRemove }: RemoveButtonProps) {
-
   const handleRemove = async () => {
-    if(onRemove){onRemove()}
+    if (onRemove) {
+      onRemove();
+    }
   };
 
   return (
@@ -17,12 +17,12 @@ export function RemoveButton({ onRemove }: RemoveButtonProps) {
         className="flex items-center px-2 py-1 text-white rounded hover:bg-red-200 disabled:bg-gray-400"
         onClick={handleRemove}
       >
-        <Image 
-            src="/icon/remove_button.png"
-            alt="Remove button"
-            width={24} 
-            height={24}
-            />
+        <Image
+          src="/icon/remove_button.png"
+          alt="Remove button"
+          width={20}
+          height={20}
+        />
       </button>
     </div>
   );

@@ -1,17 +1,5 @@
 "use client";
 import React, { useState } from "react";
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  Paper,
-  Typography,
-} from "@mui/material";
-import { useTheme } from "@mui/material/styles";
-import { Grid2 as Grid } from '@mui/material';
-
 
 interface CalendarDialogProps {
   open: boolean;
@@ -27,7 +15,6 @@ export default function CalendarDialog({
   availableDates,
 }: CalendarDialogProps) {
   const [selectedDates, setSelectedDates] = useState<Set<string>>(new Set());
-  const theme = useTheme();
 
   const toggleDate = (date: Date) => {
     const dateKey = date.toISOString().split("T")[0];
@@ -46,49 +33,69 @@ export default function CalendarDialog({
     onClose();
   };
 
+  // Build a 3-week (21 days) list, starting from today (no empty/null days)
+  function buildDateList(): Date[] {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const days: Date[] = [];
+    for (let i = 0; i < 21; i++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() + i);
+      days.push(d);
+    }
+    return days;
+  }
+
+  const dateList = buildDateList();
+
   return (
-    <Dialog open={open} onClose={onClose}>
-      <DialogTitle>Select Dates</DialogTitle>
-      <DialogContent>
-        <Grid container spacing={2}>
-          {availableDates.map((date) => {
-            const dateKey = date.toISOString().split("T")[0];
-            const isSelected = selectedDates.has(dateKey);
-            return (
-              <Grid size={3} key={dateKey}>
-                <Paper
+    open && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+        <div className="bg-white rounded-lg shadow-lg w-full max-w-md mx-2 p-4">
+          <div className="text-xl font-bold mb-4 text-darkText text-center">
+            Vælg datoer
+          </div>
+          <div className="flex flex-col gap-3 max-h-96 overflow-y-auto">
+            {dateList.map((date) => {
+              const dateKey = date.toISOString().split("T")[0];
+              const isSelected = selectedDates.has(dateKey);
+              return (
+                <button
+                  key={dateKey}
+                  type="button"
                   onClick={() => toggleDate(date)}
-                  sx={{
-                    p: 1,
-                    textAlign: "center",
-                    cursor: "pointer",
-                    backgroundColor: isSelected
-                      ? theme.palette.primary.main
-                      : theme.palette.background.default,
-                    color: isSelected
-                      ? theme.palette.primary.contrastText
-                      : theme.palette.text.primary,
-                  }}
+                  className={`w-full rounded-lg px-4 py-3 text-base text-darkText text-center border transition-colors duration-150
+                    ${isSelected ? "bg-action text-white" : "bg-white hover:bg-actionHover"}
+                  `}
+                  style={{ minHeight: 48 }}
                 >
-                  <Typography variant="body2">
-                    {date.toLocaleDateString("en-US", {
-                      weekday: "short",
-                      month: "short",
-                      day: "numeric",
-                    })}
-                  </Typography>
-                </Paper>
-              </Grid>
-            );
-          })}
-        </Grid>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={handleDone} variant="contained">
-          Done
-        </Button>
-      </DialogActions>
-    </Dialog>
+                  {date.toLocaleDateString("da-DK", {
+                    weekday: "short",
+                    month: "short",
+                    day: "numeric",
+                  })}
+                </button>
+              );
+            })}
+          </div>
+          <div className="flex justify-end gap-2 mt-6">
+            <button
+              onClick={onClose}
+              className="bg-cancel hover:bg-cancelHover text-white font-semibold px-4 py-2 rounded-lg transition-colors"
+              type="button"
+            >
+              Annuller
+            </button>
+            <button
+              onClick={handleDone}
+              className="bg-action hover:bg-actionHover text-white font-semibold px-4 py-2 rounded-lg transition-colors"
+              type="button"
+            >
+              Færdig
+            </button>
+          </div>
+        </div>
+      </div>
+    )
   );
 }
