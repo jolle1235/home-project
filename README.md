@@ -21,7 +21,6 @@ You can view the live deployment here: [https://home-project-weld.vercel.app/rec
 
 - **Offline Support**: Full offline functionality using service workers and IndexedDB. Make changes offline and sync automatically when back online.
 - **Installable PWA**: Install the app on your device for a native-like experience.
-- **Responsive UI**: Mobile-first, accessible, and visually appealing design using Tailwind CSS and Material UI.
 
 ---
 
@@ -39,42 +38,6 @@ You can view the live deployment here: [https://home-project-weld.vercel.app/rec
 - **Installable**: Add to your home screen on mobile or desktop.
 - **Offline-first**: Access recipes and meal plans even without an internet connection.
 - **Data Sync**: Changes made offline are automatically synchronized when you reconnect.
-
----
-
-## 🖥️ Getting Started
-
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/YOUR_USERNAME/home-project.git
-cd home-project
-```
-
-### 2. Install dependencies
-
-```bash
-npm install
-```
-
-### 3. Set up environment variables
-
-Create a `.env.local` file in the root directory with the following:
-
-```
-MONGODB_URI=your_mongodb_connection_string
-MONGO_DATABASE_NAME=your_database_name
-```
-
-> **Note:** The actual `.env.local` file is private and not included in this repository. You will not be able to access the production database or deploy your own version without your own credentials.
-
-### 4. Run the development server
-
-```bash
-npm run dev
-```
-
-Visit [http://localhost:3000](http://localhost:3000) to view the app.
 
 ---
 
@@ -116,7 +79,3 @@ Hi! I'm Jesper, a passionate full-stack developer. This project demonstrates my 
 > _"A home project application with recipe and shopping list management."_
 
 ---
-
-### Screenshots
-
-_Add screenshots or a demo GIF here to showcase the UI and features!_
