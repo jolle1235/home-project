@@ -55,21 +55,6 @@ If you have questions about the project or want to discuss my work, feel free to
 
 ---
 
-## 📦 Building for Production
-
-```bash
-npm run build
-npm start
-```
-
----
-
-## 📝 License
-
-This project is open source and available under the [MIT License](LICENSE).
-
----
-
 ## 👋 About the Author
 
 Hi! I'm Jesper, a passionate full-stack developer. This project demonstrates my skills in building robust, user-friendly, and modern web applications. If you're a recruiter, feel free to reach out via [LinkedIn](https://www.linkedin.com/in/jesper-dyrholm-thomsen/)
