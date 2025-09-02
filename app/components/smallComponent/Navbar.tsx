@@ -57,6 +57,13 @@ export default function NavBar() {
             >
               Madplan
             </Link>
+            <Link
+              className="text-white hover:text-gray-300 transition-colors py-2 md:py-0"
+              href="/drink"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Drinks
+            </Link>
           </div>
         </div>
       </div>

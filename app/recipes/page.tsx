@@ -70,7 +70,7 @@ export default function RecipePage() {
   };
 
   return (
-    <div className="flex flex-col p-1 w-full">
+    <div className="flex flex-col w-full bg-lightBackground">
       <div className="flex flex-row w-full mb-4">
         <input
           onChange={(e) => setSearchTerm(e.target.value)}

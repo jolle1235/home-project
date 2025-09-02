@@ -73,14 +73,12 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icon/icon-192x192.png" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col bg-lightBackground`}
       >
         <RecipeProvider>
           <ShoppingListProvider>
             <NavBar />
-            <main className="flex-grow container mx-auto px-4 py-6">
-              {children}
-            </main>
+            <main className="bg-lightBackground">{children}</main>
             <ToastProvider />
             <OfflineSyncComponent />
             <SpeedInsights />
