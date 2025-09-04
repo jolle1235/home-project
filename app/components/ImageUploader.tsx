@@ -1,4 +1,4 @@
-import { useState, ChangeEvent, ClipboardEvent } from 'react';
+import { useState, ChangeEvent, ClipboardEvent } from "react";
 
 interface ImageUploaderProps {
   onFileSelected: (file: File | null) => void;
@@ -43,29 +43,29 @@ export default function ImageUploader({ onFileSelected }: ImageUploaderProps) {
   };
 
   return (
-    <div className='border-gray-200 border-2 rounded-lg p-2'>
-      <div>
-        <input type="file" accept="image/*" onChange={handleFileChange} />
-      </div>
+    <div className="border-gray-200 border-2 rounded-lg p-2">
       <div style={{ marginTop: "10px" }}>
         <label htmlFor="pasteInput" className="block font-bold">
-          Or paste an image (or image URL) here:
+          Indsæt billede eller upload
         </label>
-        <input 
-          type="text" 
+        <input
+          type="text"
           id="pasteInput"
-          placeholder="Paste here..."
+          placeholder="Indsæt billede eller upload fra din computer"
           onPaste={handlePaste}
           value={pasteImageUrl}
           onChange={(e) => setPasteImageUrl(e.target.value)}
-          className="border p-1 rounded mt-1 w-full"
+          className="border p-1 rounded mb-1 w-full"
         />
       </div>
+      <div>
+        <input type="file" accept="image/*" onChange={handleFileChange} />
+      </div>
       {preview && (
-        <img 
-          src={preview} 
-          alt="Preview" 
-          style={{ width: '200px', marginTop: '10px' }} 
+        <img
+          src={preview}
+          alt="Preview"
+          style={{ width: "200px", marginTop: "10px" }}
         />
       )}
     </div>

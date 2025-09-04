@@ -136,6 +136,39 @@ export const recipeSchema = Yup.object({
   author: recipeAuthorSchema,
 });
 
+// DRINK SCHEMA
+export const drinkSchema = Yup.object({
+  _id: Yup.string().default(""),
+  title: recipeNameSchema, // reuse name rules
+  image: recipeImgSchema,
+  time: recipeTimeSchema,
+  numberOfPeople: recipePersonAmountSchema,
+  description: recipeDescriptionSchema,
+  alternatives: Yup.string()
+    .default("")
+    .max(maxRecipeDescriptionLength, `Max ${maxRecipeDescriptionLength} tegn`),
+  ingredients: Yup.array()
+    .of(
+      Yup.object({
+        _id: Yup.string().default(""),
+        item: Yup.object({
+          _id: Yup.string().default(""),
+          name: Yup.string().required(),
+          category: Yup.string().required(),
+        }).required(),
+        quantity: quantitySchema,
+        unit: Yup.string().required("Enhed er påkrævet"),
+        marked: Yup.boolean().default(false),
+      })
+    )
+    .required("Ingredienser er påkrævet")
+    .min(
+      minRecipeItems,
+      `Drinken skal indeholde mindst ${minRecipeItems} ingrediens`
+    ),
+  author: recipeAuthorSchema,
+});
+
 export const addToShoppingListSchema = Yup.object({
   itemSearch: itemSearchSchema,
   quantity: quantitySchema,
