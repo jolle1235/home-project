@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState, useMemo } from "react";
-import { AddRecipeButtonComponent } from "../components/AddRecipeButtonComponent";
+import { AddButtonComponent } from "../components/AddButtonComponent";
+import { AddRecipeModalComponent } from "../components/AddRecipeModalComponent";
 import { RecipeCardComponent } from "../components/RecipeCardComponent";
 import { CategoryWheelComponent } from "../components/CategoryWheelComponent";
 import { TimeRangeSelectorComponent } from "../components/TimeRangeSelectorComponent";
@@ -17,6 +18,21 @@ export default function RecipePage() {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [showMyRecipes, setShowMyRecipes] = useState<boolean>(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleOpen = () => setIsModalOpen(true);
+  const handleClose = () => setIsModalOpen(false);
+
+  useEffect(() => {
+    if (isModalOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [isModalOpen]);
 
   useEffect(() => {
     const fetchRecipes = async () => {
@@ -113,7 +129,12 @@ export default function RecipePage() {
         )}
       </div>
 
-      <AddRecipeButtonComponent />
+      <AddButtonComponent
+        onClick={handleOpen}
+        label="Add Recipe"
+        ariaLabel="add_recipe"
+      />
+      {isModalOpen && <AddRecipeModalComponent handleClose={handleClose} />}
     </div>
   );
 }
