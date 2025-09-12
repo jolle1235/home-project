@@ -1,17 +1,17 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
-import { meatCategories } from "../constant/recipeCategories";
-import { Item } from "../model/Item";
-import { Ingredient } from "../model/Ingredient";
-import SearchBar from "./SearchBarComponent";
-import { Recipe } from "../model/Recipe";
-import { AddIngredientComponent } from "./AddIngredientComponent";
+import { meatCategories } from "../../constant/recipeCategories";
+import { Item } from "../../model/Item";
+import { Ingredient } from "../../model/Ingredient";
+import SearchBar from "../SearchBarComponent";
+import { Recipe } from "../../model/Recipe";
+import { AddIngredientComponent } from "../AddIngredientComponent";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
-import { recipeSchema } from "../utils/validationSchema";
-import ImageUploader from "./ImageUploader";
-import { createItem } from "../utils/apiHelperFunctions";
-import { searchItem } from "../utils/apiHelperFunctions";
+import { recipeSchema } from "../../utils/validationSchema";
+import ImageUploader from "../ImageUploader";
+import { createItem } from "../../utils/apiHelperFunctions";
+import { searchItem } from "../../utils/apiHelperFunctions";
 
 interface Props {
   handleClose: () => void;

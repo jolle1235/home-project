@@ -79,7 +79,7 @@ export function AddIngredientComponent({
         </label>
       </div>
 
-      <div className="w-2/12 sm:w-2/12">
+      <div className="w-3/12 sm:w-3/12">
         <input
           type="number"
           value={quantity}

@@ -1,7 +1,7 @@
 "use client";
-import { Recipe } from "../model/Recipe";
-import { useRecipeContext } from "../context/RecipeContext";
-import ActionBtn from "./smallComponent/actionBtn";
+import { Recipe } from "../../model/Recipe";
+import { useRecipeContext } from "../../context/RecipeContext";
+import ActionBtn from "../smallComponent/actionBtn";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 

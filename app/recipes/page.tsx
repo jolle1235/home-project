@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useState, useMemo } from "react";
 import { AddButtonComponent } from "../components/AddButtonComponent";
-import { AddRecipeModalComponent } from "../components/AddRecipeModalComponent";
-import { RecipeCardComponent } from "../components/RecipeCardComponent";
+import { AddRecipeModalComponent } from "../components/recipeComponent/AddRecipeModalComponent";
+import { RecipeCardComponent } from "../components/recipeComponent/RecipeCardComponent";
 import { CategoryWheelComponent } from "../components/CategoryWheelComponent";
 import { TimeRangeSelectorComponent } from "../components/TimeRangeSelectorComponent";
 import VisibilityToggle from "../components/smallComponent/VisibilityToggleComponent";

@@ -33,6 +33,7 @@ export async function POST(request: Request) {
       ingredients: data.ingredients,
       time: data.time,
       numberOfPeople: data.numberOfPeople,
+      description: data.description ?? "",
       alternatives: data.alternatives ?? "",
       author: data.author ?? "",
     } as Omit<Drink, "_id">;
