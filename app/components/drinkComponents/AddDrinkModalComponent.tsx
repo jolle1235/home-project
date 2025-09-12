@@ -9,6 +9,8 @@ import ImageUploader from "../ImageUploader";
 import { Drink } from "../../model/Drink";
 import ActionBtn from "../smallComponent/actionBtn";
 import { AddIngredientModal } from "../AddIngredientModal";
+import { Ingredient } from "@/app/model/Ingredient";
+import { IngredientsList } from "../ShowIngrediens";
 
 interface Props {
   handleClose: () => void;
@@ -16,6 +18,7 @@ interface Props {
 
 export function AddDrinkModalComponent({ handleClose }: Props) {
   // States for recipe fields
+  const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [imageUrl, setImageUrl] = useState<string>("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -38,6 +41,10 @@ export function AddDrinkModalComponent({ handleClose }: Props) {
   ) => {
     setState(initialState);
   };
+
+  function handleOnIngredientRemove(index: number) {
+    setIngredients(ingredients.filter((_, i) => i !== index));
+  }
 
   const onSubmit = async (data: Drink) => {
     let uploadedImageUrl = "";
@@ -65,7 +72,7 @@ export function AddDrinkModalComponent({ handleClose }: Props) {
     const updatedFormData = {
       title: data.title,
       image: uploadedImageUrl,
-      ingredients: data.ingredients,
+      ingredients: ingredients,
       time: data.time,
       numberOfPeople: data.numberOfPeople,
       description: data.description ?? "",
@@ -201,18 +208,6 @@ export function AddDrinkModalComponent({ handleClose }: Props) {
                   </p>
                 )}
               </div>
-              <div className="w-full">
-                <ActionBtn
-                  onClickF={() => setIsModalOpen(true)}
-                  Itext="Tilføj ingredienser"
-                  color="bg-action"
-                  hover="bg-actionHover"
-                />
-
-                {isModalOpen && (
-                  <AddIngredientModal onClose={() => setIsModalOpen(false)} />
-                )}
-              </div>
 
               <div className="w-full">
                 <label className="block text-gray-700 text-sm font-bold mb-2">
@@ -233,19 +228,44 @@ export function AddDrinkModalComponent({ handleClose }: Props) {
               </div>
             </div>
           </div>
+          <div className="w-full">
+            <ActionBtn
+              onClickF={() => setIsModalOpen(true)}
+              Itext="Tilføj ingredienser"
+              color="bg-action"
+              hover="bg-actionHover"
+              extraCSS="w-full"
+            />
 
-          <div className="flex justify-end space-x-4">
+            {isModalOpen && (
+              <AddIngredientModal
+                onClose={() => setIsModalOpen(false)}
+                ingredients={ingredients}
+                setIngredients={setIngredients}
+              />
+            )}
+          </div>
+          <div>
+            <IngredientsList
+              ingredients={ingredients}
+              onRemove={(index: number) => handleOnIngredientRemove(index)}
+            />
+          </div>
+
+          <div className="flex flex-1 justify-end space-x-4">
             <ActionBtn
               onClickF={handleClose}
               Itext="Annuller"
-              color="bg-gray-500"
-              hover="bg-gray-600"
+              color="bg-red-500"
+              hover="bg-red-600"
+              extraCSS="w-full"
             />
             <ActionBtn
               onClickF={handleSubmit(onSubmit)}
               Itext="Gem drink"
-              color="bg-blue-500"
-              hover="bg-blue-600"
+              color="bg-action"
+              hover="bg-actionHover"
+              extraCSS="w-full"
               type="submit"
             />
           </div>
