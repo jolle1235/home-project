@@ -10,15 +10,17 @@ interface Props {
   onAdd: (Ingredient: Ingredient) => void;
   itemName: string;
   InputCategory?: string;
+  defaultUnit?: string;
 }
 
 export function AddIngredientComponent({
   onAdd,
   itemName,
-  InputCategory = undefined,
+  InputCategory,
+  defaultUnit,
 }: Props) {
   const [quantity, setQuantity] = useState<number | "">("");
-  const [unit, setUnit] = useState(unitTypes[0]);
+  const [unit, setUnit] = useState<string>(defaultUnit ?? unitTypes[0]);
   const [category, setCategory] = useState<string>("");
 
   const [loading, setLoading] = useState(false);
@@ -27,19 +29,20 @@ export function AddIngredientComponent({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const newItem: Ingredient = {
+    const newIngredient: Ingredient = {
       _id: "unknown",
       item: {
         _id: "unknown",
         name: itemName,
-        category: InputCategory || "unknown",
+        category: category || "unknown",
+        defaultUnit: defaultUnit || "",
       },
       quantity: quantity === "" ? 0 : quantity,
       unit,
       marked: false,
     };
 
-    onAdd(newItem);
+    onAdd(newIngredient);
     setQuantity("");
     setUnit(unitTypes[0]);
     setCategory("");
@@ -61,25 +64,25 @@ export function AddIngredientComponent({
   }
 
   return (
-    <div className="flex flex-wrap sm:flex-nowrap justify-start sm:justify-center items-center flex-row p-1 space-x-1 sm:space-x-2">
+    <div className="flex flex-nowrap justify-start items-center flex-row p-1 space-x-1">
       <button
         onClick={handleSubmit}
-        className="bg-transparent text-darkText rounded-full font-bold"
+        className="size-1/12 min-w-8 bg-transparent text-darkText rounded-full font-bold"
       >
         <img
-          className="size-6 sm:size-7 bg-action hover:bg-actionHover rounded-full p-1"
+          className="size-7 bg-action hover:bg-actionHover rounded-full p-1"
           src="/icon/add_sign.png"
           alt="add_recipe"
         />
       </button>
 
-      <div className="w-5/12 sm:w-5/12">
+      <div className="min-w-20 flex-1">
         <label className="block text-base sm:text-lg font-medium truncate">
           {itemName}
         </label>
       </div>
 
-      <div className="w-3/12 sm:w-3/12">
+      <div className="w-2/12">
         <input
           type="number"
           value={quantity}
@@ -111,9 +114,12 @@ export function AddIngredientComponent({
       </div>
 
       {/* Category selection or display */}
-      <div className="w-1/4 sm:w-1/4">
+      <div className="w-1/6 flex items-center justify-center">
         {InputCategory ? (
-          <div className="text-base sm:text-lg font-medium truncate">
+          <div
+            className="text-base sm:text-lg font-medium truncate"
+            title={InputCategory}
+          >
             {
               shoppinglistCategories[
                 InputCategory as keyof typeof shoppinglistCategories
@@ -124,9 +130,9 @@ export function AddIngredientComponent({
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="mt-1 w-full rounded-md border border-gray-300 py-1 text-sm sm:text-base"
+            className="mt-1 w-full rounded-md border border-gray-300 py-1 text-sm"
           >
-            <option value="">Vælg kategori</option>
+            <option value="">Kategori</option>
             {Object.entries(shoppinglistCategories).map(([key, value]) => (
               <option key={key} value={key}>
                 {value}
@@ -135,12 +141,13 @@ export function AddIngredientComponent({
           </select>
         )}
       </div>
-
-      {InputCategory && (
-        <div>
-          <RemoveButton onRemove={async () => handleRemoveItem(itemName)} />
-        </div>
-      )}
+      <div className="w-1/12 max-w-12 min-w-8">
+        {InputCategory && (
+          <div>
+            <RemoveButton onRemove={async () => handleRemoveItem(itemName)} />
+          </div>
+        )}
+      </div>
     </div>
   );
 }

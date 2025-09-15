@@ -144,6 +144,7 @@ export function AddIngredientModal({
                           }}
                           itemName={item.name}
                           InputCategory={item.category}
+                          defaultUnit={item.defaultUnit}
                         />
                       </div>
                     ))}
