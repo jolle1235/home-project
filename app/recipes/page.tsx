@@ -5,7 +5,6 @@ import { AddRecipeModalComponent } from "../components/recipeComponent/AddRecipe
 import { RecipeCardComponent } from "../components/recipeComponent/RecipeCardComponent";
 import { CategoryWheelComponent } from "../components/CategoryWheelComponent";
 import { TimeRangeSelectorComponent } from "../components/TimeRangeSelectorComponent";
-import VisibilityToggle from "../components/smallComponent/VisibilityToggleComponent";
 import { Recipe } from "../model/Recipe";
 import { meatCategories } from "../constant/recipeCategories";
 

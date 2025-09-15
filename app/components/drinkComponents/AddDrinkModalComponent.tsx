@@ -1,7 +1,6 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 
-import { AddIngredientComponent } from "../AddIngredientComponent";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { drinkSchema } from "../../utils/validationSchema";

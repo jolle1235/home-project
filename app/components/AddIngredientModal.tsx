@@ -9,7 +9,6 @@ import { searchItem } from "../utils/apiHelperFunctions";
 import { Ingredient } from "../model/Ingredient";
 import SearchBar from "./SearchBarComponent";
 import { AddIngredientComponent } from "./AddIngredientComponent";
-import { meatCategories } from "../constant/recipeCategories";
 import { Item } from "../model/Item";
 import ActionBtn from "./smallComponent/actionBtn";
 import { IngredientsList } from "./ShowIngrediens";
