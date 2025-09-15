@@ -99,7 +99,7 @@ export function AddDrinkModalComponent({ handleClose }: Props) {
     <div className="fixed w-full inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-20">
       <div className="bg-lightBackground rounded-lg">
         <div className="flex justify-between items-center px-6 py-2 bg-lightgreyBackground rounded-t-lg">
-          <h2 className="text-2xl font-bold">Tilføj ny opskrift</h2>
+          <h2 className="text-2xl font-bold">Tilføj ny Drink</h2>
           <button
             onClick={handleClose}
             className="text-gray-500 hover:text-gray-700"

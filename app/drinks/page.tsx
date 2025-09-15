@@ -35,7 +35,7 @@ export default function DrinkPage() {
   }, []);
 
   return (
-    <main className="bg-lightgreyBackground w-full text-darkText min-h-screen">
+    <main className="bg-lightBackground w-full text-darkText">
       <div className="container mx-auto px-4 py-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">Drinks</h1>
