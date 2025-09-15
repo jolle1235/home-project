@@ -95,7 +95,7 @@ export default function RecipePage() {
         />
         <button
           onClick={() => setIsFilterSettingsOpen(!isFilterSettingsOpen)}
-          className="ml-2 px-4 py-2 bg-gray-500 text-white rounded-md transition-colors hover:bg-gray-400"
+          className="w-36 ml-2 px-4 py-2 bg-gray-500 text-white rounded-md transition-colors hover:bg-gray-400"
         >
           {isFilterSettingsOpen ? "Skjul Filter" : "Vis Filter"}
         </button>
@@ -119,7 +119,7 @@ export default function RecipePage() {
         </div>
       )}
 
-      <div className="mt-4">
+      <div className="mt-2">
         {isLoading ? (
           <div>Loading recipes...</div>
         ) : error ? (
