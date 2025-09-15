@@ -24,6 +24,7 @@ export async function createItem(Ingredient: Ingredient): Promise<Item> {
   const newItem = {
     name: Ingredient.item.name,
     category: Ingredient.item.category,
+    defaultUnit: Ingredient.unit,
   };
 
   try {

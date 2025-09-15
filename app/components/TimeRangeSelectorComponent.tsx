@@ -1,7 +1,3 @@
-"use client";
-
-import React from "react";
-
 interface TimeRangeSelectorProps {
   timeRange: number[];
   setTimeRange: (range: number[]) => void;

@@ -59,7 +59,7 @@ export default function NavBar() {
             </Link>
             <Link
               className="text-white hover:text-gray-300 transition-colors py-2 md:py-0"
-              href="/drink"
+              href="/drinks"
               onClick={() => setIsMenuOpen(false)}
             >
               Drinks

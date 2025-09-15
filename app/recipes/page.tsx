@@ -1,10 +1,10 @@
 "use client";
 import { useEffect, useState, useMemo } from "react";
-import { AddRecipeButtonComponent } from "../components/AddRecipeButtonComponent";
-import { RecipeCardComponent } from "../components/RecipeCardComponent";
+import { AddButtonComponent } from "../components/AddButtonComponent";
+import { AddRecipeModalComponent } from "../components/recipeComponent/AddRecipeModalComponent";
+import { RecipeCardComponent } from "../components/recipeComponent/RecipeCardComponent";
 import { CategoryWheelComponent } from "../components/CategoryWheelComponent";
 import { TimeRangeSelectorComponent } from "../components/TimeRangeSelectorComponent";
-import VisibilityToggle from "../components/smallComponent/VisibilityToggleComponent";
 import { Recipe } from "../model/Recipe";
 import { meatCategories } from "../constant/recipeCategories";
 
@@ -17,6 +17,21 @@ export default function RecipePage() {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [showMyRecipes, setShowMyRecipes] = useState<boolean>(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleOpen = () => setIsModalOpen(true);
+  const handleClose = () => setIsModalOpen(false);
+
+  useEffect(() => {
+    if (isModalOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [isModalOpen]);
 
   useEffect(() => {
     const fetchRecipes = async () => {
@@ -79,7 +94,7 @@ export default function RecipePage() {
         />
         <button
           onClick={() => setIsFilterSettingsOpen(!isFilterSettingsOpen)}
-          className="ml-2 px-4 py-2 bg-gray-500 text-white rounded-md transition-colors hover:bg-gray-400"
+          className="w-36 ml-2 px-4 py-2 bg-gray-500 text-white rounded-md transition-colors hover:bg-gray-400"
         >
           {isFilterSettingsOpen ? "Skjul Filter" : "Vis Filter"}
         </button>
@@ -103,7 +118,7 @@ export default function RecipePage() {
         </div>
       )}
 
-      <div className="mt-4">
+      <div className="mt-2">
         {isLoading ? (
           <div>Loading recipes...</div>
         ) : error ? (
@@ -113,7 +128,12 @@ export default function RecipePage() {
         )}
       </div>
 
-      <AddRecipeButtonComponent />
+      <AddButtonComponent
+        onClick={handleOpen}
+        label="Add Recipe"
+        ariaLabel="add_recipe"
+      />
+      {isModalOpen && <AddRecipeModalComponent handleClose={handleClose} />}
     </div>
   );
 }

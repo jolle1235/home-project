@@ -1,7 +1,7 @@
 "use client";
-import { Recipe } from "../model/Recipe";
-import { useRecipeContext } from "../context/RecipeContext";
-import ActionBtn from "./smallComponent/actionBtn";
+import { Recipe } from "../../model/Recipe";
+import { useRecipeContext } from "../../context/RecipeContext";
+import ActionBtn from "../smallComponent/actionBtn";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
@@ -26,16 +26,16 @@ export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
   return (
     <div
       id="recipes"
-      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
+      className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:justify-center gap-4"
     >
       {recipes.map((recipe) => {
         return (
-          <div key={recipe._id} className="w-full">
+          <div key={recipe._id} className="w-full lg:max-w-sm">
             <div
               id="recipe_card"
               className="flex flex-col cursor-pointer w-full h-fit shadow-even shadow-darkBackground rounded-lg mt-3 sm:mt-5 bg-neutral-100"
             >
-              <div className="relative w-full h-48 sm:h-64">
+              <div className="relative w-full h-48 sm:h-52 lg:h-56">
                 <Image
                   src={recipe.image}
                   alt={recipe.recipeName}
