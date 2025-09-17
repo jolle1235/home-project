@@ -162,6 +162,32 @@ export function AddRecipeModalComponent({ handleClose }: Props) {
     setIngredients(ingredients.filter((_, i) => i !== index));
   }
 
+  function setRecipeData(data: Recipe) {
+    // Basic fields
+    setValue("recipeName", data.recipeName || "");
+    setValue("description", data.description || "");
+    setValue("time", data.time || 0);
+    setValue("recommendedPersonAmount", data.recommendedPersonAmount || 0);
+
+    // Image (set both local state and form field if you want)
+    if (data.image) {
+      setImageUrl(data.image);
+      setValue("image", data.image);
+    }
+
+    // Categories (you might need to map to your meatCategories)
+    if (data.categories) {
+      setSelectedCategories(data.categories);
+      setValue("categories", data.categories);
+    }
+
+    // Ingredients (local + form)
+    if (data.ingredients) {
+      setIngredients(data.ingredients);
+      setValue("ingredients", data.ingredients);
+    }
+  }
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg">
@@ -178,7 +204,7 @@ export function AddRecipeModalComponent({ handleClose }: Props) {
           <label className="block text-gray-700 font-bold mb-2 m-1 text-2xl">
             Automatisk
           </label>
-          <WebLinkInput></WebLinkInput>
+          <WebLinkInput onScraped={setRecipeData}></WebLinkInput>
         </div>
         <div className="flex flex-col items-center space-y-4 p-6 w-full max-w-4xl max-h-[75vh] overflow-y-auto">
           <label className="block text-gray-700 font-bold mb-2 m-1 text-2xl">

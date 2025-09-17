@@ -1,12 +1,40 @@
+"use client";
+
 import { useRef } from "react";
 import ActionBtn from "./smallComponent/actionBtn";
+import { Recipe } from "../model/Recipe";
+import { mapSchemaRecipeToRecipe } from "../utils/mummumRecipeConvertion";
 
-export function WebLinkInput() {
+type WebLinkInputProps = {
+  onScraped?: (recipe: Recipe) => void;
+};
+
+export function WebLinkInput({ onScraped }: WebLinkInputProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   async function sendWebpage() {
-    if (inputRef.current) {
-      console.log("sending webpage:", inputRef.current.value);
+    if (!inputRef.current) return;
+
+    const url = inputRef.current.value;
+    if (!url) return;
+
+    try {
+      const res = await fetch("/api/scrape/mummum", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+      });
+
+      const data = await res.json();
+
+      // 🔑 Call parent callback with the recipe
+      if (onScraped && data?.recipe) {
+        const recipe: Recipe = mapSchemaRecipeToRecipe(data);
+
+        onScraped(recipe);
+      }
+    } catch (err) {
+      console.error("Scraping failed:", err);
     }
   }
 
@@ -15,7 +43,7 @@ export function WebLinkInput() {
       <input
         ref={inputRef}
         className="w-10/12 p-2 border rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-        id="web_scraber"
+        id="web_scraper"
         type="text"
         placeholder="Indsæt Link"
       />
