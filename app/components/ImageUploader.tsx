@@ -1,12 +1,23 @@
-import { useState, ChangeEvent, ClipboardEvent } from "react";
+import { useState, ChangeEvent, ClipboardEvent, useEffect } from "react";
 
 interface ImageUploaderProps {
   onFileSelected: (file: File | null) => void;
+  initialPreview?: string;
 }
 
-export default function ImageUploader({ onFileSelected }: ImageUploaderProps) {
+export default function ImageUploader({
+  onFileSelected,
+  initialPreview,
+}: ImageUploaderProps) {
   const [preview, setPreview] = useState<string | null>(null);
   const [pasteImageUrl, setPasteImageUrl] = useState<string>("");
+
+  useEffect(() => {
+    if (initialPreview) {
+      setPreview(initialPreview);
+      setPasteImageUrl(initialPreview);
+    }
+  }, [initialPreview]);
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0] || null;
@@ -18,7 +29,6 @@ export default function ImageUploader({ onFileSelected }: ImageUploaderProps) {
     const items = e.clipboardData.items;
     let handled = false;
 
-    // Check for image file in clipboard
     for (const item of items) {
       if (item.type.startsWith("image/")) {
         const file = item.getAsFile();
@@ -31,11 +41,10 @@ export default function ImageUploader({ onFileSelected }: ImageUploaderProps) {
         }
       }
     }
-    // If no image file was found, assume the user pasted a URL (or other text)
+
     if (!handled) {
       const text = e.clipboardData.getData("text");
       setPasteImageUrl(text);
-      // If it's a valid URL, show it as a preview.
       if (text.startsWith("http")) {
         setPreview(text);
       }

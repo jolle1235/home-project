@@ -64,7 +64,7 @@ export function AddRecipeModalComponent({ handleClose }: Props) {
     setState(initialState);
   };
 
-  const onSubmit = async (data: Recipe) => {
+  async function uploadImage() {
     let uploadedImageUrl = "";
 
     // Upload image if file selected
@@ -86,11 +86,15 @@ export function AddRecipeModalComponent({ handleClose }: Props) {
         return;
       }
     }
+  }
+
+  const onSubmit = async (data: Recipe) => {
+    await uploadImage();
 
     const updatedFormData = {
       recipeName: data.recipeName,
       description: data.description,
-      image: uploadedImageUrl,
+      image: imageUrl,
       ingredients: data.ingredients,
       time: data.time,
       categories: selectedCategories,
@@ -162,7 +166,7 @@ export function AddRecipeModalComponent({ handleClose }: Props) {
     setIngredients(ingredients.filter((_, i) => i !== index));
   }
 
-  function setRecipeData(data: Recipe) {
+  async function setRecipeData(data: Recipe) {
     // Basic fields
     setValue("recipeName", data.recipeName || "");
     setValue("description", data.description || "");
@@ -172,6 +176,7 @@ export function AddRecipeModalComponent({ handleClose }: Props) {
     // Image (set both local state and form field if you want)
     if (data.image) {
       setImageUrl(data.image);
+      await uploadImage();
       setValue("image", data.image);
     }
 
@@ -283,7 +288,10 @@ export function AddRecipeModalComponent({ handleClose }: Props) {
                 >
                   Billede
                 </label>
-                <ImageUploader onFileSelected={setImageFile} />
+                <ImageUploader
+                  onFileSelected={setImageFile}
+                  initialPreview={imageUrl}
+                />
               </div>
               <div>
                 <label

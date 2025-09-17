@@ -42,30 +42,32 @@ export function mapSchemaRecipeToRecipe(data: any): Recipe {
   const parseDuration = (iso: string | undefined): number => {
     if (!iso) return 0;
     const match = iso.match(/PT(\d+)M/);
+    console.log("duration:", match);
     return match ? parseInt(match[1], 10) : 0;
   };
 
   const parseYield = (yieldStr: string | undefined): number => {
     if (!yieldStr) return 0;
     const match = yieldStr.match(/(\d+)/);
+    console.log("yield:", match);
     return match ? parseInt(match[1], 10) : 0;
   };
 
   return {
     _id: "",
-    recipeName: data.name ?? "",
-    description: data.description ?? data.recipeInstructions ?? "",
-    image: data.image ?? "",
-    ingredients: (data.recipeIngredient ?? []).map(parseIngredient),
+    recipeName: data.recipe.name ?? "",
+    description: data.recipe.recipeInstructions ?? data.description ?? "",
+    image: data.recipe.image ?? "",
+    ingredients: (data.recipe.recipeIngredient ?? []).map(parseIngredient),
     time:
-      parseDuration(data.totalTime) ||
-      parseDuration(data.prepTime) + parseDuration(data.cookTime),
-    categories: data.recipeCategory
-      ? Array.isArray(data.recipeCategory)
-        ? data.recipeCategory
-        : [data.recipeCategory]
+      parseDuration(data.recipe.totalTime) ||
+      parseDuration(data.recipe.prepTime) + parseDuration(data.cookTime),
+    categories: data.recipe.recipeCategory
+      ? Array.isArray(data.recipe.recipeCategory)
+        ? data.recipe.recipeCategory
+        : [data.recipe.recipeCategory]
       : [],
-    recommendedPersonAmount: parseYield(data.recipeYield),
-    author: data.author ?? "",
+    recommendedPersonAmount: parseYield(data.recipe.recipeYield),
+    author: data.recipe.author ?? "",
   };
 }

@@ -29,6 +29,7 @@ export function WebLinkInput({ onScraped }: WebLinkInputProps) {
 
       // 🔑 Call parent callback with the recipe
       if (onScraped && data?.recipe) {
+        console.log("data:", data);
         const recipe: Recipe = mapSchemaRecipeToRecipe(data);
 
         onScraped(recipe);
