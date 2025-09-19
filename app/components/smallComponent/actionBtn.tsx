@@ -1,5 +1,5 @@
 interface ActionBtnProps {
-  onClickF: (e?: React.MouseEvent<HTMLButtonElement>) => void | Promise<void>;
+  onClickF?: (e?: React.MouseEvent<HTMLButtonElement>) => void | Promise<void>;
   Itext: string;
   textSize?: string;
   color?: string;
