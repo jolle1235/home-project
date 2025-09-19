@@ -133,6 +133,7 @@ export default function RecipePage() {
         label="Add Recipe"
         ariaLabel="add_recipe"
       />
+
       {isModalOpen && <AddRecipeModalComponent handleClose={handleClose} />}
     </div>
   );

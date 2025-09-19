@@ -1,8 +1,9 @@
-"use client"
+"use client";
 import { useEffect, useState } from "react";
 import { Recipe } from "../../model/Recipe";
 import { maxRecipePersons } from "../../utils/validationVariables";
 import { useParams } from "next/navigation";
+import Image from "next/image";
 
 export default function RecipeDetailsPage() {
   const [recipe, setRecipe] = useState<Recipe | null>(null);
@@ -16,11 +17,11 @@ export default function RecipeDetailsPage() {
     const fetchRecipe = async () => {
       // Ensure we have a valid ID
       const id = Array.isArray(params.id) ? params.id[0] : params.id;
-      console.log(id)
-      
+      console.log(id);
+
       if (!id) {
         setError("No recipe ID provided");
-        console.log("ERROR fetch recipe id")
+        console.log("ERROR fetch recipe id");
         setIsLoading(false);
         return;
       }
@@ -29,17 +30,17 @@ export default function RecipeDetailsPage() {
       try {
         console.log(`Fetching recipe with ID: ${id}`);
         const response = await fetch(`/api/recipe/${id}`); // Note: changed to plural
-        
+
         if (!response.ok) {
           const errorText = await response.text();
           throw new Error(`Failed to fetch recipe: ${errorText}`);
         }
-        
+
         const data = await response.json();
-        console.log('Fetched recipe data:', data);
+        console.log("Fetched recipe data:", data);
         setRecipe(data);
       } catch (err) {
-        console.error('Fetch error:', err);
+        console.error("Fetch error:", err);
         setError(
           err instanceof Error ? err.message : "An unknown error occurred"
         );
@@ -50,7 +51,6 @@ export default function RecipeDetailsPage() {
 
     fetchRecipe();
   }, [params.id]);
-
 
   useEffect(() => {
     if (recipe?.recommendedPersonAmount) {
@@ -63,14 +63,14 @@ export default function RecipeDetailsPage() {
 
   return (
     <div className="w-full h-full flex flex-col md:flex-row overflow-x-hidden">
-      {/* Left column (Recipe details) */}
-      <div className="flex flex-col md:w-1/2 w-full h-auto md:h-full p-3 justify-center items-center">
-        {/* Image & Title */}
+      <div className="flex flex-col md:w-1/2 w-full h-auto md:h-full p-1 justify-center items-center">
         <div className="flex flex-col items-center justify-center md:h-1/2  w-full m-2">
-          <img
-            className="w-full max-h-60 object-cover rounded-lg"
-            src={recipe?.image}
-            alt={recipe?.recipeName}
+          <Image
+            className="w-full max-h-60 object-cover rounded-lg mb-2"
+            src={recipe?.image || "/fallback.jpg"}
+            alt={recipe?.recipeName || "Recipe image"}
+            width={600} // set an appropriate width
+            height={240} // set an appropriate height
           />
           <div className="flex flex-col items-center bg-lightgreyBackground rounded-lg p-2 mb-1 w-full">
             <h2 className="text-2xl font-bold text-center">
@@ -108,7 +108,7 @@ export default function RecipeDetailsPage() {
                 />
               </button>
               <p className="flex w-8 h-8 rounded-lg items-center justify-center m-0 bg-white">
-                  {recommendedPersonAmount}
+                {recommendedPersonAmount}
               </p>
               <button
                 onClick={() =>
@@ -118,11 +118,7 @@ export default function RecipeDetailsPage() {
                 }
                 className="flex justify-center items-center w-7 p-1 text-lg bg-action rounded-lg"
               >
-                <img
-                  className="w-full"
-                  src="/icon/add_sign.png"
-                  alt="add"
-                />
+                <img className="w-full" src="/icon/add_sign.png" alt="add" />
               </button>
             </div>
           </div>
@@ -139,25 +135,21 @@ export default function RecipeDetailsPage() {
                 recommendedPersonAmount / recipe.recommendedPersonAmount;
               const adjustedWeight = ingredient.quantity * scalingFactor;
 
-              console.log("scalingFactor", scalingFactor)
-              console.log("adjustedWeight", adjustedWeight)
+              console.log("scalingFactor", scalingFactor);
+              console.log("adjustedWeight", adjustedWeight);
 
               return (
                 <div
                   key={index}
                   className="flex flex-row w-full h-fit justify-between items-center p-2 border-b border-darkgreyBackground"
                 >
-                  <input
-                    className="w-6 h-6 mr-4"
-                    type="checkbox"
-                  />
+                  <input className="w-6 h-6 mr-4" type="checkbox" />
                   <div className="flex justify-start basis-1/4 flex-grow">
                     <p className="text-lg font-bold">{ingredient.item.name}</p>
                   </div>
                   <p className="flex justify-center items-center h-fit w-fit text-lg py-2 px-3 mx-2 bg-lightgreyBackground rounded-full">
                     {adjustedWeight.toFixed(1)} {ingredient.unit}
                   </p>
-                  
                 </div>
               );
             })}
@@ -182,7 +174,6 @@ export default function RecipeDetailsPage() {
           <p className="whitespace-pre-line">{recipe?.description}</p>
         </div>
       </div>
-
     </div>
   );
 }

@@ -23,6 +23,7 @@ export function AddRecipeModalComponent({ handleClose }: Props) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const searchBarRef = useRef<HTMLDivElement>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [manuelSetup, setManuelSetup] = useState(false);
 
   // States for recipe fields
   const [categories] = useState(meatCategories);
@@ -205,178 +206,199 @@ export function AddRecipeModalComponent({ handleClose }: Props) {
             ✕
           </button>
         </div>
-        <div className="flex flex-col items-center">
-          <label className="block text-gray-700 font-bold mb-2 m-1 text-2xl">
-            Automatisk
-          </label>
-          <WebLinkInput onScraped={setRecipeData}></WebLinkInput>
-        </div>
-        <div className="flex flex-col items-center space-y-4 p-6 w-full max-w-4xl max-h-[75vh] overflow-y-auto">
-          <label className="block text-gray-700 font-bold mb-2 m-1 text-2xl">
-            Manuel
-          </label>
-          <form onSubmit={handleSubmit(onSubmit)} className="">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="w-full">
-                <label
-                  className="block text-gray-700 text-sm font-bold mb-2"
-                  htmlFor="navn"
-                >
-                  Navn
-                </label>
-                <input
-                  id="navn"
-                  type="text"
-                  {...register("recipeName")}
-                  onKeyUp={() => trigger("recipeName")}
-                  className="w-full p-3 border rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Indtast navn..."
-                />
-                {errors.recipeName && (
-                  <p className="text-red-500 text-xs">
-                    {errors.recipeName.message}
-                  </p>
-                )}
-              </div>
-
-              <div className="w-full">
-                <label
-                  className="block text-gray-700 text-sm font-bold mb-2"
-                  htmlFor="tid"
-                >
-                  Tid (minutter)
-                </label>
-                <input
-                  id="tid"
-                  type="number"
-                  {...register("time")}
-                  onKeyUp={() => trigger("time")}
-                  className="w-full p-3 border rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Indtast tid..."
-                />
-                {errors.time && (
-                  <p className="text-red-500 text-xs">{errors.time.message}</p>
-                )}
-              </div>
-
-              <div className="w-full">
-                <label
-                  className="block text-gray-700 text-sm font-bold mb-2"
-                  htmlFor="personer"
-                >
-                  Antal personer
-                </label>
-                <input
-                  id="personer"
-                  type="number"
-                  {...register("recommendedPersonAmount")}
-                  onKeyUp={() => trigger("recommendedPersonAmount")}
-                  className="w-full p-3 border rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Indtast antal personer..."
-                />
-                {errors.recommendedPersonAmount && (
-                  <p className="text-red-500 text-xs">
-                    {errors.recommendedPersonAmount.message}
-                  </p>
-                )}
-              </div>
-
-              <div className="w-full">
-                <label
-                  className="block text-gray-700 text-sm font-bold mb-2"
-                  htmlFor="billede"
-                >
-                  Billede
-                </label>
-                <ImageUploader
-                  onFileSelected={setImageFile}
-                  initialPreview={imageUrl}
-                />
-              </div>
-              <div>
-                <label
-                  className="block text-gray-700 text-sm font-bold mb-2"
-                  htmlFor="beskrivelse"
-                >
-                  Beskrivelse
-                </label>
-                <textarea
-                  id="beskrivelse"
-                  placeholder="Skriv en beskrivelse..."
-                  {...register("description")}
-                  onKeyUp={() => trigger("description")}
-                  className="w-full p-3 border rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 h-32"
-                ></textarea>
-                {errors.description && (
-                  <p className="text-red-500 text-xs">
-                    {errors.description.message}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-gray-700 text-sm font-bold mb-2">
-                  Kategorier
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  {categories.map((category) => (
-                    <label
-                      key={category}
-                      className="flex items-center space-x-2 p-2 border rounded"
-                    >
-                      <input
-                        type="checkbox"
-                        value={category}
-                        onChange={handleChangeCategories}
-                        checked={selectedCategories.includes(category)}
-                        className="form-checkbox h-5 w-5 text-blue-600"
-                      />
-                      <span>{category}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
+        {!manuelSetup && (
+          <div>
+            <div className="flex flex-col items-center">
+              <label className="block text-gray-700 font-bold my-1 text-2xl">
+                Automatisk
+              </label>
+              <WebLinkInput
+                onScraped={(data) => {
+                  setRecipeData(data);
+                  setManuelSetup(true);
+                }}
+              ></WebLinkInput>
             </div>
-            <div className="w-full">
+
+            <div className="w-full flex justify-center items-center">
               <ActionBtn
-                onClickF={() => setIsModalOpen(true)}
-                Itext="Tilføj ingredienser"
-                color="bg-action"
-                hover="bg-actionHover"
+                onClickF={() => setManuelSetup(true)}
+                Itext="Opret Manuelt"
                 extraCSS="w-full"
               />
+            </div>
+          </div>
+        )}
+        {manuelSetup && (
+          <div className="flex flex-col items-center p-3 w-full max-w-4xl max-h-[75vh] overflow-y-auto">
+            <label className="block text-gray-700 font-bold mb-2 m-1 text-2xl">
+              Manuel
+            </label>
+            <form onSubmit={handleSubmit(onSubmit)} className="">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="w-full">
+                  <label
+                    className="block text-gray-700 text-sm font-bold mb-2"
+                    htmlFor="navn"
+                  >
+                    Navn
+                  </label>
+                  <input
+                    id="navn"
+                    type="text"
+                    {...register("recipeName")}
+                    onKeyUp={() => trigger("recipeName")}
+                    className="w-full"
+                    placeholder="Indtast navn..."
+                  />
+                  {errors.recipeName && (
+                    <p className="text-red-500 text-xs">
+                      {errors.recipeName.message}
+                    </p>
+                  )}
+                </div>
 
-              {isModalOpen && (
-                <AddIngredientModal
-                  onClose={() => setIsModalOpen(false)}
-                  ingredients={ingredients}
-                  setIngredients={setIngredients}
+                <div className="w-full">
+                  <label
+                    className="block text-gray-700 text-sm font-bold mb-2"
+                    htmlFor="tid"
+                  >
+                    Tid (minutter)
+                  </label>
+                  <input
+                    id="tid"
+                    type="number"
+                    {...register("time")}
+                    onKeyUp={() => trigger("time")}
+                    className="w-full"
+                    placeholder="Indtast tid..."
+                  />
+                  {errors.time && (
+                    <p className="text-red-500 text-xs">
+                      {errors.time.message}
+                    </p>
+                  )}
+                </div>
+
+                <div className="w-full">
+                  <label
+                    className="block text-gray-700 text-sm font-bold mb-2"
+                    htmlFor="personer"
+                  >
+                    Antal personer
+                  </label>
+                  <input
+                    id="personer"
+                    type="number"
+                    {...register("recommendedPersonAmount")}
+                    onKeyUp={() => trigger("recommendedPersonAmount")}
+                    className="w-full"
+                    placeholder="Indtast antal personer..."
+                  />
+                  {errors.recommendedPersonAmount && (
+                    <p className="text-red-500 text-xs">
+                      {errors.recommendedPersonAmount.message}
+                    </p>
+                  )}
+                </div>
+
+                <div className="w-full">
+                  <label
+                    className="block text-gray-700 text-sm font-bold mb-2"
+                    htmlFor="billede"
+                  >
+                    Billede
+                  </label>
+                  <ImageUploader
+                    onFileSelected={setImageFile}
+                    initialPreview={imageUrl}
+                  />
+                </div>
+                <div>
+                  <label
+                    className="block text-gray-700 text-sm font-bold mb-2"
+                    htmlFor="beskrivelse"
+                  >
+                    Beskrivelse
+                  </label>
+                  <textarea
+                    id="beskrivelse"
+                    placeholder="Skriv en beskrivelse..."
+                    {...register("description")}
+                    onKeyUp={() => trigger("description")}
+                    className="w-full h-32"
+                  ></textarea>
+                  {errors.description && (
+                    <p className="text-red-500 text-xs">
+                      {errors.description.message}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-gray-700 text-sm font-bold mb-2">
+                    Kategorier
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {categories.map((category) => (
+                      <label
+                        key={category}
+                        className="flex items-center space-x-2 p-2 border rounded"
+                      >
+                        <input
+                          type="checkbox"
+                          value={category}
+                          onChange={handleChangeCategories}
+                          checked={selectedCategories.includes(category)}
+                          className="form-checkbox h-5 w-5"
+                        />
+                        <span>{category}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div className="w-full">
+                <ActionBtn
+                  onClickF={() => setIsModalOpen(true)}
+                  Itext="Tilføj ingredienser"
+                  color="bg-action"
+                  hover="bg-actionHover"
+                  extraCSS="w-full"
                 />
-              )}
-            </div>
-            <div>
-              <IngredientsList
-                ingredients={ingredients}
-                onRemove={(index: number) => handleOnIngredientRemove(index)}
-              />
-            </div>
 
-            <div className="flex justify-end space-x-4">
-              <ActionBtn
-                onClickF={handleClose}
-                Itext="Anuller"
-                color="bg-red-500"
-                hover="bg-red-400"
-              />
-              <ActionBtn
-                type="submit"
-                Itext="Gem opskrift"
-                color="bg-action"
-                hover="bg-actionHover"
-              />
-            </div>
-          </form>
-        </div>
+                {isModalOpen && (
+                  <AddIngredientModal
+                    onClose={() => setIsModalOpen(false)}
+                    ingredients={ingredients}
+                    setIngredients={setIngredients}
+                  />
+                )}
+              </div>
+              <div>
+                <IngredientsList
+                  ingredients={ingredients}
+                  onRemove={(index: number) => handleOnIngredientRemove(index)}
+                />
+              </div>
+
+              <div className="flex justify-end space-x-4">
+                <ActionBtn
+                  onClickF={handleClose}
+                  Itext="Anuller"
+                  color="bg-red-500"
+                  hover="bg-red-400"
+                />
+                <ActionBtn
+                  type="submit"
+                  Itext="Gem opskrift"
+                  color="bg-action"
+                  hover="bg-actionHover"
+                />
+              </div>
+            </form>
+          </div>
+        )}
       </div>
     </div>
   );

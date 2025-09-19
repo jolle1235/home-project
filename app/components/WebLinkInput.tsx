@@ -43,7 +43,7 @@ export function WebLinkInput({ onScraped }: WebLinkInputProps) {
     <div className="w-full flex flex-row border-b-2 border-lightgreyBackground p-2">
       <input
         ref={inputRef}
-        className="w-10/12 p-2 border rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-10/12"
         id="web_scraper"
         type="text"
         placeholder="Indsæt Link"
