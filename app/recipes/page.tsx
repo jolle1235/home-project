@@ -6,7 +6,7 @@ import { RecipeCardComponent } from "../components/recipeComponent/RecipeCardCom
 import { CategoryWheelComponent } from "../components/CategoryWheelComponent";
 import { TimeRangeSelectorComponent } from "../components/TimeRangeSelectorComponent";
 import { Recipe } from "../model/Recipe";
-import { meatCategories } from "../constant/recipeCategories";
+import { useConstants } from "../context/ConstantsContext";
 
 export default function RecipePage() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
@@ -18,6 +18,7 @@ export default function RecipePage() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [showMyRecipes, setShowMyRecipes] = useState<boolean>(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { categories } = useConstants();
 
   const handleOpen = () => setIsModalOpen(true);
   const handleClose = () => setIsModalOpen(false);
@@ -104,7 +105,7 @@ export default function RecipePage() {
         <div className="flex md:flex-row flex-col h-fit p-2 rounded-lg bg-gray-200 w-fit items-center md:divide-x md:divide-gray-400">
           <div className="flex-1 items-center p-1">
             <CategoryWheelComponent
-              categories={meatCategories}
+              categories={categories}
               selectedCategories={selectedCategories}
               onCategoryToggle={handleCategoryToggle}
             />

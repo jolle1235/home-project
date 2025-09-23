@@ -1,10 +1,10 @@
 "use client";
 import React, { useState } from "react";
 import { Ingredient } from "../model/Ingredient";
-import { unitTypes } from "../constant/unitTypes";
 import { RemoveButton } from "./smallComponent/removeBtn";
 import { removeItem } from "../utils/apiHelperFunctions";
 import { shoppinglistCategories } from "../constant/shoppinglistCategories";
+import { useConstants } from "../context/ConstantsContext";
 
 interface Props {
   onAdd: (Ingredient: Ingredient) => void;
@@ -19,8 +19,10 @@ export function AddIngredientComponent({
   InputCategory,
   defaultUnit,
 }: Props) {
+  const { units } = useConstants(); // 👈 get unit types from context
+
   const [quantity, setQuantity] = useState<number | "">("");
-  const [unit, setUnit] = useState<string>(defaultUnit ?? unitTypes[0]);
+  const [unit, setUnit] = useState<string>(defaultUnit ?? (units[0] || ""));
   const [category, setCategory] = useState<string>("");
 
   const [loading, setLoading] = useState(false);
@@ -28,6 +30,7 @@ export function AddIngredientComponent({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!unit) return; // guard against empty unit list
 
     const newIngredient: Ingredient = {
       _id: "unknown",
@@ -44,7 +47,7 @@ export function AddIngredientComponent({
 
     onAdd(newIngredient);
     setQuantity("");
-    setUnit(unitTypes[0]);
+    setUnit(units[0] || "");
     setCategory("");
   };
 
@@ -105,9 +108,9 @@ export function AddIngredientComponent({
           onChange={(e) => setUnit(e.target.value)}
           className="mt-1 w-full rounded-md border border-gray-300 py-1 text-sm sm:text-base"
         >
-          {unitTypes.map((unitType) => (
-            <option key={unitType} value={unitType}>
-              {unitType}
+          {units.map((u) => (
+            <option key={u} value={u}>
+              {u}
             </option>
           ))}
         </select>

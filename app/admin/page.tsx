@@ -1,52 +1,19 @@
 "use client";
-import { useEffect, useState } from "react";
-import {
-  addCategoryApi,
-  removeCategoryApi,
-  addUnitApi,
-  removeUnitApi,
-} from "../utils/constantsApiHelperFunctions";
+import { useState } from "react";
+import { useConstants } from "../context/ConstantsContext";
 
 export default function AdminPage() {
-  const [categories, setCategories] = useState<any[]>([]);
-  const [units, setUnits] = useState<any[]>([]);
+  const {
+    categories,
+    units,
+    addCategory,
+    removeCategory,
+    addUnit,
+    removeUnit,
+  } = useConstants();
+
   const [newCategory, setNewCategory] = useState("");
   const [newUnit, setNewUnit] = useState("");
-
-  async function fetchData() {
-    const catRes = await fetch("/api/admin/recipeCategories");
-    const unitRes = await fetch("/api/admin/unitTypes");
-    setCategories(await catRes.json());
-    setUnits(await unitRes.json());
-  }
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  async function addCategory() {
-    if (!newCategory) return;
-    await addCategoryApi(newCategory);
-    setNewCategory("");
-    fetchData();
-  }
-
-  async function removeCategory(name: string) {
-    await removeCategoryApi(name);
-    fetchData();
-  }
-
-  async function addUnit() {
-    if (!newUnit) return;
-    await addUnitApi(newUnit);
-    setNewUnit("");
-    fetchData();
-  }
-
-  async function removeUnit(name: string) {
-    await removeUnitApi(name);
-    fetchData();
-  }
 
   return (
     <div className="p-8">
@@ -63,7 +30,10 @@ export default function AdminPage() {
             placeholder="Add new category"
           />
           <button
-            onClick={addCategory}
+            onClick={() => {
+              addCategory(newCategory);
+              setNewCategory("");
+            }}
             className="bg-blue-500 text-white px-4 py-2 rounded"
           >
             Add
@@ -71,10 +41,10 @@ export default function AdminPage() {
         </div>
         <div className="m-2 p-2 bg-lightgreyBackground rounded-lg">
           {categories.map((c) => (
-            <div key={c._id} className="w-1/3 flex justify-between">
-              <label>{c.name}</label>
+            <div key={c} className="w-1/3 flex justify-between">
+              <label>{c}</label>
               <button
-                onClick={() => removeCategory(c.name)}
+                onClick={() => removeCategory(c)}
                 className="text-red-500"
               >
                 Remove
@@ -95,7 +65,10 @@ export default function AdminPage() {
             placeholder="Add new unit"
           />
           <button
-            onClick={addUnit}
+            onClick={() => {
+              addUnit(newUnit);
+              setNewUnit("");
+            }}
             className="bg-blue-500 text-white px-4 py-2 rounded"
           >
             Add
@@ -103,12 +76,9 @@ export default function AdminPage() {
         </div>
         <ul className="mt-4 space-y-2">
           {units.map((u) => (
-            <li key={u._id} className="flex justify-between">
-              {u.name}
-              <button
-                onClick={() => removeUnit(u.name)}
-                className="text-red-500"
-              >
+            <li key={u} className="flex justify-between">
+              {u}
+              <button onClick={() => removeUnit(u)} className="text-red-500">
                 Remove
               </button>
             </li>

@@ -8,6 +8,7 @@ import Script from "next/script";
 import OfflineSyncComponent from "./components/OfflineSyncComponent";
 import type { Metadata, Viewport } from "next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { ConstantsProvider } from "./context/ConstantsContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -77,11 +78,13 @@ export default function RootLayout({
       >
         <RecipeProvider>
           <ShoppingListProvider>
-            <NavBar />
-            <main className="bg-lightBackground">{children}</main>
-            <ToastProvider />
-            <OfflineSyncComponent />
-            <SpeedInsights />
+            <ConstantsProvider>
+              <NavBar />
+              <main className="bg-lightBackground">{children}</main>
+              <ToastProvider />
+              <OfflineSyncComponent />
+              <SpeedInsights />
+            </ConstantsProvider>
           </ShoppingListProvider>
         </RecipeProvider>
         <Script src="/sw-register.js" strategy="afterInteractive" />

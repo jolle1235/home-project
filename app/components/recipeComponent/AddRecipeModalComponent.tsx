@@ -1,6 +1,5 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
-import { meatCategories } from "../../constant/recipeCategories";
 import { Item } from "../../model/Item";
 import { Ingredient } from "../../model/Ingredient";
 import { Recipe } from "../../model/Recipe";
@@ -13,6 +12,7 @@ import { AddIngredientModal } from "../AddIngredientModal";
 import { IngredientsList } from "../ShowIngrediens";
 import ActionBtn from "../smallComponent/actionBtn";
 import { WebLinkInput } from "../WebLinkInput";
+import { useConstants } from "@/app/context/ConstantsContext";
 
 interface Props {
   handleClose: () => void;
@@ -26,7 +26,7 @@ export function AddRecipeModalComponent({ handleClose }: Props) {
   const [manuelSetup, setManuelSetup] = useState(false);
 
   // States for recipe fields
-  const [categories] = useState(meatCategories);
+  const { categories } = useConstants();
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
