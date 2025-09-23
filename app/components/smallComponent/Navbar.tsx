@@ -64,6 +64,13 @@ export default function NavBar() {
             >
               Drinks
             </Link>
+            <Link
+              className="text-white hover:text-gray-300 transition-colors py-2 md:py-0"
+              href="/admin"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Drinks
+            </Link>
           </div>
         </div>
       </div>

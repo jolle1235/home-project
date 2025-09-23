@@ -5,6 +5,7 @@ import { Recipe } from "../model/Recipe";
 import { WeekPlan } from "../model/weekPlan";
 
 // API client function
+//------------------ ITEMs ------------------------//
 export async function searchItem(searchTerm: string): Promise<Item[]> {
   try {
     const response = await fetch(
@@ -57,6 +58,8 @@ export async function removeItem(itemName: string): Promise<void> {
     throw error;
   }
 }
+
+//------------------ WEEK PLANNER ------------------------//
 export async function saveWeekPlanToDatabase(
   weekPlanData: WeekPlan[]
 ): Promise<void> {
