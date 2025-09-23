@@ -69,7 +69,7 @@ export default function NavBar() {
               href="/admin"
               onClick={() => setIsMenuOpen(false)}
             >
-              Drinks
+              Admin
             </Link>
           </div>
         </div>

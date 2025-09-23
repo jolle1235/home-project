@@ -69,19 +69,19 @@ export default function AdminPage() {
             Add
           </button>
         </div>
-        <ul className="mt-4 space-y-2">
+        <div className="m-2 p-2 bg-lightgreyBackground rounded-lg">
           {categories.map((c) => (
-            <li key={c._id} className="flex justify-between">
-              {c.name}
+            <div key={c._id} className="w-1/3 flex justify-between">
+              <label>{c.name}</label>
               <button
                 onClick={() => removeCategory(c.name)}
                 className="text-red-500"
               >
                 Remove
               </button>
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
       </div>
 
       {/* Unit Types */}
