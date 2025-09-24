@@ -13,6 +13,7 @@ import { IngredientsList } from "../ShowIngrediens";
 import ActionBtn from "../smallComponent/actionBtn";
 import { WebLinkInput } from "../WebLinkInput";
 import { useConstants } from "@/app/context/ConstantsContext";
+import { toast } from "react-toastify";
 
 interface Props {
   handleClose: () => void;
@@ -65,58 +66,76 @@ export function AddRecipeModalComponent({ handleClose }: Props) {
     setState(initialState);
   };
 
-  async function uploadImage() {
-    let uploadedImageUrl = "";
+  async function uploadImage(): Promise<string | null> {
+    if (!imageFile) return null; // no file selected → just skip
 
-    // Upload image if file selected
-    if (imageFile) {
-      const formData = new FormData();
-      formData.append("image", imageFile);
-      try {
-        const response = await fetch("/api/upload", {
-          method: "POST",
-          body: formData,
-        });
-        if (!response.ok) throw new Error("Image upload failed.");
-        const uploadData = await response.json();
-        uploadedImageUrl = uploadData.imageUrl;
+    const formData = new FormData();
+    formData.append("image", imageFile);
+
+    try {
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error("Image upload failed.");
+
+      const uploadData = await response.json();
+      if (uploadData) {
+        const uploadedImageUrl = uploadData.imageUrl;
         setImageUrl(uploadedImageUrl);
-      } catch (error) {
-        console.error("Error uploading file:", error);
-        alert("Failed to upload image.");
-        return;
+        return uploadedImageUrl; // ✅ success
+      } else {
+        toast.error("Kunne ikke uploade billede");
+        console.error("uploadData is null");
+        return null;
       }
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      return null; // ✅ signal failure
     }
   }
 
   const onSubmit = async (data: Recipe) => {
-    checkAndAddUnitType(ingredients);
-    await uploadImage();
-
-    const updatedFormData = {
-      recipeName: data.recipeName,
-      description: data.description,
-      image: imageUrl,
-      ingredients: data.ingredients,
-      time: data.time,
-      categories: selectedCategories,
-      recommendedPersonAmount: data.recommendedPersonAmount,
-      author: "",
-    };
-
     try {
-      console.log("Recipe sent:", updatedFormData);
+      // Step 1: Sync unit types
+      await checkAndAddUnitType(ingredients);
+
+      // Step 2: Determine final image
+      let finalImage = imageUrl; // default to current preview/scraped image
+      if (imageFile) {
+        const uploadedUrl = await uploadImage();
+        if (!uploadedUrl) {
+          toast.error("Billedet kunne ikke uploades.");
+          return; // stop submission
+        }
+        finalImage = uploadedUrl;
+        setValue("image", finalImage);
+      }
+
+      // Step 3: Prepare final payload
+      const updatedFormData = {
+        ...data,
+        image: finalImage,
+        categories: selectedCategories,
+        author: "",
+      };
+
+      // Step 4: Submit recipe
       const res = await fetch("/api/recipe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedFormData),
       });
-      if (res.ok) {
-        clearState(setItems, []);
-        handleClose();
-      }
+
+      if (!res.ok) throw new Error("Opskriften kunne ikke gemmes.");
+
+      toast.success("Opskriften blev gemt 🎉");
+      clearState(setItems, []);
+      handleClose();
     } catch (error) {
-      console.error("Error in form submission:", error);
+      console.error("Fejl i form submission:", error);
+      toast.error("Noget gik galt. Opskriften blev ikke gemt.");
     }
   };
 
@@ -126,10 +145,6 @@ export function AddRecipeModalComponent({ handleClose }: Props) {
     setSelectedCategories((prev) =>
       checked ? [...prev, value] : prev.filter((category) => category !== value)
     );
-  };
-
-  const removeItem = (ItemToRemove: Item) => {
-    setItems(items.filter((Item) => Item.name !== ItemToRemove.name));
   };
 
   useEffect(() => {
@@ -175,20 +190,19 @@ export function AddRecipeModalComponent({ handleClose }: Props) {
     setValue("time", data.time || 0);
     setValue("recommendedPersonAmount", data.recommendedPersonAmount || 0);
 
-    // Image (set both local state and form field if you want)
+    // Image
     if (data.image) {
-      setImageUrl(data.image);
-      await uploadImage();
-      setValue("image", data.image);
+      setImageUrl(data.image); // preview
+      setValue("image", data.image); // form value
     }
 
-    // Categories (you might need to map to your meatCategories)
+    // Categories
     if (data.categories) {
       setSelectedCategories(data.categories);
       setValue("categories", data.categories);
     }
 
-    // Ingredients (local + form)
+    // Ingredients
     if (data.ingredients) {
       setIngredients(data.ingredients);
       setValue("ingredients", data.ingredients);
@@ -343,17 +357,17 @@ export function AddRecipeModalComponent({ handleClose }: Props) {
                   <div className="grid grid-cols-2 gap-2">
                     {categories.map((category) => (
                       <label
-                        key={category}
+                        key={category._id}
                         className="flex items-center space-x-2 p-2 border rounded"
                       >
                         <input
                           type="checkbox"
-                          value={category}
+                          value={category.name}
                           onChange={handleChangeCategories}
-                          checked={selectedCategories.includes(category)}
+                          checked={selectedCategories.includes(category.name)}
                           className="form-checkbox h-5 w-5"
                         />
-                        <span>{category}</span>
+                        <span>{category.name}</span>
                       </label>
                     ))}
                   </div>
@@ -387,8 +401,8 @@ export function AddRecipeModalComponent({ handleClose }: Props) {
                 <ActionBtn
                   onClickF={handleClose}
                   Itext="Anuller"
-                  color="bg-red-500"
-                  hover="bg-red-400"
+                  color="bg-cancel"
+                  hover="bg-cancelHover"
                 />
                 <ActionBtn
                   type="submit"

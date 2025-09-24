@@ -21,7 +21,9 @@ export function AddIngredientComponent({
 }: Props) {
   const { units } = useConstants();
   const [quantity, setQuantity] = useState<number | "">("");
-  const [unit, setUnit] = useState<string>(defaultUnit ?? (units[0] || ""));
+  const [unit, setUnit] = useState<string>(
+    defaultUnit ?? (units[0].name || "")
+  );
   const [category, setCategory] = useState<string>("");
 
   const [loading, setLoading] = useState(false);
@@ -46,7 +48,7 @@ export function AddIngredientComponent({
 
     onAdd(newIngredient);
     setQuantity("");
-    setUnit(units[0] || "");
+    setUnit(units[0].name || "");
     setCategory("");
   };
 
@@ -108,8 +110,8 @@ export function AddIngredientComponent({
           className="mt-1 w-full rounded-md border border-gray-300 py-1 text-sm sm:text-base"
         >
           {units.map((u) => (
-            <option key={u} value={u}>
-              {u}
+            <option key={u._id} value={u.name}>
+              {u.name}
             </option>
           ))}
         </select>
@@ -146,7 +148,7 @@ export function AddIngredientComponent({
       <div className="w-1/12 max-w-12 min-w-8">
         {InputCategory && (
           <div>
-            <RemoveButton onRemove={async () => handleRemoveItem(itemName)} />
+            <RemoveButton onClickF={async () => handleRemoveItem(itemName)} />
           </div>
         )}
       </div>

@@ -13,7 +13,7 @@ export async function GET() {
 export async function POST(req: Request) {
   const { name } = await req.json();
   const client = await clientPromise;
-  const db = client.db("home-project");
+  const db = client.db(databaseName);
   await db.collection("unitTypes").insertOne({ name });
   return NextResponse.json({ success: true });
 }
@@ -21,7 +21,7 @@ export async function POST(req: Request) {
 export async function DELETE(req: Request) {
   const { name } = await req.json();
   const client = await clientPromise;
-  const db = client.db("home-project");
+  const db = client.db(databaseName);
   await db.collection("unitTypes").deleteOne({ name });
   return NextResponse.json({ success: true });
 }

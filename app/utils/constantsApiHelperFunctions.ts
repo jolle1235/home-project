@@ -1,4 +1,4 @@
-//------------------ WEEK PLANNER ------------------------//
+//------------------ Categories and UnitTypes ------------------------//
 export async function addCategoryApi(newCategory: string) {
   await fetch("/api/admin/recipeCategories", {
     method: "POST",

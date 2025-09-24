@@ -255,8 +255,8 @@ export function AddDrinkModalComponent({ handleClose }: Props) {
             <ActionBtn
               onClickF={handleClose}
               Itext="Annuller"
-              color="bg-red-500"
-              hover="bg-red-600"
+              color="bg-cancel"
+              hover="bg-cancelHover"
               extraCSS="w-full"
             />
             <ActionBtn

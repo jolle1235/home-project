@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useRef, useState } from "react";
+import { Constant } from "../model/Constant";
 
 interface CategoryWheelProps {
-  categories: string[];
+  categories: Constant[];
   selectedCategories: string[];
   onCategoryToggle: (category: string) => void;
 }
@@ -71,15 +72,15 @@ export function CategoryWheelComponent({
       >
         {categories.map((category) => (
           <button
-            key={category}
-            onClick={() => onCategoryToggle(category)}
+            key={category._id}
+            onClick={() => onCategoryToggle(category.name)}
             className={`px-4 py-2 rounded-full whitespace-nowrap transition-colors ${
-              selectedCategories.includes(category)
+              selectedCategories.includes(category.name)
                 ? "bg-action text-darkText"
                 : "bg-gray-300 text-gray-700 hover:bg-gray-400"
             }`}
           >
-            {category}
+            {category.name}
           </button>
         ))}
       </div>

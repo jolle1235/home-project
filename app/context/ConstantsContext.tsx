@@ -13,10 +13,11 @@ import {
   removeUnitApi,
 } from "../utils/constantsApiHelperFunctions";
 import { Ingredient } from "../model/Ingredient";
+import { Constant } from "../model/Constant";
 
 interface ConstantsContextType {
-  categories: string[];
-  units: string[];
+  categories: Constant[];
+  units: Constant[];
   addCategory: (name: string) => Promise<void>;
   removeCategory: (name: string) => Promise<void>;
   addUnit: (name: string) => Promise<void>;
@@ -30,8 +31,8 @@ const ConstantsContext = createContext<ConstantsContextType | undefined>(
 );
 
 export function ConstantsProvider({ children }: { children: ReactNode }) {
-  const [categories, setCategories] = useState<string[]>([]);
-  const [units, setUnits] = useState<string[]>([]);
+  const [categories, setCategories] = useState<Constant[]>([]);
+  const [units, setUnits] = useState<Constant[]>([]);
 
   async function fetchData() {
     const catRes = await fetch("/api/admin/recipeCategories");
@@ -69,16 +70,19 @@ export function ConstantsProvider({ children }: { children: ReactNode }) {
   async function checkAndAddUnitType(
     ingredients: Ingredient[]
   ): Promise<string[]> {
-    // 1. Fetch current units from DB (as string[])
+    // 1. Fetch current units from DB (as Constant[])
     const res = await fetch("/api/admin/unitTypes");
-    const existingUnits: string[] = await res.json();
-    const existingNames = new Set(existingUnits.map((u) => u.toLowerCase()));
+    const existingUnits: Constant[] = await res.json();
+
+    const existingNames = new Set(
+      existingUnits.map((u) => u.name.toLowerCase())
+    );
 
     // 2. Collect all distinct units from ingredients
     const ingredientUnits = new Set(
       ingredients
         .map((i) => i.unit?.trim().toLowerCase())
-        .filter((u): u is string => !!u) // remove null/undefined/empty
+        .filter((u): u is string => !!u)
     );
 
     // 3. Find missing units
@@ -92,7 +96,7 @@ export function ConstantsProvider({ children }: { children: ReactNode }) {
       console.log(`Added new unit type: ${unit}`);
     }
 
-    return missingUnits; // return what was added
+    return missingUnits;
   }
 
   return (

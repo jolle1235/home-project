@@ -37,8 +37,12 @@ export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
             >
               <div className="relative w-full h-48 sm:h-52 lg:h-56">
                 <Image
-                  src={recipe.image}
-                  alt={recipe.recipeName}
+                  src={
+                    recipe.image && recipe.image.trim() !== ""
+                      ? recipe.image
+                      : "/icon/swiftcart_logo.png"
+                  }
+                  alt={recipe.recipeName || "Opskrift"}
                   fill
                   className="object-cover rounded-t-lg"
                   priority
