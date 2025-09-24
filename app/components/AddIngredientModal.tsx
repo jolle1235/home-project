@@ -77,10 +77,6 @@ export function AddIngredientModal({
     return () => clearTimeout(debounceTimeout);
   }, [searchTerm]);
 
-  const removeItem = (ItemToRemove: Item) => {
-    setItems(items.filter((Item) => Item.name !== ItemToRemove.name));
-  };
-
   useEffect(() => {
     setValue(
       "ingredients",

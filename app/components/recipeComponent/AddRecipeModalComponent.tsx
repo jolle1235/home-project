@@ -26,7 +26,7 @@ export function AddRecipeModalComponent({ handleClose }: Props) {
   const [manuelSetup, setManuelSetup] = useState(false);
 
   // States for recipe fields
-  const { categories } = useConstants();
+  const { categories, checkAndAddUnitType } = useConstants();
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
@@ -90,6 +90,7 @@ export function AddRecipeModalComponent({ handleClose }: Props) {
   }
 
   const onSubmit = async (data: Recipe) => {
+    checkAndAddUnitType(ingredients);
     await uploadImage();
 
     const updatedFormData = {

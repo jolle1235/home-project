@@ -12,6 +12,7 @@ import {
   addUnitApi,
   removeUnitApi,
 } from "../utils/constantsApiHelperFunctions";
+import { Ingredient } from "../model/Ingredient";
 
 interface ConstantsContextType {
   categories: string[];
@@ -20,6 +21,7 @@ interface ConstantsContextType {
   removeCategory: (name: string) => Promise<void>;
   addUnit: (name: string) => Promise<void>;
   removeUnit: (name: string) => Promise<void>;
+  checkAndAddUnitType: (ingredients: Ingredient[]) => Promise<string[]>;
   refresh: () => Promise<void>;
 }
 
@@ -64,6 +66,35 @@ export function ConstantsProvider({ children }: { children: ReactNode }) {
     await fetchData();
   }
 
+  async function checkAndAddUnitType(
+    ingredients: Ingredient[]
+  ): Promise<string[]> {
+    // 1. Fetch current units from DB (as string[])
+    const res = await fetch("/api/admin/unitTypes");
+    const existingUnits: string[] = await res.json();
+    const existingNames = new Set(existingUnits.map((u) => u.toLowerCase()));
+
+    // 2. Collect all distinct units from ingredients
+    const ingredientUnits = new Set(
+      ingredients
+        .map((i) => i.unit?.trim().toLowerCase())
+        .filter((u): u is string => !!u) // remove null/undefined/empty
+    );
+
+    // 3. Find missing units
+    const missingUnits = [...ingredientUnits].filter(
+      (u) => !existingNames.has(u)
+    );
+
+    // 4. Add missing ones
+    for (const unit of missingUnits) {
+      await addUnitApi(unit);
+      console.log(`Added new unit type: ${unit}`);
+    }
+
+    return missingUnits; // return what was added
+  }
+
   return (
     <ConstantsContext.Provider
       value={{
@@ -73,6 +104,7 @@ export function ConstantsProvider({ children }: { children: ReactNode }) {
         removeCategory,
         addUnit,
         removeUnit,
+        checkAndAddUnitType,
         refresh: fetchData,
       }}
     >

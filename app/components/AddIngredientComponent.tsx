@@ -19,8 +19,7 @@ export function AddIngredientComponent({
   InputCategory,
   defaultUnit,
 }: Props) {
-  const { units } = useConstants(); // 👈 get unit types from context
-
+  const { units } = useConstants();
   const [quantity, setQuantity] = useState<number | "">("");
   const [unit, setUnit] = useState<string>(defaultUnit ?? (units[0] || ""));
   const [category, setCategory] = useState<string>("");
