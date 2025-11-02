@@ -216,7 +216,7 @@ export function AddRecipeModalComponent({ handleClose }: Props) {
           <h2 className="text-2xl font-bold">Tilføj ny opskrift</h2>
           <button
             onClick={handleClose}
-            className="text-gray-500 hover:text-gray-700"
+            className="text-gray-500 hover:text-gray-700 transition-all duration-150 cursor-pointer transform hover:scale-110 active:scale-95 active:opacity-80 p-1 rounded"
           >
             ✕
           </button>

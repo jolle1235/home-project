@@ -4,10 +4,12 @@ import { useRecipeContext } from "../../context/RecipeContext";
 import ActionBtn from "../smallComponent/actionBtn";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { useState } from "react";
 
 export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
   const { addRecipeToTempWeekPlan } = useRecipeContext();
   const router = useRouter();
+  const [loadingRecipeId, setLoadingRecipeId] = useState<string | null>(null);
 
   if (!recipes || recipes.length === 0) {
     return (
@@ -17,9 +19,17 @@ export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
     );
   }
 
-  function handleRouter(id?: string) {
+  async function handleRouter(id?: string) {
     if (id) {
-      router.push(`/recipes/${id}`);
+      setLoadingRecipeId(id);
+      try {
+        router.push(`/recipes/${id}`);
+      } catch (error) {
+        console.error("Navigation error:", error);
+      } finally {
+        // Reset loading state after a short delay to show the loader
+        setTimeout(() => setLoadingRecipeId(null), 500);
+      }
     }
   }
 
@@ -93,10 +103,39 @@ export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
                   onClickF={() => addRecipeToTempWeekPlan(recipe)}
                   Itext="Tilføj til madplan"
                 />
-                <ActionBtn
-                  onClickF={() => handleRouter(recipe._id)}
-                  Itext="Se opskrift"
-                ></ActionBtn>
+                <button
+                  onClick={() => handleRouter(recipe._id)}
+                  disabled={loadingRecipeId === recipe._id}
+                  className={`flex justify-center items-center text-base sm:text-lg bg-action hover:bg-secondaryHover active:scale-95 active:opacity-80 transition-all duration-150 cursor-pointer transform hover:scale-105 py-1 px-2 m-1 rounded-lg min-h-[36px] sm:min-h-[40px] disabled:opacity-70 disabled:cursor-not-allowed`}
+                >
+                  {loadingRecipeId === recipe._id ? (
+                    <div className="flex items-center gap-2">
+                      <svg
+                        className="animate-spin h-5 w-5 text-darkText"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      <span>Indlæser...</span>
+                    </div>
+                  ) : (
+                    "Se opskrift"
+                  )}
+                </button>
               </div>
             </div>
           </div>

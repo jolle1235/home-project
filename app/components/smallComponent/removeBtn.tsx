@@ -38,7 +38,7 @@ export function RemoveButton({
     <button
       onClick={onClickF}
       type={type}
-      className={`flex items-center px-2 py-1 text-white hover:bg-cancelHover disabled:bg-gray-400 ${textSize} ${extraCSS} m-1 rounded-lg`}
+      className={`flex items-center px-2 py-1 text-white hover:bg-cancelHover disabled:bg-gray-400 transition-all duration-150 cursor-pointer transform hover:scale-105 active:scale-95 active:opacity-80 ${textSize} ${extraCSS} m-1 rounded-lg`}
     >
       <Image
         src="/icon/remove_button.png"

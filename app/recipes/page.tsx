@@ -86,7 +86,7 @@ export default function RecipePage() {
   };
 
   return (
-    <div className="flex flex-col w-full bg-lightBackground">
+    <div className="flex flex-col w-full bg-lightBackground overflow-hidden">
       <div className="flex flex-row w-full mb-4">
         <input
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -95,14 +95,14 @@ export default function RecipePage() {
         />
         <button
           onClick={() => setIsFilterSettingsOpen(!isFilterSettingsOpen)}
-          className="w-36 ml-2 px-4 py-2 bg-gray-500 text-white rounded-md transition-colors hover:bg-gray-400"
+          className="w-36 ml-2 px-4 py-2 bg-gray-500 text-white rounded-md transition-all duration-150 cursor-pointer transform hover:scale-105 hover:bg-gray-400 active:scale-95 active:opacity-80"
         >
           {isFilterSettingsOpen ? "Skjul Filter" : "Vis Filter"}
         </button>
       </div>
 
       {isFilterSettingsOpen && (
-        <div className="flex md:flex-row flex-col h-fit p-2 rounded-lg bg-gray-200 w-fit items-center md:divide-x md:divide-gray-400">
+        <div className="flex w-full md:flex-row flex-col h-fit p-2 rounded-lg bg-gray-200 items-center md:divide-x md:divide-gray-400">
           <div className="flex-1 items-center p-1">
             <CategoryWheelComponent
               categories={categories}
