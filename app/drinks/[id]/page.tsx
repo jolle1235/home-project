@@ -140,8 +140,8 @@ export default function DrinkDetailsPage() {
           deleteDrink();
         }}
         Itext="Slet drink"
-        color="bg-red-500"
-        hover="bg-red-600"
+        color="bg-cancel"
+        hover="bg-cancelHover"
       />
     </div>
   );

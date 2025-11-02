@@ -170,14 +170,14 @@ export default function WeeklyRecipePlanner() {
                                       entry.recipe._id
                                     );
                                   }}
-                                  className="text-gray-500 hover:text-gray-700"
+                                  className="text-gray-500 hover:text-gray-700 transition-all duration-150 cursor-pointer transform hover:scale-110 active:scale-95 active:opacity-80 p-1 rounded"
                                 >
                                   ✕
                                 </button>
                               </div>
                               <div className="flex flex-row justify-evenly w-full gap-1">
                                 <button
-                                  className="text-base p-1 bg-action hover:bg-actionHover rounded-lg w-10/12"
+                                  className="text-base p-1 bg-action hover:bg-actionHover rounded-lg w-10/12 transition-all duration-150 cursor-pointer transform hover:scale-105 active:scale-95 active:opacity-80"
                                   onClick={() => {
                                     handleRouter(entry.recipe._id);
                                   }}

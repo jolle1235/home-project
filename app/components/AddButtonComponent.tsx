@@ -21,11 +21,11 @@ export function AddButtonComponent({
       </span>
       <button
         onClick={onClick}
-        className="bg-transparent m-4"
+        className="bg-transparent m-4 cursor-pointer transition-all duration-150 transform hover:scale-110 active:scale-95 active:opacity-80"
         aria-label={ariaLabel}
       >
         <img
-          className="size-14 bg-action hover:bg-actionHover rounded-full"
+          className="size-14 bg-action hover:bg-actionHover rounded-full transition-colors duration-150"
           src={iconSrc}
           alt={ariaLabel}
         />

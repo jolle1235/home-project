@@ -12,7 +12,7 @@ export default function NavBar() {
         <div className="flex justify-between items-center md:hidden">
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="text-white p-2"
+            className="text-white p-2 transition-all duration-150 cursor-pointer transform hover:scale-110 active:scale-95 active:opacity-80 rounded"
             aria-label="Toggle menu"
           >
             <svg
@@ -38,32 +38,53 @@ export default function NavBar() {
               )}
             </svg>
           </button>
-          <span className="text-white font-semibold">Home Project</span>
+          <Link
+            href="/recipes"
+            className="text-white font-semibold hover:text-gray-300 transition-colors"
+          >
+            Home Project
+          </Link>
         </div>
 
         <div className={`${isMenuOpen ? "block" : "hidden"} md:block`}>
-          <div className="flex flex-col md:flex-row md:space-x-4 space-y-2 md:space-y-0">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between md:space-x-4 space-y-2 md:space-y-0">
             <Link
-              className="text-white hover:text-gray-300 transition-colors py-2 md:py-0"
               href="/recipes"
+              className="text-white font-semibold hover:text-gray-300 transition-colors py-2 md:py-0"
               onClick={() => setIsMenuOpen(false)}
             >
-              Opskrifter
+              Home Project
             </Link>
-            <Link
-              className="text-white hover:text-gray-300 transition-colors py-2 md:py-0"
-              href="/weekPlanner"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Madplan
-            </Link>
-            <Link
-              className="text-white hover:text-gray-300 transition-colors py-2 md:py-0"
-              href="/drinks"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Drinks
-            </Link>
+            <div className="flex flex-col md:flex-row md:space-x-4 space-y-2 md:space-y-0">
+              <Link
+                className="text-white hover:text-gray-300 transition-colors py-2 md:py-0"
+                href="/recipes"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Opskrifter
+              </Link>
+              <Link
+                className="text-white hover:text-gray-300 transition-colors py-2 md:py-0"
+                href="/weekPlanner"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Madplan
+              </Link>
+              <Link
+                className="text-white hover:text-gray-300 transition-colors py-2 md:py-0"
+                href="/drinks"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Drinks
+              </Link>
+              <Link
+                className="text-white hover:text-gray-300 transition-colors py-2 md:py-0"
+                href="/admin"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Admin
+              </Link>
+            </div>
           </div>
         </div>
       </div>
