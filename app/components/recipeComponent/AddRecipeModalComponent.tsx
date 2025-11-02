@@ -146,6 +146,9 @@ export function AddRecipeModalComponent({ handleClose, onRecipeSaved }: Props) {
     } catch (error) {
       console.error("Fejl i form submission:", error);
       toast.error("Noget gik galt. Opskriften blev ikke gemt.");
+      // Still close the modal and go back to recipe page even on error
+      clearState(setItems, []);
+      handleClose();
     } finally {
       setIsSaving(false);
     }
