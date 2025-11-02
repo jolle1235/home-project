@@ -141,32 +141,66 @@ export default function RecipeDetailsPage() {
             className="flex flex-col w-full h-auto md:h-full justify-between border-t border-darkgreyBackground"
           >
             <div className="flex flex-col w-full h-fit justify-start items-start">
-              {recipe?.ingredients.map((ingredient, index) => {
-                // Calculate adjusted weight
-                const scalingFactor =
-                  recommendedPersonAmount / recipe.recommendedPersonAmount;
-                const adjustedWeight = ingredient.quantity * scalingFactor;
+              {(() => {
+                // Group ingredients by section
+                const groupedIngredients = (recipe?.ingredients || []).reduce(
+                  (acc, ingredient, index) => {
+                    const section = ingredient.section || "none";
+                    if (!acc[section]) {
+                      acc[section] = [];
+                    }
+                    acc[section].push({ ingredient, index });
+                    return acc;
+                  },
+                  {} as Record<
+                    string,
+                    Array<{ ingredient: Recipe["ingredients"][0]; index: number }>
+                  >
+                );
 
-                console.log("scalingFactor", scalingFactor);
-                console.log("adjustedWeight", adjustedWeight);
+                // Get sections in order: first unsectioned (none), then sections
+                const sections = [
+                  ...(groupedIngredients["none"] ? ["none"] : []),
+                  ...Object.keys(groupedIngredients).filter((s) => s !== "none"),
+                ];
+
+                const scalingFactor =
+                  recommendedPersonAmount / (recipe?.recommendedPersonAmount || 1);
 
                 return (
-                  <div
-                    key={index}
-                    className="flex flex-row w-full h-fit justify-between items-center p-2 border-b border-darkgreyBackground"
-                  >
-                    <input className="w-6 h-6 mr-4" type="checkbox" />
-                    <div className="flex justify-start basis-1/4 flex-grow">
-                      <p className="text-lg font-bold">
-                        {ingredient.item.name}
-                      </p>
-                    </div>
-                    <p className="flex justify-center items-center h-fit w-fit text-lg py-2 px-3 mx-2 bg-lightgreyBackground rounded-full">
-                      {adjustedWeight.toFixed(1)} {ingredient.unit}
-                    </p>
-                  </div>
+                  <>
+                    {sections.map((section) => (
+                      <div key={section} className="w-full">
+                        {section !== "none" && (
+                          <h3 className="text-xl font-bold text-darkText mb-2 mt-4 pt-2 border-t border-darkgreyBackground first:border-t-0 first:mt-0 first:pt-0">
+                            {section}
+                          </h3>
+                        )}
+                        {groupedIngredients[section].map(({ ingredient, index }) => {
+                          const adjustedWeight = ingredient.quantity * scalingFactor;
+
+                          return (
+                            <div
+                              key={index}
+                              className="flex flex-row w-full h-fit justify-between items-center p-2 border-b border-darkgreyBackground"
+                            >
+                              <input className="w-6 h-6 mr-4" type="checkbox" />
+                              <div className="flex justify-start basis-1/4 flex-grow">
+                                <p className="text-lg font-bold">
+                                  {ingredient.item.name}
+                                </p>
+                              </div>
+                              <p className="flex justify-center items-center h-fit w-fit text-lg py-2 px-3 mx-2 bg-lightgreyBackground rounded-full">
+                                {adjustedWeight.toFixed(1)} {ingredient.unit}
+                              </p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ))}
+                  </>
                 );
-              })}
+              })()}
             </div>
             {/* Portion and Action Buttons */}
             {/* <div className="flex flex-col md:flex-row justify-between items-center border-darkgreyBackground mt-3">

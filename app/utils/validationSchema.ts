@@ -127,6 +127,7 @@ export const recipeSchema = Yup.object({
         quantity: quantitySchema,
         unit: Yup.string().required("Enhed er påkrævet"),
         marked: Yup.boolean().default(false),
+        section: Yup.string().optional(),
       })
     )
     .required("Ingredienser er påkrævet")
@@ -161,6 +162,7 @@ export const drinkSchema = Yup.object({
         quantity: quantitySchema,
         unit: Yup.string().required("Enhed er påkrævet"),
         marked: Yup.boolean().default(false),
+        section: Yup.string().optional(),
       })
     )
     .required("Ingredienser er påkrævet")

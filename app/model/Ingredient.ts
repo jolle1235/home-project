@@ -6,4 +6,5 @@ export interface Ingredient {
   unit: string;
   marked: boolean;
   quantity: number;
+  section?: string; // Optional section/category title (e.g., "Sauce", "Main course")
 }
