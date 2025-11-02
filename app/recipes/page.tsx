@@ -23,6 +23,23 @@ export default function RecipePage() {
   const handleOpen = () => setIsModalOpen(true);
   const handleClose = () => setIsModalOpen(false);
 
+  const handleRecipeSaved = async () => {
+    // Refresh recipes after saving
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/recipe");
+      if (!response.ok) throw new Error("Failed to fetch recipes");
+      const data = await response.json();
+      setRecipes(data);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "An unknown error occurred"
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (isModalOpen) {
       document.body.style.overflow = "hidden";
@@ -135,7 +152,12 @@ export default function RecipePage() {
         ariaLabel="add_recipe"
       />
 
-      {isModalOpen && <AddRecipeModalComponent handleClose={handleClose} />}
+      {isModalOpen && (
+        <AddRecipeModalComponent
+          handleClose={handleClose}
+          onRecipeSaved={handleRecipeSaved}
+        />
+      )}
     </div>
   );
 }

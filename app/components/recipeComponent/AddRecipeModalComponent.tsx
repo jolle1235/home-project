@@ -17,14 +17,16 @@ import { toast } from "react-toastify";
 
 interface Props {
   handleClose: () => void;
+  onRecipeSaved?: () => void;
 }
 
-export function AddRecipeModalComponent({ handleClose }: Props) {
+export function AddRecipeModalComponent({ handleClose, onRecipeSaved }: Props) {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const searchBarRef = useRef<HTMLDivElement>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [manuelSetup, setManuelSetup] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   // States for recipe fields
   const { categories, checkAndAddUnitType } = useConstants();
@@ -97,6 +99,7 @@ export function AddRecipeModalComponent({ handleClose }: Props) {
   }
 
   const onSubmit = async (data: Recipe) => {
+    setIsSaving(true);
     try {
       // Step 1: Sync unit types
       await checkAndAddUnitType(ingredients);
@@ -107,6 +110,7 @@ export function AddRecipeModalComponent({ handleClose }: Props) {
         const uploadedUrl = await uploadImage();
         if (!uploadedUrl) {
           toast.error("Billedet kunne ikke uploades.");
+          setIsSaving(false);
           return; // stop submission
         }
         finalImage = uploadedUrl;
@@ -132,10 +136,18 @@ export function AddRecipeModalComponent({ handleClose }: Props) {
 
       toast.success("Opskriften blev gemt 🎉");
       clearState(setItems, []);
+      
+      // Trigger refresh callback if provided
+      if (onRecipeSaved) {
+        onRecipeSaved();
+      }
+      
       handleClose();
     } catch (error) {
       console.error("Fejl i form submission:", error);
       toast.error("Noget gik galt. Opskriften blev ikke gemt.");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -403,13 +415,41 @@ export function AddRecipeModalComponent({ handleClose }: Props) {
                   Itext="Anuller"
                   color="bg-cancel"
                   hover="bg-cancelHover"
+                  extraCSS={isSaving ? "opacity-50 cursor-not-allowed" : ""}
                 />
-                <ActionBtn
+                <button
                   type="submit"
-                  Itext="Gem opskrift"
-                  color="bg-action"
-                  hover="bg-actionHover"
-                />
+                  disabled={isSaving}
+                  className={`flex justify-center items-center text-base sm:text-lg bg-action hover:bg-actionHover active:scale-95 active:opacity-80 transition-all duration-150 cursor-pointer transform hover:scale-105 py-1 px-2 m-1 rounded-lg min-h-[36px] sm:min-h-[40px] disabled:opacity-70 disabled:cursor-not-allowed`}
+                >
+                  {isSaving ? (
+                    <div className="flex items-center gap-2">
+                      <svg
+                        className="animate-spin h-5 w-5 text-darkText"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      <span>Gemmer...</span>
+                    </div>
+                  ) : (
+                    "Gem opskrift"
+                  )}
+                </button>
               </div>
             </form>
           </div>
