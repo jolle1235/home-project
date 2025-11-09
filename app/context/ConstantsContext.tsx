@@ -70,33 +70,55 @@ export function ConstantsProvider({ children }: { children: ReactNode }) {
   async function checkAndAddUnitType(
     ingredients: Ingredient[]
   ): Promise<string[]> {
-    // 1. Fetch current units from DB (as Constant[])
-    const res = await fetch("/api/admin/unitTypes");
-    const existingUnits: Constant[] = await res.json();
+    try {
+      // 1. Fetch current units from DB (as Constant[])
+      const res = await fetch("/api/admin/unitTypes");
+      if (!res.ok) {
+        console.error("Failed to fetch unit types:", res.status, res.statusText);
+        // Don't throw - allow recipe submission to continue even if unit sync fails
+        return [];
+      }
+      const existingUnits: Constant[] = await res.json();
 
-    const existingNames = new Set(
-      existingUnits.map((u) => u.name.toLowerCase())
-    );
+      const existingNames = new Set(
+        existingUnits.map((u) => u.name.toLowerCase())
+      );
 
-    // 2. Collect all distinct units from ingredients
-    const ingredientUnits = new Set(
-      ingredients
-        .map((i) => i.unit?.trim().toLowerCase())
-        .filter((u): u is string => !!u)
-    );
+      // 2. Collect all distinct units from ingredients
+      const ingredientUnits = new Set(
+        ingredients
+          .map((i) => i.unit?.trim().toLowerCase())
+          .filter((u): u is string => !!u)
+      );
 
-    // 3. Find missing units
-    const missingUnits = [...ingredientUnits].filter(
-      (u) => !existingNames.has(u)
-    );
+      // 3. Find missing units
+      const missingUnits = [...ingredientUnits].filter(
+        (u) => !existingNames.has(u)
+      );
 
-    // 4. Add missing ones
-    for (const unit of missingUnits) {
-      await addUnitApi(unit);
-      console.log(`Added new unit type: ${unit}`);
+      // 4. Add missing ones
+      const addedUnits: string[] = [];
+      for (const unit of missingUnits) {
+        try {
+          const success = await addUnitApi(unit);
+          if (success) {
+            addedUnits.push(unit);
+            console.log(`Added new unit type: ${unit}`);
+          } else {
+            console.warn(`Failed to add unit type: ${unit}`);
+          }
+        } catch (error) {
+          console.error(`Error adding unit type ${unit}:`, error);
+          // Continue with other units even if one fails
+        }
+      }
+
+      return addedUnits;
+    } catch (error) {
+      console.error("Error in checkAndAddUnitType:", error);
+      // Don't throw - allow recipe submission to continue even if unit sync fails
+      return [];
     }
-
-    return missingUnits;
   }
 
   return (

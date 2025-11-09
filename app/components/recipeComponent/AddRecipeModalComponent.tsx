@@ -49,17 +49,37 @@ export function AddRecipeModalComponent({ handleClose, onRecipeSaved }: Props) {
   });
 
   useEffect(() => {
-    setValue(
-      "ingredients",
-      ingredients.map((ingredient: Ingredient) => ({
-        _id: "unknown",
-        item: ingredient.item,
-        unit: ingredient.unit,
-        marked: ingredient.marked,
-        quantity: ingredient.quantity,
-      }))
-    );
+    // Map ingredients and ensure all required fields are present
+    const mappedIngredients = ingredients.map((ingredient: Ingredient) => {
+      // Ensure all required fields are present and valid
+      return {
+        _id: ingredient._id || "unknown",
+        item: {
+          _id: ingredient.item._id || "unknown",
+          name: ingredient.item.name || "",
+          category: ingredient.item.category || "unknown",
+          defaultUnit: ingredient.item.defaultUnit || ingredient.unit || "",
+        },
+        unit: ingredient.unit || "",
+        marked: ingredient.marked || false,
+        quantity: ingredient.quantity || 0,
+        section: ingredient.section,
+      };
+    });
+
+    console.log("Setting ingredients in form:", {
+      ingredientsCount: ingredients.length,
+      mappedIngredientsCount: mappedIngredients.length,
+      mappedIngredients: mappedIngredients,
+    });
+
+    setValue("ingredients", mappedIngredients, { shouldValidate: true });
   }, [ingredients, setValue]);
+
+  // Sync imageUrl with form state
+  useEffect(() => {
+    setValue("image", imageUrl || "");
+  }, [imageUrl, setValue]);
 
   const clearState = (
     setState: React.Dispatch<React.SetStateAction<any>>,
@@ -101,11 +121,59 @@ export function AddRecipeModalComponent({ handleClose, onRecipeSaved }: Props) {
   const onSubmit = async (data: Recipe) => {
     setIsSaving(true);
     try {
+      // Get current form values to ensure we have the latest data
+      const currentFormData = getValues();
+      console.log("Starting recipe submission...", { 
+        formData: data, 
+        currentFormData,
+        ingredientsState: ingredients, 
+        imageUrl, 
+        imageFile: !!imageFile 
+      });
+      
+      // Ensure we have ingredients - use state if form data doesn't have them
+      let finalIngredients = data.ingredients || currentFormData.ingredients || ingredients;
+      
+      // If ingredients are empty or invalid, check the state
+      if (!finalIngredients || finalIngredients.length === 0) {
+        console.warn("No ingredients in form data, using ingredients state");
+        finalIngredients = ingredients;
+      }
+
+      // Validate ingredients exist
+      if (!finalIngredients || finalIngredients.length === 0) {
+        toast.error("Du skal tilføje mindst én ingrediens før opskriften kan gemmes.");
+        setIsSaving(false);
+        return;
+      }
+
+      // Ensure all ingredients have required fields
+      const validIngredients = finalIngredients.map((ing: any) => ({
+        _id: ing._id || "unknown",
+        item: {
+          _id: ing.item?._id || "unknown",
+          name: ing.item?.name || "",
+          category: ing.item?.category || "unknown",
+          defaultUnit: ing.item?.defaultUnit || ing.unit || "",
+        },
+        unit: ing.unit || "",
+        marked: ing.marked || false,
+        quantity: ing.quantity || 0,
+        section: ing.section,
+      }));
+
+      console.log("Validated ingredients:", validIngredients);
+      
       // Step 1: Sync unit types
-      await checkAndAddUnitType(ingredients);
+      try {
+        await checkAndAddUnitType(validIngredients as Ingredient[]);
+      } catch (unitError) {
+        console.warn("Unit type sync failed, continuing with recipe submission:", unitError);
+        // Continue with submission even if unit sync fails
+      }
 
       // Step 2: Determine final image
-      let finalImage = imageUrl; // default to current preview/scraped image
+      let finalImage = imageUrl || ""; // default to current preview/scraped image or empty string
       if (imageFile) {
         const uploadedUrl = await uploadImage();
         if (!uploadedUrl) {
@@ -120,10 +188,13 @@ export function AddRecipeModalComponent({ handleClose, onRecipeSaved }: Props) {
       // Step 3: Prepare final payload
       const updatedFormData = {
         ...data,
-        image: finalImage,
+        ingredients: validIngredients,
+        image: finalImage || "", // Ensure image is always a string
         categories: selectedCategories,
         author: "",
       };
+
+      console.log("Submitting recipe data:", updatedFormData);
 
       // Step 4: Submit recipe
       const res = await fetch("/api/recipe", {
@@ -132,25 +203,71 @@ export function AddRecipeModalComponent({ handleClose, onRecipeSaved }: Props) {
         body: JSON.stringify(updatedFormData),
       });
 
-      if (!res.ok) throw new Error("Opskriften kunne ikke gemmes.");
+      if (!res.ok) {
+        const errorText = await res.text();
+        let errorMessage = "Opskriften kunne ikke gemmes.";
+        try {
+          const errorData = JSON.parse(errorText);
+          errorMessage = errorData.error || errorMessage;
+        } catch {
+          errorMessage = errorText || errorMessage;
+        }
+        console.error("Recipe submission failed:", res.status, res.statusText, errorMessage);
+        throw new Error(errorMessage);
+      }
+
+      const result = await res.json();
+      console.log("Recipe saved successfully:", result);
 
       toast.success("Opskriften blev gemt 🎉");
       clearState(setItems, []);
-      
+
       // Trigger refresh callback if provided
       if (onRecipeSaved) {
         onRecipeSaved();
       }
-      
+
       handleClose();
     } catch (error) {
       console.error("Fejl i form submission:", error);
-      toast.error("Noget gik galt. Opskriften blev ikke gemt.");
-      // Still close the modal and go back to recipe page even on error
-      clearState(setItems, []);
-      handleClose();
-    } finally {
+      const errorMessage = error instanceof Error ? error.message : "Noget gik galt. Opskriften blev ikke gemt.";
+      toast.error(errorMessage);
+      // Don't close modal on error - let user see the error and try again
       setIsSaving(false);
+    }
+  };
+
+  const onError = (errors: any) => {
+    console.error("Form validation errors:", errors);
+    console.log("Current form values:", getValues());
+    console.log("Current ingredients state:", ingredients);
+    
+    // Trigger validation for all fields to show errors
+    trigger();
+    
+    // Check specifically for ingredients error
+    if (errors.ingredients) {
+      const ingredientsError = errors.ingredients;
+      if (ingredientsError.message) {
+        toast.error(`Ingredienser: ${ingredientsError.message}`);
+      } else if (Array.isArray(ingredientsError) && ingredientsError.length > 0) {
+        const firstError = ingredientsError[0];
+        toast.error(`Ingrediens fejl: ${firstError.message || "Ingredienser er ugyldige"}`);
+      } else {
+        toast.error("Der skal være mindst én ingrediens i opskriften.");
+      }
+      return;
+    }
+    
+    // Show toast with validation errors
+    const errorMessages = Object.values(errors)
+      .map((error: any) => error?.message)
+      .filter(Boolean)
+      .join(", ");
+    if (errorMessages) {
+      toast.error(`Valideringsfejl: ${errorMessages}`);
+    } else {
+      toast.error("Venligst udfyld alle påkrævede felter korrekt.");
     }
   };
 
@@ -209,18 +326,44 @@ export function AddRecipeModalComponent({ handleClose, onRecipeSaved }: Props) {
     if (data.image) {
       setImageUrl(data.image); // preview
       setValue("image", data.image); // form value
+    } else {
+      setImageUrl("");
+      setValue("image", "");
     }
 
     // Categories
     if (data.categories) {
       setSelectedCategories(data.categories);
       setValue("categories", data.categories);
+    } else {
+      setSelectedCategories([]);
+      setValue("categories", []);
     }
 
-    // Ingredients
-    if (data.ingredients) {
-      setIngredients(data.ingredients);
-      setValue("ingredients", data.ingredients);
+    // Ingredients - ensure they're properly formatted
+    if (data.ingredients && data.ingredients.length > 0) {
+      // Format ingredients to ensure all required fields are present
+      const formattedIngredients = data.ingredients.map((ing: Ingredient) => ({
+        _id: ing._id || "unknown",
+        item: {
+          _id: ing.item?._id || "unknown",
+          name: ing.item?.name || "",
+          category: ing.item?.category || "unknown",
+          defaultUnit: ing.item?.defaultUnit || ing.unit || "",
+        },
+        unit: ing.unit || "",
+        marked: ing.marked || false,
+        quantity: ing.quantity || 0,
+        section: ing.section,
+      }));
+      
+      console.log("Setting recipe data - formatted ingredients:", formattedIngredients);
+      setIngredients(formattedIngredients as Ingredient[]);
+      // The useEffect will sync these to the form, but we can also set them directly
+      setValue("ingredients", formattedIngredients, { shouldValidate: true });
+    } else {
+      setIngredients([]);
+      setValue("ingredients", [], { shouldValidate: true });
     }
   }
 
@@ -264,7 +407,7 @@ export function AddRecipeModalComponent({ handleClose, onRecipeSaved }: Props) {
             <label className="block text-gray-700 font-bold mb-2 m-1 text-2xl">
               Manuel
             </label>
-            <form onSubmit={handleSubmit(onSubmit)} className="">
+            <form onSubmit={handleSubmit(onSubmit, onError)} className="">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="w-full">
                   <label
@@ -343,6 +486,15 @@ export function AddRecipeModalComponent({ handleClose, onRecipeSaved }: Props) {
                     onFileSelected={setImageFile}
                     initialPreview={imageUrl}
                   />
+                  {errors.image && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.image.message}
+                    </p>
+                  )}
+                  <input
+                    type="hidden"
+                    {...register("image")}
+                  />
                 </div>
                 <div>
                   <label
@@ -410,6 +562,14 @@ export function AddRecipeModalComponent({ handleClose, onRecipeSaved }: Props) {
                   ingredients={ingredients}
                   onRemove={(index: number) => handleOnIngredientRemove(index)}
                 />
+                {errors.ingredients && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {String(
+                      (errors as any).ingredients?.message ||
+                        "Der mangler ingredienser"
+                    )}
+                  </p>
+                )}
               </div>
 
               <div className="flex justify-end space-x-4">
@@ -420,39 +580,14 @@ export function AddRecipeModalComponent({ handleClose, onRecipeSaved }: Props) {
                   hover="bg-cancelHover"
                   extraCSS={isSaving ? "opacity-50 cursor-not-allowed" : ""}
                 />
-                <button
+                <ActionBtn
                   type="submit"
-                  disabled={isSaving}
-                  className={`flex justify-center items-center text-base sm:text-lg bg-action hover:bg-actionHover active:scale-95 active:opacity-80 transition-all duration-150 cursor-pointer transform hover:scale-105 py-1 px-2 m-1 rounded-lg min-h-[36px] sm:min-h-[40px] disabled:opacity-70 disabled:cursor-not-allowed`}
-                >
-                  {isSaving ? (
-                    <div className="flex items-center gap-2">
-                      <svg
-                        className="animate-spin h-5 w-5 text-darkText"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                      </svg>
-                      <span>Gemmer...</span>
-                    </div>
-                  ) : (
-                    "Gem opskrift"
-                  )}
-                </button>
+                  Itext="Gem opskrift"
+                  color="bg-action"
+                  hover="bg-actionHover"
+                  isLoading={isSaving}
+                  loadingText="Gemmer..."
+                />
               </div>
             </form>
           </div>

@@ -13,12 +13,19 @@ export async function removeCategoryApi(name: string) {
   });
 }
 
-export async function addUnitApi(newUnit: string) {
-  if (!newUnit) return;
-  await fetch("/api/admin/unitTypes", {
-    method: "POST",
-    body: JSON.stringify({ name: newUnit }),
-  });
+export async function addUnitApi(newUnit: string): Promise<boolean> {
+  if (!newUnit) return false;
+  try {
+    const response = await fetch("/api/admin/unitTypes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: newUnit }),
+    });
+    return response.ok;
+  } catch (error) {
+    console.error("Error adding unit:", error);
+    return false;
+  }
 }
 
 export async function removeUnitApi(name: string) {

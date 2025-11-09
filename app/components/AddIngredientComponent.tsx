@@ -31,24 +31,42 @@ export function AddIngredientComponent({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!unit) return; // guard against empty unit list
+    if (!unit) {
+      console.warn("Cannot add ingredient: unit is required");
+      return; // guard against empty unit list
+    }
+    if (quantity === "" || quantity === null || quantity === undefined) {
+      console.warn("Cannot add ingredient: quantity is required");
+      return; // Quantity is required - don't add ingredient if quantity is missing
+    }
+
+    // Ensure defaultUnit is never empty - use unit if defaultUnit is not provided
+    const finalDefaultUnit = defaultUnit || unit || (units[0]?.name || "");
+    if (!finalDefaultUnit) {
+      console.error("Cannot add ingredient: no defaultUnit available");
+      return;
+    }
+    
+    // Ensure category is never empty
+    const finalCategory = category || InputCategory || "unknown";
 
     const newIngredient: Ingredient = {
       _id: "unknown",
       item: {
         _id: "unknown",
         name: itemName,
-        category: category || "unknown",
-        defaultUnit: defaultUnit || "",
+        category: finalCategory,
+        defaultUnit: finalDefaultUnit,
       },
-      quantity: quantity === "" ? 0 : quantity,
-      unit,
+      quantity: Number(quantity),
+      unit: unit,
       marked: false,
     };
 
+    console.log("Adding ingredient:", newIngredient);
     onAdd(newIngredient);
     setQuantity("");
-    setUnit(units[0].name || "");
+    setUnit(units[0]?.name || "");
     setCategory("");
   };
 

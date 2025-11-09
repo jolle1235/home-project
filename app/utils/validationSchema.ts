@@ -70,7 +70,11 @@ export const recipeAuthorSchema = Yup.string().default("");
 
 export const recipeImgSchema = Yup.string()
   .default("")
-  .url("Ugyldig billed-URL");
+  .test(
+    "is-url-or-empty",
+    "Ugyldig billed-URL",
+    (value) => !value || Yup.string().url().isValidSync(value)
+  );
 
 export const recipePersonAmountSchema = Yup.number()
   .transform((value, originalValue) =>

@@ -36,7 +36,7 @@ export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
   return (
     <div
       id="recipes"
-      className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:justify-center gap-4"
+      className="grid grid-cols-1 sm:grid-cols-2 lg:flex flex-wrap lg:justify-center gap-4"
     >
       {recipes.map((recipe) => {
         return (
