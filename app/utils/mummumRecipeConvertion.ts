@@ -62,11 +62,7 @@ export function mapSchemaRecipeToRecipe(data: any): Recipe {
     time:
       parseDuration(data.recipe.totalTime) ||
       parseDuration(data.recipe.prepTime) + parseDuration(data.cookTime),
-    categories: data.recipe.recipeCategory
-      ? Array.isArray(data.recipe.recipeCategory)
-        ? data.recipe.recipeCategory
-        : [data.recipe.recipeCategory]
-      : [],
+    categories: [],
     recommendedPersonAmount: parseYield(data.recipe.recipeYield),
     author: data.recipe.author ?? "",
   };

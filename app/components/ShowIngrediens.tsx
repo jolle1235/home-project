@@ -48,7 +48,7 @@ export function IngredientsList({
                   {groupedIngredients[section].map(({ ingredient, index }) => (
                     <div
                       key={index}
-                      className="flex items-center justify-between bg-gray-50 p-3 rounded-lg"
+                      className="flex items-center justify-between"
                     >
                       <div className="flex items-center space-x-3">
                         <span className="font-medium">

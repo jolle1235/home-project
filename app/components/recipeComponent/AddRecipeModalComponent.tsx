@@ -14,6 +14,7 @@ import ActionBtn from "../smallComponent/actionBtn";
 import { WebLinkInput } from "../WebLinkInput";
 import { useConstants } from "@/app/context/ConstantsContext";
 import { toast } from "react-toastify";
+import * as Yup from "yup";
 
 interface Props {
   handleClose: () => void;
@@ -36,6 +37,8 @@ export function AddRecipeModalComponent({ handleClose, onRecipeSaved }: Props) {
   const [imageUrl, setImageUrl] = useState<string>("");
   const [imageFile, setImageFile] = useState<File | null>(null);
 
+  type RecipeFormType = Yup.InferType<typeof recipeSchema>;
+
   const {
     register,
     formState: { errors },
@@ -43,7 +46,7 @@ export function AddRecipeModalComponent({ handleClose, onRecipeSaved }: Props) {
     getValues,
     setValue,
     handleSubmit,
-  } = useForm<Recipe>({
+  } = useForm<RecipeFormType>({
     resolver: yupResolver(recipeSchema),
     mode: "onBlur",
   });
@@ -56,11 +59,11 @@ export function AddRecipeModalComponent({ handleClose, onRecipeSaved }: Props) {
         _id: ingredient._id || "unknown",
         item: {
           _id: ingredient.item._id || "unknown",
-          name: ingredient.item.name || "",
+          name: ingredient.item.name || "Unknown",
           category: ingredient.item.category || "unknown",
-          defaultUnit: ingredient.item.defaultUnit || ingredient.unit || "",
+          defaultUnit: ingredient.item.defaultUnit || ingredient.unit || "stk",
         },
-        unit: ingredient.unit || "",
+        unit: ingredient.unit || "stk",
         marked: ingredient.marked || false,
         quantity: ingredient.quantity || 0,
         section: ingredient.section,
@@ -118,22 +121,23 @@ export function AddRecipeModalComponent({ handleClose, onRecipeSaved }: Props) {
     }
   }
 
-  const onSubmit = async (data: Recipe) => {
+  const onSubmit = async (data: RecipeFormType) => {
     setIsSaving(true);
     try {
       // Get current form values to ensure we have the latest data
       const currentFormData = getValues();
-      console.log("Starting recipe submission...", { 
-        formData: data, 
+      console.log("Starting recipe submission...", {
+        formData: data,
         currentFormData,
-        ingredientsState: ingredients, 
-        imageUrl, 
-        imageFile: !!imageFile 
+        ingredientsState: ingredients,
+        imageUrl,
+        imageFile: !!imageFile,
       });
-      
+
       // Ensure we have ingredients - use state if form data doesn't have them
-      let finalIngredients = data.ingredients || currentFormData.ingredients || ingredients;
-      
+      let finalIngredients =
+        data.ingredients || currentFormData.ingredients || ingredients;
+
       // If ingredients are empty or invalid, check the state
       if (!finalIngredients || finalIngredients.length === 0) {
         console.warn("No ingredients in form data, using ingredients state");
@@ -142,7 +146,9 @@ export function AddRecipeModalComponent({ handleClose, onRecipeSaved }: Props) {
 
       // Validate ingredients exist
       if (!finalIngredients || finalIngredients.length === 0) {
-        toast.error("Du skal tilføje mindst én ingrediens før opskriften kan gemmes.");
+        toast.error(
+          "Du skal tilføje mindst én ingrediens før opskriften kan gemmes."
+        );
         setIsSaving(false);
         return;
       }
@@ -152,23 +158,26 @@ export function AddRecipeModalComponent({ handleClose, onRecipeSaved }: Props) {
         _id: ing._id || "unknown",
         item: {
           _id: ing.item?._id || "unknown",
-          name: ing.item?.name || "",
+          name: ing.item?.name || "Unknown",
           category: ing.item?.category || "unknown",
-          defaultUnit: ing.item?.defaultUnit || ing.unit || "",
+          defaultUnit: ing.item?.defaultUnit || ing.unit || "stk",
         },
-        unit: ing.unit || "",
+        unit: ing.unit || "stk",
         marked: ing.marked || false,
         quantity: ing.quantity || 0,
         section: ing.section,
       }));
 
       console.log("Validated ingredients:", validIngredients);
-      
+
       // Step 1: Sync unit types
       try {
         await checkAndAddUnitType(validIngredients as Ingredient[]);
       } catch (unitError) {
-        console.warn("Unit type sync failed, continuing with recipe submission:", unitError);
+        console.warn(
+          "Unit type sync failed, continuing with recipe submission:",
+          unitError
+        );
         // Continue with submission even if unit sync fails
       }
 
@@ -212,7 +221,12 @@ export function AddRecipeModalComponent({ handleClose, onRecipeSaved }: Props) {
         } catch {
           errorMessage = errorText || errorMessage;
         }
-        console.error("Recipe submission failed:", res.status, res.statusText, errorMessage);
+        console.error(
+          "Recipe submission failed:",
+          res.status,
+          res.statusText,
+          errorMessage
+        );
         throw new Error(errorMessage);
       }
 
@@ -230,7 +244,10 @@ export function AddRecipeModalComponent({ handleClose, onRecipeSaved }: Props) {
       handleClose();
     } catch (error) {
       console.error("Fejl i form submission:", error);
-      const errorMessage = error instanceof Error ? error.message : "Noget gik galt. Opskriften blev ikke gemt.";
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Noget gik galt. Opskriften blev ikke gemt.";
       toast.error(errorMessage);
       // Don't close modal on error - let user see the error and try again
       setIsSaving(false);
@@ -241,24 +258,32 @@ export function AddRecipeModalComponent({ handleClose, onRecipeSaved }: Props) {
     console.error("Form validation errors:", errors);
     console.log("Current form values:", getValues());
     console.log("Current ingredients state:", ingredients);
-    
+
     // Trigger validation for all fields to show errors
     trigger();
-    
+
     // Check specifically for ingredients error
     if (errors.ingredients) {
       const ingredientsError = errors.ingredients;
+      console.log("Ingredients error:", ingredientsError);
       if (ingredientsError.message) {
         toast.error(`Ingredienser: ${ingredientsError.message}`);
-      } else if (Array.isArray(ingredientsError) && ingredientsError.length > 0) {
+      } else if (
+        Array.isArray(ingredientsError) &&
+        ingredientsError.length > 0 &&
+        ingredientsError !== undefined &&
+        ingredientsError !== null
+      ) {
         const firstError = ingredientsError[0];
-        toast.error(`Ingrediens fejl: ${firstError.message || "Ingredienser er ugyldige"}`);
+        toast.error(
+          `Ingrediens fejl: ${firstError.message || "Ingredienser er ugyldige"}`
+        );
       } else {
         toast.error("Der skal være mindst én ingrediens i opskriften.");
       }
       return;
     }
-    
+
     // Show toast with validation errors
     const errorMessages = Object.values(errors)
       .map((error: any) => error?.message)
@@ -344,23 +369,28 @@ export function AddRecipeModalComponent({ handleClose, onRecipeSaved }: Props) {
     if (data.ingredients && data.ingredients.length > 0) {
       // Format ingredients to ensure all required fields are present
       const formattedIngredients = data.ingredients.map((ing: Ingredient) => ({
-        _id: ing._id || "unknown",
+        _id: ing._id || null,
         item: {
-          _id: ing.item?._id || "unknown",
-          name: ing.item?.name || "",
+          _id: ing.item?._id || null,
+          name: ing.item?.name || "Unknown",
           category: ing.item?.category || "unknown",
-          defaultUnit: ing.item?.defaultUnit || ing.unit || "",
+          defaultUnit: ing.item?.defaultUnit || ing.unit || "stk",
         },
-        unit: ing.unit || "",
+        unit: ing.unit || "stk",
         marked: ing.marked || false,
         quantity: ing.quantity || 0,
         section: ing.section,
       }));
-      
-      console.log("Setting recipe data - formatted ingredients:", formattedIngredients);
+
+      console.log(
+        "Setting recipe data - formatted ingredients:",
+        formattedIngredients
+      );
       setIngredients(formattedIngredients as Ingredient[]);
       // The useEffect will sync these to the form, but we can also set them directly
-      setValue("ingredients", formattedIngredients, { shouldValidate: true });
+      setValue("ingredients", formattedIngredients as Ingredient[], {
+        shouldValidate: true,
+      });
     } else {
       setIngredients([]);
       setValue("ingredients", [], { shouldValidate: true });
@@ -491,10 +521,7 @@ export function AddRecipeModalComponent({ handleClose, onRecipeSaved }: Props) {
                       {errors.image.message}
                     </p>
                   )}
-                  <input
-                    type="hidden"
-                    {...register("image")}
-                  />
+                  <input type="hidden" {...register("image")} />
                 </div>
                 <div>
                   <label

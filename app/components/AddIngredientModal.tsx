@@ -137,11 +137,12 @@ export function AddIngredientModal({
 
   return (
     <div className="fixed w-full inset-0 bg-darkBackground bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="flex justify-between flex-col bg-lightBackground rounded-lg w-2/3 h-full ">
+      <div className="flex justify-between flex-col bg-lightBackground rounded-lg w-full md:w-2/3 h-full ">
         <div>
           <div className="flex justify-between items-center px-6 py-2 bg-lightgreyBackground rounded-t-lg">
             <h2 className="text-2xl font-bold">Tilføj ingredienser</h2>
             <button
+              type="button"
               onClick={onClose}
               className="text-gray-500 hover:text-gray-700 transition-all duration-150 cursor-pointer transform hover:scale-110 active:scale-95 active:opacity-80 p-1 rounded"
             >
@@ -150,84 +151,113 @@ export function AddIngredientModal({
           </div>
           <div className="w-full bg-lightBackground p-2">
             {/* Section Management */}
-            <div className="mb-4 space-y-2">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-sm font-semibold text-gray-700">
-                  Sektion:
-                </span>
+            <div className="mb-2 space-y-2">
+              {!showAddSectionInput ? (
                 <button
-                  onClick={() => setCurrentSection(null)}
-                  className={`px-3 py-1 rounded-lg text-sm transition-all duration-150 cursor-pointer ${
-                    currentSection === null
-                      ? "bg-action text-darkText font-bold"
-                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                  }`}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setShowAddSectionInput(true);
+                  }}
+                  className="mx-2 px-5 py-1 rounded-lg text-sm bg-action text-darkText hover:bg-actionHover transition-colors duration-150 cursor-pointer"
                 >
-                  Ingen sektion
+                  + Tilføj sektion
                 </button>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={newSectionName}
+                    onChange={(e) => setNewSectionName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleAddSection();
+                      } else if (e.key === "Escape") {
+                        e.preventDefault();
+                        setShowAddSectionInput(false);
+                        setNewSectionName("");
+                      }
+                    }}
+                    placeholder="Sektionsnavn (f.eks. 'Sauce')"
+                    className="px-3 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-action"
+                    autoFocus
+                  />
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleAddSection();
+                    }}
+                    className="px-3 py-1 rounded-lg text-sm bg-action text-darkText hover:bg-actionHover transition-colors duration-150 cursor-pointer"
+                  >
+                    ✓
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setShowAddSectionInput(false);
+                      setNewSectionName("");
+                    }}
+                    className="px-3 py-1 rounded-lg text-sm bg-gray-300 text-gray-700 hover:bg-gray-400 transition-colors duration-150 cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+              <div className="flex flex-wrap gap-2">
+                {sections.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setCurrentSection(null);
+                    }}
+                    className={`px-3 py-1 rounded-lg text-sm transition-all duration-150 cursor-pointer ${
+                      currentSection === null
+                        ? "bg-action text-darkText font-bold"
+                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    }`}
+                  >
+                    Ingen sektion
+                  </button>
+                )}
                 {sections.map((section) => (
                   <div key={section} className="flex items-center gap-1">
                     <button
-                      onClick={() => setCurrentSection(section)}
-                      className={`px-3 py-1 rounded-lg text-sm transition-all duration-150 cursor-pointer ${
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setCurrentSection(section);
+                      }}
+                      className={`w-fit min-w-20 flex justify-between px-3 py-1 rounded-lg text-sm transition-all duration-150 cursor-pointer ${
                         currentSection === section
                           ? "bg-action text-darkText font-bold"
                           : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                       }`}
                     >
                       {section}
-                    </button>
-                    <button
-                      onClick={() => handleRemoveSection(section)}
-                      className="text-red-500 hover:text-red-700 text-sm px-1 transition-colors"
-                      title="Fjern sektion"
-                    >
-                      ✕
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleRemoveSection(section);
+                        }}
+                        className="text-red-500 hover:text-red-700 text-sm px-1 transition-colors"
+                        title="Fjern sektion"
+                      >
+                        ✕
+                      </button>
                     </button>
                   </div>
                 ))}
-                {!showAddSectionInput ? (
-                  <button
-                    onClick={() => setShowAddSectionInput(true)}
-                    className="px-3 py-1 rounded-lg text-sm bg-action text-darkText hover:bg-actionHover transition-colors duration-150 cursor-pointer"
-                  >
-                    + Tilføj sektion
-                  </button>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      value={newSectionName}
-                      onChange={(e) => setNewSectionName(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          handleAddSection();
-                        } else if (e.key === "Escape") {
-                          setShowAddSectionInput(false);
-                          setNewSectionName("");
-                        }
-                      }}
-                      placeholder="Sektionsnavn (f.eks. 'Sauce')"
-                      className="px-3 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-action"
-                      autoFocus
-                    />
-                    <button
-                      onClick={handleAddSection}
-                      className="px-3 py-1 rounded-lg text-sm bg-action text-darkText hover:bg-actionHover transition-colors duration-150 cursor-pointer"
-                    >
-                      ✓
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowAddSectionInput(false);
-                        setNewSectionName("");
-                      }}
-                      className="px-3 py-1 rounded-lg text-sm bg-gray-300 text-gray-700 hover:bg-gray-400 transition-colors duration-150 cursor-pointer"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                )}
               </div>
             </div>
 
@@ -238,9 +268,9 @@ export function AddIngredientModal({
                   placeholder="Søg efter ingredienser..."
                 />
                 {isDropdownOpen && (
-                  <div className="absolute z-50 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-96 overflow-y-auto">
+                  <div className="w-full mt-1 h-fit space-y-2">
                     {searchTerm.trim() && (
-                      <div className="hover:bg-gray-100 cursor-pointer bg-gray-50 p-2">
+                      <div className="">
                         <AddIngredientComponent
                           onAdd={async (returnItem) => {
                             const newItem: Ingredient = returnItem;
@@ -254,10 +284,7 @@ export function AddIngredientModal({
                       </div>
                     )}
                     {items.map((item) => (
-                      <div
-                        key={item.name}
-                        className="p-2 hover:bg-gray-100 cursor-pointer"
-                      >
+                      <div key={item.name}>
                         <AddIngredientComponent
                           onAdd={async (newItem) => {
                             handleAddIngredient(newItem);
