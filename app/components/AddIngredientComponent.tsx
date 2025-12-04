@@ -10,6 +10,7 @@ interface Props {
   itemName: string;
   InputCategory?: string;
   defaultUnit?: string;
+  onItemDeleted?: () => void;
 }
 
 export function AddIngredientComponent({
@@ -17,6 +18,7 @@ export function AddIngredientComponent({
   itemName,
   InputCategory,
   defaultUnit,
+  onItemDeleted,
 }: Props) {
   const { units } = useConstants();
   const [quantity, setQuantity] = useState<number | "">("");
@@ -40,7 +42,7 @@ export function AddIngredientComponent({
     }
   }, [isPopoverOpen, defaultUnit, units]);
 
-  // Close popover when clicking outside
+  // Close popover when clicking outside and disable scroll when popover is open
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -54,9 +56,14 @@ export function AddIngredientComponent({
     };
 
     if (isPopoverOpen) {
+      document.body.style.overflow = "hidden";
       document.addEventListener("mousedown", handleClickOutside);
-      return () =>
+      return () => {
+        document.body.style.overflow = "unset";
         document.removeEventListener("mousedown", handleClickOutside);
+      };
+    } else {
+      document.body.style.overflow = "unset";
     }
   }, [isPopoverOpen]);
 
@@ -110,6 +117,10 @@ export function AddIngredientComponent({
 
     try {
       await removeItem(itemName);
+      // Trigger refresh callback if provided
+      if (onItemDeleted) {
+        onItemDeleted();
+      }
     } catch (err) {
       setError("Failed to remove item");
     } finally {
@@ -125,21 +136,23 @@ export function AddIngredientComponent({
 
   return (
     <div className="relative">
-      <button
-        ref={buttonRef}
-        type="button"
-        onClick={handleButtonClick}
-        className="w-full flex items-center justify-between px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-150 text-left"
-      >
-        <span className="text-base sm:text-lg font-medium truncate flex-1">
-          {itemName}
-        </span>
+      <div className="flex items-center gap-2">
+        <button
+          ref={buttonRef}
+          type="button"
+          onClick={handleButtonClick}
+          className="flex-1 flex items-center justify-between px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-150 text-left"
+        >
+          <span className="text-base sm:text-lg font-medium truncate">
+            {itemName}
+          </span>
+        </button>
         {InputCategory && (
           <div onClick={(e) => e.stopPropagation()}>
             <RemoveButton onClickF={async () => handleRemoveItem(itemName)} />
           </div>
         )}
-      </button>
+      </div>
 
       {isPopoverOpen && (
         <div

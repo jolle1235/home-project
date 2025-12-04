@@ -17,12 +17,14 @@ interface AddIngredientModalProps {
   onClose: () => void;
   ingredients: Ingredient[];
   setIngredients: React.Dispatch<React.SetStateAction<Ingredient[]>>;
+  onRefreshItems?: () => void;
 }
 
 export function AddIngredientModal({
   onClose,
   ingredients,
   setIngredients,
+  onRefreshItems,
 }: AddIngredientModalProps) {
   const searchBarRef = useRef<HTMLDivElement>(null);
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -32,6 +34,8 @@ export function AddIngredientModal({
   const [sections, setSections] = useState<string[]>([]);
   const [showAddSectionInput, setShowAddSectionInput] = useState(false);
   const [newSectionName, setNewSectionName] = useState<string>("");
+  const [isClosing, setIsClosing] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   const {
     register,
@@ -135,16 +139,63 @@ export function AddIngredientModal({
     }
   }, []);
 
+  // Disable scroll when modal is open and trigger mount animation
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    // Trigger animation after mount
+    setTimeout(() => setIsMounted(true), 10);
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, []);
+
+  // Handle close with animation
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      onClose();
+    }, 300); // Match animation duration
+  };
+
+  // Refresh items after deletion
+  const handleRefreshItems = async () => {
+    if (searchTerm) {
+      try {
+        const data = await searchItem(searchTerm);
+        setItems(data);
+      } catch (error) {
+        console.error("Failed to refresh Items");
+      }
+    }
+    if (onRefreshItems) {
+      onRefreshItems();
+    }
+  };
+
   return (
-    <div className="fixed w-full inset-0 bg-darkBackground bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="flex justify-between flex-col bg-lightBackground rounded-lg w-full md:w-2/3 h-full ">
+    <div
+      className={`fixed w-full inset-0 bg-darkBackground bg-opacity-50 flex items-end md:items-center justify-center p-4 z-50 transition-opacity duration-300 ${
+        isClosing ? "opacity-0" : "opacity-100"
+      }`}
+      onClick={handleClose}
+    >
+      <div
+        className={`flex justify-between flex-col bg-lightBackground rounded-t-lg md:rounded-lg w-full md:w-2/3 h-full md:h-auto md:max-h-[90vh] transform transition-all duration-300 ease-out ${
+          isClosing
+            ? "translate-y-full md:translate-y-0 md:scale-95 md:opacity-0"
+            : isMounted
+              ? "translate-y-0 md:scale-100 md:opacity-100"
+              : "translate-y-full md:translate-y-0 md:scale-95 md:opacity-0"
+        }`}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div>
           <div className="flex justify-between items-center px-6 py-2 bg-lightgreyBackground rounded-t-lg">
             <h2 className="text-2xl font-bold">Tilføj ingredienser</h2>
             <button
               type="button"
-              onClick={onClose}
-              className="text-gray-500 hover:text-gray-700 transition-all duration-150 cursor-pointer transform hover:scale-110 active:scale-95 active:opacity-80 p-1 rounded"
+              onClick={handleClose}
+              className="text-gray-500 hover:text-gray-700 transition-all duration-150 cursor-pointer transform hover:scale-110 active:scale-95 active:opacity-90 rounded"
             >
               ✕
             </button>
@@ -294,6 +345,7 @@ export function AddIngredientModal({
                           itemName={item.name}
                           InputCategory={item.category}
                           defaultUnit={item.defaultUnit}
+                          onItemDeleted={handleRefreshItems}
                         />
                       </div>
                     ))}
@@ -309,7 +361,7 @@ export function AddIngredientModal({
         </div>
         <div className="flex justify-between items-center">
           <ActionBtn
-            onClickF={onClose}
+            onClickF={handleClose}
             Itext="Done"
             color="bg-action"
             extraCSS="w-full"

@@ -105,7 +105,16 @@ export default function WeeklyRecipePlanner() {
               key={recipe._id}
               className="flex flex-col w-full items-center justify-between border rounded-lg p-2"
             >
-              <p className="truncate w-full">{recipe.recipeName}</p>
+              <div className="flex flex-row w-full items-center justify-between mb-2">
+                <p className="truncate flex-1">{recipe.recipeName}</p>
+                <button
+                  onClick={() => removeRecipeFromTempWeekPlan(recipe._id)}
+                  className="text-gray-500 hover:text-gray-700 transition-all duration-150 cursor-pointer transform hover:scale-110 active:scale-95 active:opacity-80 p-1 rounded ml-2"
+                  title="Fjern opskrift"
+                >
+                  ✕
+                </button>
+              </div>
               <ActionBtn
                 onClickF={() => openDialogForRecipe(recipe)}
                 Itext="Tilføj til madplan"
@@ -117,83 +126,71 @@ export default function WeeklyRecipePlanner() {
         <p className="text-gray-500">No recipes added yet.</p>
       )}
       <div className="mt-8">
-        <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
-          {Array.from({ length: 3 }).map((_, rowIdx) => (
-            <React.Fragment key={rowIdx}>
-              {weekDates
-                .slice(rowIdx * 7, rowIdx * 7 + 7)
-                .map((date, colIdx) => {
-                  if (!date) {
-                    return (
-                      <div
-                        key={`empty-${rowIdx}-${colIdx}`}
-                        className="border rounded p-4 min-h-[120px] bg-gray-50 opacity-50"
-                      />
-                    );
-                  }
-                  const dateKey = date.toISOString().split("T")[0];
-                  const displayText = date.toLocaleDateString("da-DK", {
-                    month: "short",
-                    day: "numeric",
-                    weekday: "short",
-                  });
-                  const entriesForDate = weekPlan.filter(
-                    (entry) => entry.date === dateKey
-                  );
-                  return (
-                    <div
-                      key={dateKey}
-                      className="border rounded p-4 flex flex-col min-h-[120px]"
-                    >
-                      <h6 className="text-base font-semibold mb-2 text-center">
-                        {displayText}
-                      </h6>
-                      {entriesForDate.length === 0 ? (
-                        <p className="text-gray-500 text-sm text-center">
-                          Ingen opskrifter planlagt.
-                        </p>
-                      ) : (
-                        <div className="space-y-1">
-                          {entriesForDate.map((entry) => (
-                            <div
-                              key={entry.recipe._id}
-                              className="flex flex-col items-center "
+        <div className="flex flex-col gap-4">
+          {weekDates
+            .filter((date) => date !== null)
+            .map((date) => {
+              const dateKey = date!.toISOString().split("T")[0];
+              const displayText = date!.toLocaleDateString("da-DK", {
+                month: "short",
+                day: "numeric",
+                weekday: "short",
+              });
+              const entriesForDate = weekPlan.filter(
+                (entry) => entry.date === dateKey
+              );
+              return (
+                <div
+                  key={dateKey}
+                  className="border rounded p-4 flex flex-col min-h-[120px]"
+                >
+                  <h6 className="text-base font-semibold mb-2 text-center">
+                    {displayText}
+                  </h6>
+                  {entriesForDate.length === 0 ? (
+                    <p className="text-gray-500 text-sm text-center">
+                      Ingen opskrifter planlagt.
+                    </p>
+                  ) : (
+                    <div className="space-y-1">
+                      {entriesForDate.map((entry) => (
+                        <div
+                          key={entry.recipe._id}
+                          className="flex flex-col items-center "
+                        >
+                          <div className="flex flex-row w-full justify-center items-center bg-gray-100 rounded-lg m-1 p-1">
+                            <p className="truncate flex-1 w-10/12">
+                              {entry.recipe.recipeName}
+                            </p>
+                            <button
+                              onClick={() => {
+                                removeRecipeFromWeekPlan(
+                                  dateKey,
+                                  entry.recipe._id
+                                );
+                              }}
+                              className="text-gray-500 hover:text-gray-700 transition-all duration-150 cursor-pointer transform hover:scale-110 active:scale-95 active:opacity-80 p-1 rounded"
                             >
-                              <div className="flex flex-row w-full justify-center items-center bg-gray-100 rounded-lg m-1 p-1">
-                                <p className="truncate flex-1 w-10/12">
-                                  {entry.recipe.recipeName}
-                                </p>
-                                <button
-                                  onClick={() => {
-                                    removeRecipeFromWeekPlan(
-                                      entriesForDate[0].date,
-                                      entry.recipe._id
-                                    );
-                                  }}
-                                  className="text-gray-500 hover:text-gray-700 transition-all duration-150 cursor-pointer transform hover:scale-110 active:scale-95 active:opacity-80 p-1 rounded"
-                                >
-                                  ✕
-                                </button>
-                              </div>
-                              <div className="flex flex-row justify-evenly w-full gap-1">
-                                <button
-                                  className="text-base p-1 bg-action hover:bg-actionHover rounded-lg w-10/12 transition-all duration-150 cursor-pointer transform hover:scale-105 active:scale-95 active:opacity-80"
-                                  onClick={() => {
-                                    handleRouter(entry.recipe._id);
-                                  }}
-                                >
-                                  Opskrift
-                                </button>
-                              </div>
-                            </div>
-                          ))}
+                              ✕
+                            </button>
+                          </div>
+                          <div className="flex flex-row justify-evenly w-full gap-1">
+                            <button
+                              className="text-base p-1 bg-action hover:bg-actionHover rounded-lg w-10/12 transition-all duration-150 cursor-pointer transform hover:scale-105 active:scale-95 active:opacity-80"
+                              onClick={() => {
+                                handleRouter(entry.recipe._id);
+                              }}
+                            >
+                              Opskrift
+                            </button>
+                          </div>
                         </div>
-                      )}
+                      ))}
                     </div>
-                  );
-                })}
-            </React.Fragment>
-          ))}
+                  )}
+                </div>
+              );
+            })}
         </div>
       </div>
       <CalendarDialog
