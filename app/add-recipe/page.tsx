@@ -1,6 +1,6 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import React, { useEffect, useRef, useState, Suspense } from "react";
+import { useRouter } from "next/navigation";
 import { Item } from "../model/Item";
 import { Ingredient } from "../model/Ingredient";
 import { Recipe } from "../model/Recipe";
@@ -16,9 +16,8 @@ import { useConstants } from "@/app/context/ConstantsContext";
 import { toast } from "react-toastify";
 import * as Yup from "yup";
 
-export default function AddRecipePage() {
+function AddRecipePageContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const searchBarRef = useRef<HTMLDivElement>(null);
@@ -546,6 +545,21 @@ export default function AddRecipePage() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function AddRecipePage() {
+  return (
+    <Suspense fallback={
+      <div className="w-full min-h-screen bg-lightBackground p-4 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-action mx-auto"></div>
+          <p className="mt-4 text-gray-600">Indlæser...</p>
+        </div>
+      </div>
+    }>
+      <AddRecipePageContent />
+    </Suspense>
   );
 }
 
