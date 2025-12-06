@@ -12,6 +12,7 @@ export default function WeeklyRecipePlanner() {
     weekPlan,
     tempWeekPlan,
     addRecipeToWeekPlan,
+    addRecipesToWeekPlan,
     removeRecipeFromTempWeekPlan,
     removeRecipeFromWeekPlan,
     getDatesForNext4Weeks,
@@ -84,9 +85,9 @@ export default function WeeklyRecipePlanner() {
 
   const handleDialogDone = (selectedDates: string[]) => {
     if (selectedRecipe) {
-      selectedDates.forEach((dateKey) => {
-        addRecipeToWeekPlan(dateKey, selectedRecipe);
-      });
+      if (selectedDates.length > 0) {
+        addRecipesToWeekPlan(selectedDates, selectedRecipe);
+      }
       removeRecipeFromTempWeekPlan(selectedRecipe._id);
     }
   };

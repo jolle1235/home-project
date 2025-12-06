@@ -18,6 +18,7 @@ interface RecipeContextProps {
   weekPlan: WeekPlan[];
   tempWeekPlan: Recipe[];
   addRecipeToWeekPlan: (date: string, recipe: Recipe) => void;
+  addRecipesToWeekPlan: (dates: string[], recipe: Recipe) => void;
   removeRecipeFromWeekPlan: (date: string, recipeId: string) => void;
   addRecipeToTempWeekPlan: (recipe: Recipe) => void;
   removeRecipeFromTempWeekPlan: (recipeId: string) => void;
@@ -54,10 +55,24 @@ export function RecipeProvider({ children }: { children: ReactNode }) {
   };
 
   const addRecipeToWeekPlan = (date: string, recipe: Recipe) => {
-    const newWeekPlan = [...weekPlan, { date, recipe }];
-    setWeekPlan(newWeekPlan);
+    setWeekPlan((prevWeekPlan) => {
+      const newWeekPlan = [...prevWeekPlan, { date, recipe }];
+      saveWeekPlanToDatabase(newWeekPlan);
+      return newWeekPlan;
+    });
     toast.success("Opskrift er nu tilføjet til din madplan");
-    saveWeekPlanToDatabase(newWeekPlan);
+  };
+
+  const addRecipesToWeekPlan = (dates: string[], recipe: Recipe) => {
+    setWeekPlan((prevWeekPlan) => {
+      const newEntries = dates.map((date) => ({ date, recipe }));
+      const newWeekPlan = [...prevWeekPlan, ...newEntries];
+      saveWeekPlanToDatabase(newWeekPlan);
+      return newWeekPlan;
+    });
+    toast.success(
+      `Opskrift er nu tilføjet til ${dates.length} ${dates.length === 1 ? "dato" : "datoer"} i din madplan`
+    );
   };
 
   const removeRecipeFromWeekPlan = (date: string, recipeId: string) => {
@@ -117,6 +132,7 @@ export function RecipeProvider({ children }: { children: ReactNode }) {
         weekPlan,
         tempWeekPlan,
         addRecipeToWeekPlan,
+        addRecipesToWeekPlan,
         removeRecipeFromWeekPlan,
         addRecipeToTempWeekPlan,
         removeRecipeFromTempWeekPlan,
