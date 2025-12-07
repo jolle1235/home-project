@@ -62,10 +62,12 @@ export default function RecipeDetailsPage() {
   if (isLoading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
 
+  const recipeId = Array.isArray(params.id) ? params.id[0] : params.id;
+
   return (
     <div className="w-full h-full flex flex-col overflow-x-hidden">
-      {/* Back Button */}
-      <div className="w-full mb-2">
+      {/* Back Button and Edit Button */}
+      <div className="w-full mb-2 flex justify-between items-center">
         <Link
           href="/recipes"
           className="flex items-center text-lg font-semibold text-gray-700 hover:text-gray-900 transition-colors"
@@ -73,6 +75,15 @@ export default function RecipeDetailsPage() {
           <img src="/icon/back_arrow.png" alt="Back" className="h-6 w-6 mr-2" />
           Tilbage til opskrifter
         </Link>
+        {recipeId && (
+          <Link
+            href={`/add-recipe?id=${recipeId}`}
+            className="flex items-center px-3 py-2 bg-action hover:bg-actionHover text-darkText font-semibold rounded-lg transition-colors duration-150 cursor-pointer transform hover:scale-105 active:scale-95 active:opacity-80"
+          >
+            <span className="mr-2">✏️</span>
+            Rediger
+          </Link>
+        )}
       </div>
       <div className="flex flex-col md:flex-row w-full h-full">
         <div className="flex flex-col md:w-1/2 w-full h-auto md:h-full p-1 justify-center items-center">
@@ -154,18 +165,24 @@ export default function RecipeDetailsPage() {
                   },
                   {} as Record<
                     string,
-                    Array<{ ingredient: Recipe["ingredients"][0]; index: number }>
+                    Array<{
+                      ingredient: Recipe["ingredients"][0];
+                      index: number;
+                    }>
                   >
                 );
 
                 // Get sections in order: first unsectioned (none), then sections
                 const sections = [
                   ...(groupedIngredients["none"] ? ["none"] : []),
-                  ...Object.keys(groupedIngredients).filter((s) => s !== "none"),
+                  ...Object.keys(groupedIngredients).filter(
+                    (s) => s !== "none"
+                  ),
                 ];
 
                 const scalingFactor =
-                  recommendedPersonAmount / (recipe?.recommendedPersonAmount || 1);
+                  recommendedPersonAmount /
+                  (recipe?.recommendedPersonAmount || 1);
 
                 return (
                   <>
@@ -176,26 +193,32 @@ export default function RecipeDetailsPage() {
                             {section}
                           </h3>
                         )}
-                        {groupedIngredients[section].map(({ ingredient, index }) => {
-                          const adjustedWeight = ingredient.quantity * scalingFactor;
+                        {groupedIngredients[section].map(
+                          ({ ingredient, index }) => {
+                            const adjustedWeight =
+                              ingredient.quantity * scalingFactor;
 
-                          return (
-                            <div
-                              key={index}
-                              className="flex flex-row w-full h-fit justify-between items-center p-2 border-b border-darkgreyBackground"
-                            >
-                              <input className="w-6 h-6 mr-4" type="checkbox" />
-                              <div className="flex justify-start basis-1/4 flex-grow">
-                                <p className="text-lg font-bold">
-                                  {ingredient.item.name}
+                            return (
+                              <div
+                                key={index}
+                                className="flex flex-row w-full h-fit justify-between items-center p-2 border-b border-darkgreyBackground"
+                              >
+                                <input
+                                  className="w-6 h-6 mr-4"
+                                  type="checkbox"
+                                />
+                                <div className="flex justify-start basis-1/4 flex-grow">
+                                  <p className="text-lg font-bold">
+                                    {ingredient.item.name}
+                                  </p>
+                                </div>
+                                <p className="flex justify-center items-center h-fit w-fit text-lg py-2 px-3 mx-2 bg-lightgreyBackground rounded-full">
+                                  {adjustedWeight.toFixed(1)} {ingredient.unit}
                                 </p>
                               </div>
-                              <p className="flex justify-center items-center h-fit w-fit text-lg py-2 px-3 mx-2 bg-lightgreyBackground rounded-full">
-                                {adjustedWeight.toFixed(1)} {ingredient.unit}
-                              </p>
-                            </div>
-                          );
-                        })}
+                            );
+                          }
+                        )}
                       </div>
                     ))}
                   </>

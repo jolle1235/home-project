@@ -55,12 +55,42 @@ export function AddIngredientComponent({
       }
     };
 
+    const handleWheel = (event: WheelEvent) => {
+      // Prevent scroll propagation when scrolling inside the popover
+      if (
+        popoverRef.current &&
+        popoverRef.current.contains(event.target as Node)
+      ) {
+        event.stopPropagation();
+      }
+    };
+
+    const handleTouchMove = (event: TouchEvent) => {
+      // Prevent scroll propagation when scrolling inside the popover on touch devices
+      if (
+        popoverRef.current &&
+        popoverRef.current.contains(event.target as Node)
+      ) {
+        event.stopPropagation();
+      }
+    };
+
     if (isPopoverOpen) {
       document.body.style.overflow = "hidden";
       document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("wheel", handleWheel, {
+        passive: false,
+        capture: true,
+      });
+      document.addEventListener("touchmove", handleTouchMove, {
+        passive: false,
+        capture: true,
+      });
       return () => {
         document.body.style.overflow = "unset";
         document.removeEventListener("mousedown", handleClickOutside);
+        document.removeEventListener("wheel", handleWheel, true);
+        document.removeEventListener("touchmove", handleTouchMove, true);
       };
     } else {
       document.body.style.overflow = "unset";
@@ -157,7 +187,9 @@ export function AddIngredientComponent({
       {isPopoverOpen && (
         <div
           ref={popoverRef}
-          className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg p-3"
+          className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg p-3 max-h-[80vh] overflow-y-auto"
+          onWheel={(e) => e.stopPropagation()}
+          onTouchMove={(e) => e.stopPropagation()}
         >
           <div className="flex flex-wrap items-center gap-2">
             <div className="flex w-full gap-1">

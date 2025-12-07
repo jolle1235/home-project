@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useRef, useState, Suspense } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Item } from "../model/Item";
 import { Ingredient } from "../model/Ingredient";
 import { Recipe } from "../model/Recipe";
@@ -12,17 +12,22 @@ import { searchItem } from "../utils/apiHelperFunctions";
 import { AddIngredientModal } from "../components/AddIngredientModal";
 import { IngredientsList } from "../components/ShowIngrediens";
 import ActionBtn from "../components/smallComponent/actionBtn";
+import ConfirmationDialog from "../components/ConfirmationDialog";
 import { useConstants } from "@/app/context/ConstantsContext";
 import { toast } from "react-toastify";
 import * as Yup from "yup";
 
 function AddRecipePageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const searchBarRef = useRef<HTMLDivElement>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [recipeId, setRecipeId] = useState<string | null>(null);
+  const [isLoadingRecipe, setIsLoadingRecipe] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   // States for recipe fields
   const { categories, checkAndAddUnitType } = useConstants();
@@ -46,24 +51,50 @@ function AddRecipePageContent() {
     mode: "onBlur",
   });
 
-  // Load recipe data from sessionStorage if coming from automatic mode
+  // Check for edit mode via query parameter and load recipe data
   useEffect(() => {
-    const storedRecipeData = sessionStorage.getItem("addRecipe_data");
-    if (storedRecipeData) {
-      try {
-        const data = JSON.parse(storedRecipeData);
-        setRecipeData(data);
-        sessionStorage.removeItem("addRecipe_data");
-      } catch (e) {
-        console.error("Failed to parse stored recipe data", e);
+    const id = searchParams.get("id");
+    if (id) {
+      setRecipeId(id);
+      setIsLoadingRecipe(true);
+      // Fetch recipe data for editing
+      const fetchRecipe = async () => {
+        try {
+          const response = await fetch(`/api/recipe/${id}`);
+          if (!response.ok) {
+            throw new Error("Failed to fetch recipe");
+          }
+          const data = await response.json();
+          setRecipeData(data);
+        } catch (error) {
+          console.error("Failed to fetch recipe for editing:", error);
+          toast.error("Kunne ikke indlæse opskriften til redigering.");
+        } finally {
+          setIsLoadingRecipe(false);
+        }
+      };
+      fetchRecipe();
+    } else {
+      // Load recipe data from sessionStorage if coming from automatic mode
+      const storedRecipeData = sessionStorage.getItem("addRecipe_data");
+      if (storedRecipeData) {
+        try {
+          const data = JSON.parse(storedRecipeData);
+          setRecipeData(data);
+          sessionStorage.removeItem("addRecipe_data");
+        } catch (e) {
+          console.error("Failed to parse stored recipe data", e);
+        }
       }
     }
-  }, []);
+  }, [searchParams]);
 
   // Load ingredients from sessionStorage when returning from add-ingredients
   useEffect(() => {
     const checkForReturnedIngredients = () => {
-      const storedIngredients = sessionStorage.getItem("addIngredients_ingredients");
+      const storedIngredients = sessionStorage.getItem(
+        "addIngredients_ingredients"
+      );
       if (storedIngredients) {
         try {
           const parsed = JSON.parse(storedIngredients);
@@ -76,7 +107,7 @@ function AddRecipePageContent() {
         }
       }
     };
-    
+
     checkForReturnedIngredients();
     const interval = setInterval(checkForReturnedIngredients, 500);
     return () => clearInterval(interval);
@@ -202,15 +233,23 @@ function AddRecipePageContent() {
         author: "",
       };
 
+      // If editing, include the _id and use PUT, otherwise use POST
+      const method = recipeId ? "PUT" : "POST";
+      const requestData = recipeId
+        ? { ...updatedFormData, _id: recipeId }
+        : updatedFormData;
+
       const res = await fetch("/api/recipe", {
-        method: "POST",
+        method: method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedFormData),
+        body: JSON.stringify(requestData),
       });
 
       if (!res.ok) {
         const errorText = await res.text();
-        let errorMessage = "Opskriften kunne ikke gemmes.";
+        let errorMessage = recipeId
+          ? "Opskriften kunne ikke opdateres."
+          : "Opskriften kunne ikke gemmes.";
         try {
           const errorData = JSON.parse(errorText);
           errorMessage = errorData.error || errorMessage;
@@ -221,7 +260,9 @@ function AddRecipePageContent() {
       }
 
       const result = await res.json();
-      toast.success("Opskriften blev gemt 🎉");
+      toast.success(
+        recipeId ? "Opskriften blev opdateret 🎉" : "Opskriften blev gemt 🎉"
+      );
       router.push("/recipes");
     } catch (error) {
       console.error("Fejl i form submission:", error);
@@ -311,6 +352,42 @@ function AddRecipePageContent() {
     setIngredients(ingredients.filter((_, i) => i !== index));
   }
 
+  const handleDeleteRecipe = async () => {
+    if (!recipeId) return;
+
+    setIsSaving(true);
+    try {
+      const res = await fetch("/api/recipe", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ _id: recipeId }),
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        let errorMessage = "Opskriften kunne ikke slettes.";
+        try {
+          const errorData = JSON.parse(errorText);
+          errorMessage = errorData.error || errorMessage;
+        } catch {
+          errorMessage = errorText || errorMessage;
+        }
+        throw new Error(errorMessage);
+      }
+
+      toast.success("Opskriften blev slettet");
+      router.push("/recipes");
+    } catch (error) {
+      console.error("Fejl ved sletning af opskrift:", error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Noget gik galt. Opskriften blev ikke slettet.";
+      toast.error(errorMessage);
+      setIsSaving(false);
+    }
+  };
+
   async function setRecipeData(data: Recipe) {
     setValue("recipeName", data.recipeName || "");
     setValue("description", data.description || "");
@@ -358,11 +435,24 @@ function AddRecipePageContent() {
     }
   }
 
+  if (isLoadingRecipe) {
+    return (
+      <div className="w-full min-h-screen bg-lightBackground p-4 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-action mx-auto"></div>
+          <p className="mt-4 text-gray-600">Indlæser opskrift...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full min-h-screen bg-lightBackground p-4">
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold">Tilføj ny opskrift</h2>
+          <h2 className="text-2xl font-bold">
+            {recipeId ? "Rediger opskrift" : "Tilføj ny opskrift"}
+          </h2>
           <button
             onClick={() => router.back()}
             className="text-gray-500 hover:text-gray-700 transition-all duration-150 cursor-pointer transform hover:scale-110 active:scale-95 active:opacity-80 p-1 rounded"
@@ -389,7 +479,9 @@ function AddRecipePageContent() {
                 placeholder="Indtast navn..."
               />
               {errors.recipeName && (
-                <p className="text-red-500 text-xs">{errors.recipeName.message}</p>
+                <p className="text-red-500 text-xs">
+                  {errors.recipeName.message}
+                </p>
               )}
             </div>
 
@@ -447,7 +539,9 @@ function AddRecipePageContent() {
                 initialPreview={imageUrl}
               />
               {errors.image && (
-                <p className="text-red-500 text-xs mt-1">{errors.image.message}</p>
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.image.message}
+                </p>
               )}
               <input type="hidden" {...register("image")} />
             </div>
@@ -466,7 +560,9 @@ function AddRecipePageContent() {
                 className="w-full p-3 border rounded-lg h-32"
               ></textarea>
               {errors.description && (
-                <p className="text-red-500 text-xs">{errors.description.message}</p>
+                <p className="text-red-500 text-xs">
+                  {errors.description.message}
+                </p>
               )}
             </div>
 
@@ -525,24 +621,43 @@ function AddRecipePageContent() {
             )}
           </div>
 
-          <div className="flex justify-end space-x-4">
-            <ActionBtn
-              onClickF={() => router.back()}
-              Itext="Annuller"
-              color="bg-cancel"
-              hover="bg-cancelHover"
-              extraCSS={isSaving ? "opacity-50 cursor-not-allowed" : ""}
-            />
-            <ActionBtn
-              type="submit"
-              Itext="Gem opskrift"
-              color="bg-action"
-              hover="bg-actionHover"
-              isLoading={isSaving}
-              loadingText="Gemmer..."
-            />
+          <div className="flex justify-between items-center space-x-4">
+            {recipeId && (
+              <ActionBtn
+                onClickF={() => setShowDeleteDialog(true)}
+                Itext="Slet opskrift"
+                color="bg-cancel"
+                hover="bg-cancelHover"
+                extraCSS={isSaving ? "opacity-50 cursor-not-allowed" : ""}
+              />
+            )}
+            <div className="flex justify-end space-x-4 ml-auto">
+              <ActionBtn
+                onClickF={() => router.back()}
+                Itext="Annuller"
+                color="bg-cancel"
+                hover="bg-cancelHover"
+                extraCSS={isSaving ? "opacity-50 cursor-not-allowed" : ""}
+              />
+              <ActionBtn
+                type="submit"
+                Itext={recipeId ? "Opdater opskrift" : "Gem opskrift"}
+                color="bg-action"
+                hover="bg-actionHover"
+                isLoading={isSaving}
+                loadingText="Gemmer..."
+              />
+            </div>
           </div>
         </form>
+
+        <ConfirmationDialog
+          open={showDeleteDialog}
+          onClose={() => setShowDeleteDialog(false)}
+          onConfirm={handleDeleteRecipe}
+          title="Slet opskrift"
+          message="Er du sikker på, at du vil slette denne opskrift? Denne handling kan ikke fortrydes."
+        />
       </div>
     </div>
   );
@@ -550,16 +665,17 @@ function AddRecipePageContent() {
 
 export default function AddRecipePage() {
   return (
-    <Suspense fallback={
-      <div className="w-full min-h-screen bg-lightBackground p-4 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-action mx-auto"></div>
-          <p className="mt-4 text-gray-600">Indlæser...</p>
+    <Suspense
+      fallback={
+        <div className="w-full min-h-screen bg-lightBackground p-4 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-action mx-auto"></div>
+            <p className="mt-4 text-gray-600">Indlæser...</p>
+          </div>
         </div>
-      </div>
-    }>
+      }
+    >
       <AddRecipePageContent />
     </Suspense>
   );
 }
-
