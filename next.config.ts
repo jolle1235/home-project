@@ -1,16 +1,9 @@
 // next.config.ts
 import type { NextConfig } from "next";
 
-/**
- * runtimeCaching rules use string handler names supported by next-pwa:
- * 'StaleWhileRevalidate', 'CacheFirst', etc.
- *
- * We'll use StaleWhileRevalidate so cached responses show instantly
- * while the service worker fetches an update in the background.
- */
+// ---- your runtimeCaching stays the same ----
 
 const runtimeCaching = [
-  // next.js static assets
   {
     urlPattern: /^\/_next\/static\/.*/i,
     handler: "StaleWhileRevalidate",
@@ -19,8 +12,6 @@ const runtimeCaching = [
       expiration: { maxEntries: 100, maxAgeSeconds: 30 * 24 * 60 * 60 },
     },
   },
-
-  // manifest icons (your project uses /icon/)
   {
     urlPattern: /^\/icon\/.*\.(?:png|jpg|svg|webp|ico)$/i,
     handler: "StaleWhileRevalidate",
@@ -30,8 +21,6 @@ const runtimeCaching = [
       cacheableResponse: { statuses: [0, 200] },
     },
   },
-
-  // API endpoints you might want to cache (adjust paths if needed)
   {
     urlPattern: /^\/api\/admin\/unitTypes.*$/i,
     handler: "StaleWhileRevalidate",
@@ -50,8 +39,6 @@ const runtimeCaching = [
       cacheableResponse: { statuses: [0, 200] },
     },
   },
-
-  // fallback for images in other routes
   {
     urlPattern: /.*\.(?:png|jpg|jpeg|svg|gif|webp)$/i,
     handler: "StaleWhileRevalidate",
@@ -63,30 +50,6 @@ const runtimeCaching = [
   },
 ];
 
-const nextConfig: NextConfig = {
-  // Keep your sw.js header (helps ensure browser revalidates the service worker)
-  headers: async () => {
-    return [
-      {
-        source: "/sw.js",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=0, must-revalidate",
-          },
-        ],
-      },
-    ];
-  },
-  images: {
-    domains: ["mummum.dk"],
-  },
-};
-
-/**
- * Use CommonJS require for next-pwa so it works in both JS/TS configs.
- * next-pwa returns a function that wraps your next config.
- */
 const withPWA = require("next-pwa")({
   dest: "public",
   register: true,
@@ -95,4 +58,29 @@ const withPWA = require("next-pwa")({
   runtimeCaching,
 });
 
+// ---- Final merged config ----
+
+const nextConfig: NextConfig = {
+  headers: async () => [
+    {
+      source: "/sw.js",
+      headers: [
+        {
+          key: "Cache-Control",
+          value: "public, max-age=0, must-revalidate",
+        },
+      ],
+    },
+  ],
+  images: {
+    domains: ["mummum.dk"],
+  },
+  webpack: (config) => {
+    // your custom webpack changes here
+    return config;
+  },
+  turbopack: false,
+};
+
+// Wrap with PWA plugin
 export default withPWA(nextConfig);
