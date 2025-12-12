@@ -17,6 +17,7 @@
     "@vercel/speed-insights": "^1.2.0",
     "amqplib": "^0.10.9",
     "cheerio": "^1.1.2",
+    "hase": "^2.0.1",
     "mongodb": "^6.14.2",
     "next": "^16.0.7",
     "next-connect": "^1.0.0",
