@@ -2,12 +2,6 @@
 import { NextResponse } from "next/server";
 import { MongoClient } from "mongodb";
 
-export const config = {
-  api: {
-    bodyParser: false, // Disable Next.js default body parsing to handle multipart/form-data manually.
-  },
-};
-
 const databaseName = process.env.MONGO_DATABASE_NAME ?? "";
 const mongoURI = process.env.MONGODB_URI ?? "";
 
@@ -15,8 +9,8 @@ if (!databaseName) {
   throw new Error("databaseName is not defined");
 }
 
-if(!mongoURI){
-    throw new Error("mongoURI is not defined");
+if (!mongoURI) {
+  throw new Error("mongoURI is not defined");
 }
 
 async function saveImageToMongoDB(fileBuffer: Buffer, fileName: string) {
@@ -46,10 +40,7 @@ export async function POST(req: Request) {
     const file = formData.get("image") as File;
 
     if (!file) {
-      return NextResponse.json(
-        { error: "No file uploaded" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
     }
 
     // Convert the uploaded File into a Buffer.
@@ -65,9 +56,6 @@ export async function POST(req: Request) {
       { status: 200 }
     );
   } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

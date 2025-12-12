@@ -79,7 +79,9 @@ const nextConfig: NextConfig = {
     // your custom webpack changes here
     return config;
   },
-  turbopack: false,
+  turbopack: {
+    resolveExtensions: [".ts", ".tsx", ".js", ".jsx", ".json", ".mjs", ".cjs"],
+  },
 };
 
 // Wrap with PWA plugin
