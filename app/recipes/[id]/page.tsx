@@ -1,17 +1,34 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Recipe } from "../../model/Recipe";
+import { Ingredient } from "../../model/Ingredient";
 import { maxRecipePersons } from "../../utils/validationVariables";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { useShoppingListContext } from "../../context/ShoppinglistContext";
+import { toast } from "react-toastify";
 
 export default function RecipeDetailsPage() {
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [recommendedPersonAmount, setRecommendedPersonAmount] = useState(1);
+  const [checkedIngredients, setCheckedIngredients] = useState<Set<string>>(
+    new Set()
+  );
   const params = useParams();
+  const { addIngredients } = useShoppingListContext();
+
+  const toggleCheckedIngredient = (index: number) => {
+    setCheckedIngredients((prev) => {
+      const next = new Set(prev);
+      const key = String(index);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
 
   // Fetch recipes
   useEffect(() => {
@@ -63,6 +80,37 @@ export default function RecipeDetailsPage() {
   if (error) return <p>{error}</p>;
 
   const recipeId = Array.isArray(params.id) ? params.id[0] : params.id;
+  const scalingFactor = recipe
+    ? recommendedPersonAmount / (recipe.recommendedPersonAmount || 1)
+    : 1;
+
+  const handleAddCheckedToShoppingList = () => {
+    if (!recipe?.ingredients?.length) return;
+    const toAdd: Ingredient[] = recipe.ingredients
+      .filter((_, i) => checkedIngredients.has(String(i)))
+      .map((ing) => {
+        const hasAmount = ing.quantity != null && ing.quantity > 0;
+        const quantity = hasAmount
+          ? parseFloat((ing.quantity * scalingFactor).toFixed(1))
+          : 1;
+        const unit = hasAmount && ing.unit ? ing.unit : "stk";
+        return {
+          ...ing,
+          _id: crypto.randomUUID(),
+          marked: false,
+          quantity,
+          unit,
+        };
+      });
+    if (toAdd.length === 0) {
+      toast.info("Vælg mindst én ingrediens.");
+      return;
+    }
+    addIngredients(toAdd);
+    toast.success(
+      `${toAdd.length} ingrediens${toAdd.length === 1 ? "" : "er"} tilføjet til indkøbslisten`
+    );
+  };
 
   return (
     <div className="w-full h-full flex flex-col overflow-x-hidden">
@@ -206,6 +254,12 @@ export default function RecipeDetailsPage() {
                                 <input
                                   className="w-6 h-6 mr-4"
                                   type="checkbox"
+                                  checked={checkedIngredients.has(
+                                    String(index)
+                                  )}
+                                  onChange={() =>
+                                    toggleCheckedIngredient(index)
+                                  }
                                 />
                                 <div className="flex justify-start basis-1/4 flex-grow">
                                   <p className="text-lg font-bold">
@@ -225,17 +279,15 @@ export default function RecipeDetailsPage() {
                 );
               })()}
             </div>
-            {/* Portion and Action Buttons */}
-            {/* <div className="flex flex-col md:flex-row justify-between items-center border-darkgreyBackground mt-3">
-            <div className="flex items-center mb-3 md:mb-0">
-            
+            <div className="flex flex-col md:flex-row justify-between items-center border-darkgreyBackground mt-3 pt-3">
+              <button
+                type="button"
+                onClick={handleAddCheckedToShoppingList}
+                className="flex h-10 p-2 justify-center items-center bg-action hover:bg-actionHover text-darkText font-bold rounded-lg w-full md:w-auto"
+              >
+                Tilføj valgte til indkøbslisten
+              </button>
             </div>
-            <button
-            className="flex h-10 p-2 justify-center items-center bg-action hover:bg-actionHover text-darkText font-bold rounded-lg w-full md:w-auto"
-            >
-            Tilføj til din indkøbsliste
-            </button>
-            </div> */}
           </div>
         </div>
         {/* Right column (Description) */}

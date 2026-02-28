@@ -12,12 +12,17 @@ import { AddIngredientComponent } from "./AddIngredientComponent";
 import { Item } from "../model/Item";
 import ActionBtn from "./smallComponent/actionBtn";
 import { IngredientsList } from "./ShowIngrediens";
+import { useShoppingListContext } from "../context/ShoppinglistContext";
 
 interface AddIngredientModalProps {
   onClose: () => void;
   ingredients: Ingredient[];
   setIngredients: React.Dispatch<React.SetStateAction<Ingredient[]>>;
   onRefreshItems?: () => void;
+  /** When "shoppingList", ingredients are added to the shopping list instead of the local list. */
+  mode?: "recipe" | "shoppingList";
+  /** Shown at top in small grey text when mode is shoppingList. */
+  description?: string;
 }
 
 export function AddIngredientModal({
@@ -25,7 +30,10 @@ export function AddIngredientModal({
   ingredients,
   setIngredients,
   onRefreshItems,
+  mode = "recipe",
+  description,
 }: AddIngredientModalProps) {
+  const { addIngredient: addToShoppingList } = useShoppingListContext();
   const searchBarRef = useRef<HTMLDivElement>(null);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -36,6 +44,7 @@ export function AddIngredientModal({
   const [newSectionName, setNewSectionName] = useState<string>("");
   const [isClosing, setIsClosing] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const isShoppingListMode = mode === "shoppingList";
 
   const {
     register,
@@ -76,6 +85,15 @@ export function AddIngredientModal({
   }
 
   function handleAddIngredient(ingredient: Ingredient) {
+    if (isShoppingListMode) {
+      addToShoppingList({
+        ...ingredient,
+        _id: crypto.randomUUID(),
+        section: undefined,
+        marked: false,
+      });
+      return;
+    }
     const ingredientWithSection: Ingredient = {
       ...ingredient,
       section: currentSection || undefined,
@@ -191,7 +209,12 @@ export function AddIngredientModal({
       >
         <div>
           <div className="flex justify-between items-center px-6 py-2 bg-lightgreyBackground rounded-t-lg">
-            <h2 className="text-2xl font-bold">Tilføj ingredienser</h2>
+            <div>
+              <h2 className="text-2xl font-bold">Tilføj ingredienser</h2>
+              {isShoppingListMode && description && (
+                <p className="text-sm text-gray-500 mt-0.5">{description}</p>
+              )}
+            </div>
             <button
               type="button"
               onClick={handleClose}
@@ -201,116 +224,118 @@ export function AddIngredientModal({
             </button>
           </div>
           <div className="w-full bg-lightBackground p-2">
-            {/* Section Management */}
-            <div className="mb-2 space-y-2">
-              {!showAddSectionInput ? (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setShowAddSectionInput(true);
-                  }}
-                  className="mx-2 px-5 py-1 rounded-lg text-sm bg-action text-darkText hover:bg-actionHover transition-colors duration-150 cursor-pointer"
-                >
-                  + Tilføj sektion
-                </button>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={newSectionName}
-                    onChange={(e) => setNewSectionName(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        handleAddSection();
-                      } else if (e.key === "Escape") {
-                        e.preventDefault();
-                        setShowAddSectionInput(false);
-                        setNewSectionName("");
-                      }
-                    }}
-                    placeholder="Sektionsnavn (f.eks. 'Sauce')"
-                    className="px-3 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-action"
-                    autoFocus
-                  />
+            {/* Section Management - only for recipe mode */}
+            {!isShoppingListMode && (
+              <div className="mb-2 space-y-2">
+                {!showAddSectionInput ? (
                   <button
                     type="button"
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      handleAddSection();
+                      setShowAddSectionInput(true);
                     }}
-                    className="px-3 py-1 rounded-lg text-sm bg-action text-darkText hover:bg-actionHover transition-colors duration-150 cursor-pointer"
+                    className="mx-2 px-5 py-1 rounded-lg text-sm bg-action text-darkText hover:bg-actionHover transition-colors duration-150 cursor-pointer"
                   >
-                    ✓
+                    + Tilføj sektion
                   </button>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setShowAddSectionInput(false);
-                      setNewSectionName("");
-                    }}
-                    className="px-3 py-1 rounded-lg text-sm bg-gray-300 text-gray-700 hover:bg-gray-400 transition-colors duration-150 cursor-pointer"
-                  >
-                    ✕
-                  </button>
-                </div>
-              )}
-              <div className="flex flex-wrap gap-2">
-                {sections.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setCurrentSection(null);
-                    }}
-                    className={`px-3 py-1 rounded-lg text-sm transition-all duration-150 cursor-pointer ${
-                      currentSection === null
-                        ? "bg-action text-darkText font-bold"
-                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                    }`}
-                  >
-                    Ingen sektion
-                  </button>
-                )}
-                {sections.map((section) => (
-                  <div key={section} className="flex items-center gap-1">
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={newSectionName}
+                      onChange={(e) => setNewSectionName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleAddSection();
+                        } else if (e.key === "Escape") {
+                          e.preventDefault();
+                          setShowAddSectionInput(false);
+                          setNewSectionName("");
+                        }
+                      }}
+                      placeholder="Sektionsnavn (f.eks. 'Sauce')"
+                      className="px-3 py-1 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-action"
+                      autoFocus
+                    />
                     <button
                       type="button"
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        setCurrentSection(section);
+                        handleAddSection();
                       }}
-                      className={`w-fit min-w-20 flex justify-between px-3 py-1 rounded-lg text-sm transition-all duration-150 cursor-pointer ${
-                        currentSection === section
+                      className="px-3 py-1 rounded-lg text-sm bg-action text-darkText hover:bg-actionHover transition-colors duration-150 cursor-pointer"
+                    >
+                      ✓
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setShowAddSectionInput(false);
+                        setNewSectionName("");
+                      }}
+                      className="px-3 py-1 rounded-lg text-sm bg-gray-300 text-gray-700 hover:bg-gray-400 transition-colors duration-150 cursor-pointer"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-2">
+                  {sections.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setCurrentSection(null);
+                      }}
+                      className={`px-3 py-1 rounded-lg text-sm transition-all duration-150 cursor-pointer ${
+                        currentSection === null
                           ? "bg-action text-darkText font-bold"
                           : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                       }`}
                     >
-                      {section}
+                      Ingen sektion
+                    </button>
+                  )}
+                  {sections.map((section) => (
+                    <div key={section} className="flex items-center gap-1">
                       <button
                         type="button"
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          handleRemoveSection(section);
+                          setCurrentSection(section);
                         }}
-                        className="text-red-500 hover:text-red-700 text-sm px-1 transition-colors"
-                        title="Fjern sektion"
+                        className={`w-fit min-w-20 flex justify-between px-3 py-1 rounded-lg text-sm transition-all duration-150 cursor-pointer ${
+                          currentSection === section
+                            ? "bg-action text-darkText font-bold"
+                            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                        }`}
                       >
-                        ✕
+                        {section}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleRemoveSection(section);
+                          }}
+                          className="text-red-500 hover:text-red-700 text-sm px-1 transition-colors"
+                          title="Fjern sektion"
+                        >
+                          ✕
+                        </button>
                       </button>
-                    </button>
-                  </div>
-                ))}
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             <div className="space-y-4 relative">
               <div ref={searchBarRef} className="relative">
@@ -338,7 +363,11 @@ export function AddIngredientModal({
                       <div key={item.name}>
                         <AddIngredientComponent
                           onAdd={async (newItem) => {
-                            handleAddIngredient(newItem);
+                            handleAddIngredient(
+                              isShoppingListMode
+                                ? { ...newItem, _id: crypto.randomUUID() }
+                                : newItem
+                            );
                             setSearchTerm("");
                             setIsDropdownOpen(false);
                           }}
@@ -353,10 +382,17 @@ export function AddIngredientModal({
                 )}
               </div>
             </div>
-            <IngredientsList
-              ingredients={ingredients}
-              onRemove={(index) => handleOnIngredientRemove(index)}
-            />
+            {!isShoppingListMode && (
+              <IngredientsList
+                ingredients={ingredients}
+                onRemove={(index) => handleOnIngredientRemove(index)}
+              />
+            )}
+            {isShoppingListMode && (
+              <p className="text-sm text-gray-500 py-2">
+                Varer tilføjes direkte til indkøbslisten.
+              </p>
+            )}
           </div>
         </div>
         <div className="flex justify-between items-center">
