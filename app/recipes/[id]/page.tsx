@@ -74,6 +74,11 @@ export default function RecipeDetailsPage() {
     if (recipe?.recommendedPersonAmount) {
       setRecommendedPersonAmount(recipe.recommendedPersonAmount);
     }
+    if (recipe?.ingredients?.length) {
+      setCheckedIngredients(
+        new Set(recipe.ingredients.map((_, index) => String(index)))
+      );
+    }
   }, [recipe]);
 
   if (isLoading) return <p>Loading...</p>;
@@ -187,7 +192,7 @@ export default function RecipeDetailsPage() {
                       prev < maxRecipePersons ? prev + 1 : prev
                     )
                   }
-                  className="flex justify-center items-center w-7 p-1 text-lg bg-action rounded-lg"
+                  className="flex justify-center items-center w-7 p-0.5 text-lg bg-action rounded-lg"
                 >
                   <img className="w-full" src="/icon/add_sign.png" alt="add" />
                 </button>

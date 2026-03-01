@@ -13,6 +13,8 @@ import { Item } from "../model/Item";
 import ActionBtn from "./smallComponent/actionBtn";
 import { IngredientsList } from "./ShowIngrediens";
 import { useShoppingListContext } from "../context/ShoppinglistContext";
+import { IconButton } from "./IconButton";
+import { Link2 } from "lucide-react";
 
 interface AddIngredientModalProps {
   onClose: () => void;
@@ -223,7 +225,24 @@ export function AddIngredientModal({
               ✕
             </button>
           </div>
-          <div className="w-full bg-lightBackground p-2">
+          <div className="w-full bg-lightBackground p-2 space-y-2">
+            <div className="flex justify-end">
+              <div className="flex items-center gap-1 group">
+                <IconButton
+                  icon={Link2}
+                  variant="secondary"
+                  ariaLabel="Indsæt ingredienser fra URL"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    // Placeholder for future URL-based ingredient import
+                  }}
+                />
+                <span className="hidden sm:inline-flex text-xs text-darkText opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-150">
+                  Indsæt fra URL
+                </span>
+              </div>
+            </div>
             {/* Section Management - only for recipe mode */}
             {!isShoppingListMode && (
               <div className="mb-2 space-y-2">

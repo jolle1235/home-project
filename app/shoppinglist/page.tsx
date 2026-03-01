@@ -1,8 +1,10 @@
 "use client";
 import { useState } from "react";
+import { Plus, Trash2, ArrowUpDown } from "lucide-react";
 import { useShoppingListContext } from "../context/ShoppinglistContext";
 import { ShoppingListItemComponent } from "../components/ShoppingListItemComponent";
 import { AddIngredientModal } from "../components/AddIngredientModal";
+import { IconButton } from "../components/IconButton";
 
 export default function ShoppingListPage() {
   const {
@@ -19,39 +21,55 @@ export default function ShoppingListPage() {
       <h1 className="text-2xl sm:text-3xl font-bold text-darkText mb-4">
         Indkøbsliste
       </h1>
-      <div className="flex flex-wrap gap-2 mb-4">
-        <button
-          type="button"
-          onClick={() => setAddModalOpen(true)}
-          className="px-3 py-2 bg-action hover:bg-actionHover text-darkText font-semibold rounded-lg transition-colors"
-        >
-          Tilføj ingrediens
-        </button>
+      <div className="flex flex-wrap gap-3 mb-4 items-center">
+        <div className="flex items-center gap-1 group">
+          <IconButton
+            icon={Plus}
+            variant="primary"
+            ariaLabel="Tilføj ingrediens"
+            onClick={() => setAddModalOpen(true)}
+          />
+          <span className="hidden sm:inline-flex text-sm text-darkText opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-150">
+            Tilføj ingrediens
+          </span>
+        </div>
         {isSomethingMarked() && (
-          <button
-            type="button"
-            onClick={clearMarked}
-            className="px-3 py-2 bg-gray-200 hover:bg-gray-300 text-darkText font-medium rounded-lg transition-colors"
-          >
-            Fjern markerede
-          </button>
+          <div className="flex items-center gap-1 group">
+            <IconButton
+              icon={Trash2}
+              variant="secondary"
+              ariaLabel="Fjern markerede"
+              onClick={clearMarked}
+            />
+            <span className="hidden sm:inline-flex text-sm text-darkText opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-150">
+              Fjern markerede
+            </span>
+          </div>
         )}
         {shoppingList.length > 0 && (
-          <div className="flex ml-auto flex-row gap-2">
-            <button
-              type="button"
-              onClick={sortByCenter}
-              className="px-3 py-2 bg-gray-200 hover:bg-gray-300 text-darkText font-medium rounded-lg transition-colors"
-            >
-              Sortér efter butik
-            </button>
-            <button
-              type="button"
-              onClick={clearList}
-              className="px-3 py-2 bg-cancel hover:opacity-90 text-darkText font-medium rounded-lg transition-colors"
-            >
-              Tøm listen
-            </button>
+          <div className="flex ml-auto flex-row gap-3">
+            <div className="flex items-center gap-1 group">
+              <IconButton
+                icon={ArrowUpDown}
+                variant="secondary"
+                ariaLabel="Sortér efter butik"
+                onClick={sortByCenter}
+              />
+              <span className="hidden sm:inline-flex text-sm text-darkText opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-150">
+                Sortér efter butik
+              </span>
+            </div>
+            <div className="flex items-center gap-1 group">
+              <IconButton
+                icon={Trash2}
+                variant="danger"
+                ariaLabel="Tøm listen"
+                onClick={clearList}
+              />
+              <span className="hidden sm:inline-flex text-sm text-darkText opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-150">
+                Tøm listen
+              </span>
+            </div>
           </div>
         )}
       </div>

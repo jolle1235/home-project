@@ -5,6 +5,8 @@ import ActionBtn from "../smallComponent/actionBtn";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useState } from "react";
+import { CalendarPlus, Eye } from "lucide-react";
+import { IconButton } from "../IconButton";
 
 export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
   const { addRecipeToTempWeekPlan } = useRecipeContext();
@@ -98,44 +100,36 @@ export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
                   <p>personer</p>
                 </div>
               </div>
-              <div className="flex flex-row justify-center items-center p-1 sm:p-2 gap-1 sm:gap-2">
-                <ActionBtn
-                  onClickF={() => addRecipeToTempWeekPlan(recipe)}
-                  Itext="Tilføj til madplan"
-                />
-                <button
-                  onClick={() => handleRouter(recipe._id)}
-                  disabled={loadingRecipeId === recipe._id}
-                  className={`flex justify-center items-center text-base sm:text-lg bg-action hover:bg-secondaryHover active:scale-95 active:opacity-80 transition-all duration-150 cursor-pointer transform hover:scale-105 py-1 px-2 m-1 rounded-lg min-h-[36px] sm:min-h-[40px] disabled:opacity-70 disabled:cursor-not-allowed`}
-                >
-                  {loadingRecipeId === recipe._id ? (
-                    <div className="flex items-center gap-2">
-                      <svg
-                        className="animate-spin h-5 w-5 text-darkText"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                      </svg>
-                      <span>Indlæser...</span>
-                    </div>
-                  ) : (
-                    "Se opskrift"
-                  )}
-                </button>
+              <div className="flex flex-row justify-center items-center p-1 sm:p-2 gap-3">
+                <div className="flex items-center gap-1 group">
+                  <IconButton
+                    icon={CalendarPlus}
+                    variant="primary"
+                    ariaLabel="Tilføj til madplan"
+                    onClick={() => addRecipeToTempWeekPlan(recipe)}
+                  />
+                  <span className="hidden md:inline-flex text-xs text-darkText opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-150">
+                    Tilføj til madplan
+                  </span>
+                </div>
+                <div className="flex items-center gap-1 group">
+                  <IconButton
+                    icon={Eye}
+                    variant="secondary"
+                    ariaLabel={
+                      loadingRecipeId === recipe._id
+                        ? "Indlæser opskrift"
+                        : "Se opskrift"
+                    }
+                    onClick={() => handleRouter(recipe._id)}
+                    disabled={loadingRecipeId === recipe._id}
+                  />
+                  <span className="hidden md:inline-flex text-xs text-darkText opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-150">
+                    {loadingRecipeId === recipe._id
+                      ? "Indlæser..."
+                      : "Se opskrift"}
+                  </span>
+                </div>
               </div>
             </div>
           </div>

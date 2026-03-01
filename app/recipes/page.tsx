@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState, useMemo } from "react";
+import { Filter } from "lucide-react";
 import { AddButtonComponent } from "../components/AddButtonComponent";
 import { AddRecipeModalComponent } from "../components/recipeComponent/AddRecipeModalComponent";
 import { RecipeCardComponent } from "../components/recipeComponent/RecipeCardComponent";
@@ -7,6 +8,7 @@ import { CategoryWheelComponent } from "../components/CategoryWheelComponent";
 import { TimeRangeSelectorComponent } from "../components/TimeRangeSelectorComponent";
 import { Recipe } from "../model/Recipe";
 import { useConstants } from "../context/ConstantsContext";
+import { IconButton } from "../components/IconButton";
 
 export default function RecipePage() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
@@ -104,18 +106,23 @@ export default function RecipePage() {
 
   return (
     <div className="flex flex-col w-full bg-lightBackground overflow-hidden">
-      <div className="flex flex-row w-full mb-4">
+      <div className="flex flex-row w-full mb-4 items-center">
         <input
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Søg efter opskrifter..."
           className="border border-gray-300 p-2 rounded-md w-full"
         />
-        <button
-          onClick={() => setIsFilterSettingsOpen(!isFilterSettingsOpen)}
-          className="w-36 ml-2 px-4 py-2 bg-gray-500 text-white rounded-md transition-all duration-150 cursor-pointer transform hover:scale-105 hover:bg-gray-400 active:scale-95 active:opacity-80"
-        >
-          {isFilterSettingsOpen ? "Skjul Filter" : "Vis Filter"}
-        </button>
+        <div className="ml-2 flex items-center gap-1 group">
+          <IconButton
+            icon={Filter}
+            variant="secondary"
+            ariaLabel={isFilterSettingsOpen ? "Skjul filter" : "Vis filter"}
+            onClick={() => setIsFilterSettingsOpen(!isFilterSettingsOpen)}
+          />
+          <span className="hidden sm:inline-flex text-sm text-darkText opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-150">
+            {isFilterSettingsOpen ? "Skjul filter" : "Vis filter"}
+          </span>
+        </div>
       </div>
 
       {isFilterSettingsOpen && (
