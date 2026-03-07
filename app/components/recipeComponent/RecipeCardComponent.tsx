@@ -35,7 +35,7 @@ export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
   return (
     <div
       id="recipes"
-      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 px-4 sm:px-0"
+      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 px-0"
     >
       {recipes.map((recipe) => {
         const isLoading = loadingRecipeId === recipe._id;
