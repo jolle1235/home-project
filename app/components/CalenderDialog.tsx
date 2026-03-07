@@ -59,7 +59,7 @@ export default function CalendarDialog({
         {/* Header */}
         <div className="mb-5 text-center">
           <h2 className="text-xl font-semibold text-foreground">Vælg datoer</h2>
-          <p className="text-sm text-secondary-hover mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             Vælg en eller flere dage
           </p>
         </div>

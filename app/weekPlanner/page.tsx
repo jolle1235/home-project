@@ -180,7 +180,7 @@ export default function WeeklyRecipePlanner() {
                           </div>
                           <div className="flex flex-row justify-evenly w-full gap-1">
                             <button
-                              className="text-base p-1 bg-action hover:bg-actionHover rounded-lg w-10/12 transition-all duration-150 cursor-pointer transform hover:scale-105 active:scale-95 active:opacity-80"
+                              className="text-base p-1 bg-primary hover:bg-primaryHover rounded-lg w-10/12 transition-all duration-150 cursor-pointer transform hover:scale-105 active:scale-95 active:opacity-80"
                               onClick={() => {
                                 handleRouter(entry.recipe._id);
                               }}

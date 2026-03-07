@@ -55,7 +55,7 @@ export function AddRecipeModalComponent({ handleClose, onRecipeSaved }: Props) {
             <h2 className="text-xl sm:text-2xl font-semibold text-foreground">
               Tilføj ny opskrift
             </h2>
-            <p className="text-sm text-secondary-hover mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               Importér automatisk eller opret manuelt
             </p>
           </div>
@@ -64,7 +64,7 @@ export function AddRecipeModalComponent({ handleClose, onRecipeSaved }: Props) {
             onClick={handleClose}
             type="button"
             aria-label="Luk"
-            className="min-h-[40px] min-w-[40px] flex items-center justify-center rounded-full text-secondary-hover hover:bg-soft transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            className="min-h-[40px] min-w-[40px] flex items-center justify-center rounded-full text-muted-foreground hover:bg-soft transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             ✕
           </button>
@@ -76,7 +76,7 @@ export function AddRecipeModalComponent({ handleClose, onRecipeSaved }: Props) {
           <div className="bg-surface rounded-xl p-4 flex flex-col gap-3">
             <div>
               <h3 className="font-medium text-foreground">Automatisk import</h3>
-              <p className="text-sm text-secondary-hover">
+              <p className="text-sm text-muted-foreground">
                 Indsæt et link, så henter vi opskriften for dig.
               </p>
             </div>
@@ -87,7 +87,7 @@ export function AddRecipeModalComponent({ handleClose, onRecipeSaved }: Props) {
           {/* Divider */}
           <div className="flex items-center gap-3">
             <div className="flex-1 h-px bg-secondary"></div>
-            <span className="text-xs text-secondary-hover uppercase tracking-wide">
+            <span className="text-xs text-muted-foreground uppercase tracking-wide">
               Eller
             </span>
             <div className="flex-1 h-px bg-secondary"></div>

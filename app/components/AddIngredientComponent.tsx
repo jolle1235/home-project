@@ -268,7 +268,7 @@ export function AddIngredientComponent({
             <button
               type="button"
               onClick={handleSubmit}
-              className="w-full bg-action hover:bg-actionHover font-semibold px-4 py-2 rounded-lg transition-colors"
+              className="w-full bg-primary hover:bg-primaryHover font-semibold px-4 py-2 rounded-lg transition-colors"
             >
               Tilføj
             </button>

@@ -42,16 +42,6 @@ export default function NavBar() {
           </span>
         </Link>
         <Link
-          href="/weekPlanner"
-          aria-label="Madplan"
-          className={`${makeLinkClasses("/weekPlanner")} group`}
-        >
-          <CalendarDays className="w-6 h-6 sm:w-5 sm:h-5" />
-          <span className="hidden md:inline-flex text-[10px] opacity-0 group-hover:opacity-100 transition-opacity duration-150">
-            Madplan
-          </span>
-        </Link>
-        <Link
           href="/shoppinglist"
           aria-label="Indkøbsliste"
           className={`${makeLinkClasses("/shoppinglist")} group`}
@@ -59,6 +49,16 @@ export default function NavBar() {
           <ShoppingCart className="w-6 h-6 sm:w-5 sm:h-5" />
           <span className="hidden md:inline-flex text-[10px] opacity-0 group-hover:opacity-100 transition-opacity duration-150">
             Indkøbsliste
+          </span>
+        </Link>
+        <Link
+          href="/weekPlanner"
+          aria-label="Madplan"
+          className={`${makeLinkClasses("/weekPlanner")} group`}
+        >
+          <CalendarDays className="w-6 h-6 sm:w-5 sm:h-5" />
+          <span className="hidden md:inline-flex text-[10px] opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+            Madplan
           </span>
         </Link>
         <Link

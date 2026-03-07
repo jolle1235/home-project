@@ -24,7 +24,7 @@ export function DrinkCardComponent({ drinks }: { drinks: Drink[] }) {
           <div key={drink._id} className="w-full">
             <div
               id="drink_card"
-              className="flex flex-col w-full h-fit shadow-even shadow-darkBackground rounded-lg mt-3 sm:mt-5 bg-neutral-100 cursor-pointer"
+              className="flex flex-col w-full h-fit shadow-even shadow-background rounded-lg mt-3 sm:mt-5 bg-neutral-100 cursor-pointer"
               onClick={() => router.push(`/drinks/${drink._id}`)}
             >
               <div className="relative w-full h-48 sm:h-64">
@@ -38,7 +38,7 @@ export function DrinkCardComponent({ drinks }: { drinks: Drink[] }) {
               </div>
 
               <div id="titel_and_meta" className="flex flex-col p-2">
-                <p className="truncate w-full text-darkText text-lg sm:text-xl font-bold">
+                <p className="truncate w-full text-muted-foreground text-lg sm:text-xl font-bold">
                   {drink.title}
                 </p>
                 <div className="flex flex-row justify-between text-darkgreyText text-sm sm:text-base mt-1">

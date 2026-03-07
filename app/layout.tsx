@@ -55,7 +55,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" style={{ colorScheme: 'light' }}>
+    <html lang="en" style={{ colorScheme: "light" }}>
       <head>
         <link rel="manifest" href="/manifest.json" />
         <meta name="application-name" content="Home Project" />
@@ -74,7 +74,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icon/icon-192x192.png" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col bg-lightBackground`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col bg-`}
       >
         <RecipeProvider>
           <ShoppingListProvider>

@@ -94,7 +94,7 @@ export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
                 </div>
 
                 {/* Content */}
-                <div className="flex flex-col p-5 gap-3">
+                <div className="flex flex-col p-2 gap-3">
                   {/* Categories */}
                   {Array.isArray(recipe.categories) &&
                     recipe.categories.length > 0 && (
@@ -150,7 +150,7 @@ export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
               </div>
 
               {/* Actions */}
-              <div className="flex gap-3 px-5 pb-5 pt-1">
+              <div className="flex gap-3 px-2 pb-2 pt-1">
                 <Button
                   variant={isInTempPlan ? "ghost" : "primary"}
                   size="sm"

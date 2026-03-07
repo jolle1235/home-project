@@ -85,7 +85,7 @@ export default function RecipeDetailsPage() {
 
   if (isLoading)
     return (
-      <div className="w-full py-12 text-center text-secondary-hover">
+      <div className="w-full py-12 text-center text-muted-foreground">
         Indlæser opskrift...
       </div>
     );
@@ -132,7 +132,7 @@ export default function RecipeDetailsPage() {
         <div className="w-full mb-4 flex justify-between items-center gap-3">
           <Link
             href="/recipes"
-            className="inline-flex items-center gap-2 text-sm sm:text-base text-secondary-hover hover:text-foreground transition-colors"
+            className="flex flex-row justify-center items-center gap-2 bg-secondary rounded-lg p-2"
           >
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             <span>Tilbage til opskrifter</span>
@@ -170,7 +170,7 @@ export default function RecipeDetailsPage() {
                 <h2 className="text-xl sm:text-2xl font-semibold text-foreground">
                   {recipe?.recipeName}
                 </h2>
-                <div className="flex flex-wrap items-center gap-3 text-sm text-secondary-hover">
+                <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
                   <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-soft">
                     <Clock className="h-4 w-4" aria-hidden="true" />
                     <span>{recipe?.time} min</span>
@@ -181,7 +181,7 @@ export default function RecipeDetailsPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-3 mt-1">
-                  <span className="text-sm text-secondary-hover">
+                  <span className="text-sm text-muted-foreground">
                     Justér antal personer:
                   </span>
                   <div className="inline-flex items-center rounded-full bg-soft px-2 py-1 gap-1.5">

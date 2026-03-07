@@ -25,12 +25,10 @@ export default function ConfirmationDialog({
     open && (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
         <div className="bg-white rounded-lg shadow-lg w-full max-w-md mx-2 p-4">
-          <div className="text-xl font-bold mb-4 text-darkText text-center">
+          <div className="text-xl font-bold mb-4 text-muted-foreground text-center">
             {title}
           </div>
-          <div className="mb-6 text-center text-gray-700">
-            {message}
-          </div>
+          <div className="mb-6 text-center text-gray-700">{message}</div>
           <div className="flex justify-end gap-2">
             <button
               onClick={onClose}
@@ -41,7 +39,7 @@ export default function ConfirmationDialog({
             </button>
             <button
               onClick={handleConfirm}
-              className="bg-action hover:bg-actionHover text-white font-semibold px-4 py-2 rounded-lg transition-colors"
+              className="bg-primary hover:bg-primaryHover text-white font-semibold px-4 py-2 rounded-lg transition-colors"
               type="button"
             >
               Bekræft
@@ -52,4 +50,3 @@ export default function ConfirmationDialog({
     )
   );
 }
-

@@ -11,7 +11,7 @@ export function TimeRangeSelectorComponent({
 
   return (
     <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch">
-      <label className="flex flex-col text-xs sm:text-sm text-secondary-hover gap-1 flex-1">
+      <label className="flex flex-col text-xs sm:text-sm text-muted-foreground gap-1 flex-1">
         Minimum
         <select
           value={timeRange[0]}
@@ -29,7 +29,7 @@ export function TimeRangeSelectorComponent({
         </select>
       </label>
 
-      <label className="flex flex-col text-xs sm:text-sm text-secondary-hover gap-1 flex-1">
+      <label className="flex flex-col text-xs sm:text-sm text-muted-foreground gap-1 flex-1">
         Maksimum
         <select
           value={timeRange[1]}

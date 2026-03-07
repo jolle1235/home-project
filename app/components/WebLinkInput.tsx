@@ -40,7 +40,7 @@ export function WebLinkInput({ onScraped }: WebLinkInputProps) {
   }
 
   return (
-    <div className="w-full flex flex-row border-b-2 border-lightgreyBackground p-2">
+    <div className="w-full flex flex-row gap-2">
       <input
         ref={inputRef}
         className="w-10/12"
@@ -48,7 +48,7 @@ export function WebLinkInput({ onScraped }: WebLinkInputProps) {
         type="text"
         placeholder="Indsæt Link"
       />
-      <Button onClick={sendWebpage} variant="primary" size="lg" fullWidth>
+      <Button onClick={sendWebpage} variant="primary" size="md">
         Send
       </Button>
     </div>

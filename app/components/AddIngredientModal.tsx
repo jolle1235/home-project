@@ -13,7 +13,7 @@ import { Item } from "../model/Item";
 import { IngredientsList } from "./ShowIngrediens";
 import { useShoppingListContext } from "../context/ShoppinglistContext";
 import { IconButton } from "./IconButton";
-import { Link2 } from "lucide-react";
+import { Link2, X } from "lucide-react";
 import Button from "./smallComponent/Button";
 
 interface AddIngredientModalProps {
@@ -205,7 +205,7 @@ export function AddIngredientModal({
 
   return (
     <div
-      className={`fixed w-full inset-0 bg-darkBackground bg-opacity-50 flex items-end md:items-center justify-center p-4 z-50 transition-opacity duration-300 ${
+      className={`fixed w-full inset-0 bg-background bg-opacity-50 flex items-end md:items-center justify-center p-4 z-50 transition-opacity duration-300 ${
         isClosing ? "opacity-0" : "opacity-100"
       }`}
       onClick={handleClose}
@@ -221,39 +221,15 @@ export function AddIngredientModal({
         onClick={(e) => e.stopPropagation()}
       >
         <div>
-          <div className="flex justify-between items-center px-6 py-2 bg-lightgreyBackground rounded-t-lg">
+          <div className="flex justify-start items-center p-2 bg-lightgreyBackground rounded-t-lg">
             <div>
               <h2 className="text-2xl font-bold">Tilføj ingredienser</h2>
               {isShoppingListMode && description && (
                 <p className="text-sm text-gray-500 mt-0.5">{description}</p>
               )}
             </div>
-            <button
-              type="button"
-              onClick={handleClose}
-              className="text-gray-500 hover:text-gray-700 transition-all duration-150 cursor-pointer transform hover:scale-110 active:scale-95 active:opacity-90 rounded"
-            >
-              ✕
-            </button>
           </div>
           <div className="w-full bg-lightBackground p-2 space-y-2">
-            <div className="flex justify-end">
-              <div className="flex items-center gap-1 group">
-                <IconButton
-                  icon={Link2}
-                  variant="secondary"
-                  ariaLabel="Indsæt ingredienser fra URL"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    // Placeholder for future URL-based ingredient import
-                  }}
-                />
-                <span className="hidden sm:inline-flex text-xs text-darkText opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-150">
-                  Indsæt fra URL
-                </span>
-              </div>
-            </div>
             {/* Section Management - only for recipe mode */}
             {!isShoppingListMode && (
               <div className="mb-2 space-y-2">
@@ -265,7 +241,7 @@ export function AddIngredientModal({
                       e.stopPropagation();
                       setShowAddSectionInput(true);
                     }}
-                    className="mx-2 px-5 py-1 rounded-lg text-sm bg-action text-darkText hover:bg-actionHover transition-colors duration-150 cursor-pointer"
+                    className="mx-2 px-5 py-1 rounded-lg text-sm bg-primary text-muted-foreground hover:bg-primaryHover transition-colors duration-150 cursor-pointer"
                   >
                     + Tilføj sektion
                   </button>
@@ -296,7 +272,7 @@ export function AddIngredientModal({
                         e.stopPropagation();
                         handleAddSection();
                       }}
-                      className="px-3 py-1 rounded-lg text-sm bg-action text-darkText hover:bg-actionHover transition-colors duration-150 cursor-pointer"
+                      className="px-3 py-1 rounded-lg text-sm bg-primary text-muted-foreground hover:bg-primaryHover transition-colors duration-150 cursor-pointer"
                     >
                       ✓
                     </button>
@@ -325,7 +301,7 @@ export function AddIngredientModal({
                       }}
                       className={`px-3 py-1 rounded-lg text-sm transition-all duration-150 cursor-pointer ${
                         currentSection === null
-                          ? "bg-action text-darkText font-bold"
+                          ? "bg-primary text-muted-foreground font-bold"
                           : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                       }`}
                     >
@@ -343,7 +319,7 @@ export function AddIngredientModal({
                         }}
                         className={`w-fit min-w-20 flex justify-between px-3 py-1 rounded-lg text-sm transition-all duration-150 cursor-pointer ${
                           currentSection === section
-                            ? "bg-action text-darkText font-bold"
+                            ? "bg-primary text-muted-foreground font-bold"
                             : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                         }`}
                       >

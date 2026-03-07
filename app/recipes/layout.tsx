@@ -5,5 +5,5 @@ export default async function RecipeLayout({
 }: {
   children: ReactNode;
 }) {
-  return <div className="bg-lightBackground p-1 w-full h-full">{children}</div>;
+  return <div className="bg-background p-1 w-full h-full">{children}</div>;
 }

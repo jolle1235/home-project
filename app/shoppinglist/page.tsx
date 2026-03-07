@@ -18,7 +18,7 @@ export default function ShoppingListPage() {
 
   return (
     <div className="w-full max-w-4xl mx-auto p-4">
-      <h1 className="text-2xl sm:text-3xl font-bold text-darkText mb-4">
+      <h1 className="text-2xl sm:text-3xl font-bold text-muted-foreground mb-4">
         Indkøbsliste
       </h1>
       <div className="flex flex-wrap gap-3 mb-4 items-center">
@@ -29,7 +29,7 @@ export default function ShoppingListPage() {
             ariaLabel="Tilføj ingrediens"
             onClick={() => setAddModalOpen(true)}
           />
-          <span className="hidden sm:inline-flex text-sm text-darkText opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-150">
+          <span className="hidden sm:inline-flex text-sm text-muted-foreground opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-150">
             Tilføj ingrediens
           </span>
         </div>
@@ -41,7 +41,7 @@ export default function ShoppingListPage() {
               ariaLabel="Fjern markerede"
               onClick={clearMarked}
             />
-            <span className="hidden sm:inline-flex text-sm text-darkText opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-150">
+            <span className="hidden sm:inline-flex text-sm text-muted-foreground opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-150">
               Fjern markerede
             </span>
           </div>
@@ -55,7 +55,7 @@ export default function ShoppingListPage() {
                 ariaLabel="Sortér efter butik"
                 onClick={sortByCenter}
               />
-              <span className="hidden sm:inline-flex text-sm text-darkText opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-150">
+              <span className="hidden sm:inline-flex text-sm text-muted-foreground opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-150">
                 Sortér efter butik
               </span>
             </div>
@@ -66,7 +66,7 @@ export default function ShoppingListPage() {
                 ariaLabel="Tøm listen"
                 onClick={clearList}
               />
-              <span className="hidden sm:inline-flex text-sm text-darkText opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-150">
+              <span className="hidden sm:inline-flex text-sm text-muted-foreground opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-150">
                 Tøm listen
               </span>
             </div>

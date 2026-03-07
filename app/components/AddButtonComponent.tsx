@@ -17,9 +17,8 @@ export function AddButtonComponent({
     <Button
       onClick={onClick}
       variant="primary"
-      size="lg"
+      size="sm"
       aria-label={ariaLabel}
-      className="rounded-full shadow-lg min-h-[48px] px-5"
     >
       <Plus className="w-5 h-5" aria-hidden="true" />
       <span className="hidden sm:inline">{label}</span>

@@ -110,21 +110,31 @@ export default function RecipePage() {
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 py-6">
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-col gap-1">
-            <div className="flex items-baseline gap-3">
-              <h1 className="text-xl sm:text-2xl font-semibold text-foreground">
-                Opskrifter
-              </h1>
-              {!isLoading && !error && (
-                <span className="text-sm text-muted-foreground">
-                  {resultsCount} resultat
-                  {resultsCount === 1 ? "" : "er"}
-                </span>
-              )}
+          <div className="flex flex-row justify-between items-center">
+            <div className="flex flex-col gap-1">
+              <div className="flex items-baseline gap-3">
+                <h1 className="text-xl sm:text-2xl font-semibold text-foreground">
+                  Opskrifter
+                </h1>
+                {!isLoading && !error && (
+                  <span className="text-sm text-muted-foreground">
+                    {resultsCount} resultat
+                    {resultsCount === 1 ? "" : "er"}
+                  </span>
+                )}
+              </div>
+              <p className="text-sm text-muted-foreground max-w-xl">
+                Find, filtrer og tilføj opskrifter til din madplan.
+              </p>
             </div>
-            <p className="text-sm text-muted-foreground max-w-xl">
-              Find, filtrer og tilføj opskrifter til din madplan.
-            </p>
+            {/* Add recipe CTA */}
+            <div className="flex justify-center items-center">
+              <AddButtonComponent
+                onClick={handleOpen}
+                label="Tilføj opskrift"
+                ariaLabel="Tilføj ny opskrift"
+              />
+            </div>
           </div>
 
           <div className="w-full sm:max-w-md flex items-center gap-2">
@@ -217,15 +227,6 @@ export default function RecipePage() {
           ) : (
             <RecipeCardComponent recipes={filteredRecipes} />
           )}
-        </div>
-
-        {/* Add recipe CTA */}
-        <div className="mt-8 flex justify-end">
-          <AddButtonComponent
-            onClick={handleOpen}
-            label="Tilføj opskrift"
-            ariaLabel="Tilføj ny opskrift"
-          />
         </div>
       </div>
 
