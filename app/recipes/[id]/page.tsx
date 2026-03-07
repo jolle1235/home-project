@@ -8,6 +8,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useShoppingListContext } from "../../context/ShoppinglistContext";
 import { toast } from "react-toastify";
+import Button from "../../components/smallComponent/Button";
+import { ArrowLeft, Clock, Edit2, Minus, Plus, Users } from "lucide-react";
 
 export default function RecipeDetailsPage() {
   const [recipe, setRecipe] = useState<Recipe | null>(null);
@@ -81,8 +83,14 @@ export default function RecipeDetailsPage() {
     }
   }, [recipe]);
 
-  if (isLoading) return <p>Loading...</p>;
-  if (error) return <p>{error}</p>;
+  if (isLoading)
+    return (
+      <div className="w-full py-12 text-center text-secondary-hover">
+        Indlæser opskrift...
+      </div>
+    );
+  if (error)
+    return <div className="w-full py-12 text-center text-red-600">{error}</div>;
 
   const recipeId = Array.isArray(params.id) ? params.id[0] : params.id;
   const scalingFactor = recipe
@@ -118,189 +126,217 @@ export default function RecipeDetailsPage() {
   };
 
   return (
-    <div className="w-full h-full flex flex-col overflow-x-hidden">
-      {/* Back Button and Edit Button */}
-      <div className="w-full mb-2 flex justify-between items-center">
-        <Link
-          href="/recipes"
-          className="flex items-center text-lg font-semibold text-gray-700 hover:text-gray-900 transition-colors"
-        >
-          <img src="/icon/back_arrow.png" alt="Back" className="h-6 w-6 mr-2" />
-          Tilbage til opskrifter
-        </Link>
-        {recipeId && (
+    <div className="w-full bg-background">
+      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 py-6">
+        {/* Back Button and Edit Button */}
+        <div className="w-full mb-4 flex justify-between items-center gap-3">
           <Link
-            href={`/add-recipe?id=${recipeId}`}
-            className="flex items-center px-3 py-2 bg-action hover:bg-actionHover text-darkText font-semibold rounded-lg transition-colors duration-150 cursor-pointer transform hover:scale-105 active:scale-95 active:opacity-80"
+            href="/recipes"
+            className="inline-flex items-center gap-2 text-sm sm:text-base text-secondary-hover hover:text-foreground transition-colors"
           >
-            <span className="mr-2">✏️</span>
-            Rediger
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+            <span>Tilbage til opskrifter</span>
           </Link>
-        )}
-      </div>
-      <div className="flex flex-col md:flex-row w-full h-full">
-        <div className="flex flex-col md:w-1/2 w-full h-auto md:h-full p-1 justify-center items-center">
-          <div className="flex flex-col items-center justify-center md:h-1/2  w-full m-2">
-            <Image
-              className="w-full max-h-60 object-cover rounded-lg mb-2"
-              src={recipe?.image || "/fallback.jpg"}
-              alt={recipe?.recipeName || "Recipe image"}
-              width={600} // set an appropriate width
-              height={240} // set an appropriate height
-            />
-            <div className="flex flex-col items-center bg-lightgreyBackground rounded-lg p-2 mb-1 w-full">
-              <h2 className="text-2xl font-bold text-center">
-                {recipe?.recipeName}
-              </h2>
-            </div>
-            <div className="flex flex-row w-full justify-around">
-              <div className="flex flex-row w-fit justify-center items-center py-1 px-4 m-2 bg-lightgreyBackground h-12 rounded-full">
-                <img
-                  src="/icon/recipes_page/time.png"
-                  alt="Time"
-                  className="h-6 mr-1"
-                />
-                <span className="text-lg">{recipe?.time} min</span>
-              </div>
-              <div
-                id="portion_div"
-                className="flex flex-row w-fit h-12 justify-center items-center py-1 px-4 m-2 bg-lightgreyBackground space-x-2 rounded-full"
-              >
-                <img
-                  src="/icon/recipes_page/person.png"
-                  className="h-8"
-                  alt="Person icon"
-                />
-                <button
-                  onClick={() =>
-                    setRecommendedPersonAmount((prev) => Math.max(prev - 1, 1))
-                  }
-                  className="flex justify-center items-center p-1 w-7 bg-cancel rounded-lg"
-                >
-                  <img
-                    className="w-full"
-                    src="/icon/substract_sign.png"
-                    alt="subtract"
-                  />
-                </button>
-                <p className="flex w-8 h-8 rounded-lg items-center justify-center m-0 bg-white">
-                  {recommendedPersonAmount}
-                </p>
-                <button
-                  onClick={() =>
-                    setRecommendedPersonAmount((prev) =>
-                      prev < maxRecipePersons ? prev + 1 : prev
-                    )
-                  }
-                  className="flex justify-center items-center w-7 p-0.5 text-lg bg-action rounded-lg"
-                >
-                  <img className="w-full" src="/icon/add_sign.png" alt="add" />
-                </button>
-              </div>
-            </div>
-          </div>
-          {/* Items */}
-          <div
-            id="recipe_Items"
-            className="flex flex-col w-full h-auto md:h-full justify-between border-t border-darkgreyBackground"
-          >
-            <div className="flex flex-col w-full h-fit justify-start items-start">
-              {(() => {
-                // Group ingredients by section
-                const groupedIngredients = (recipe?.ingredients || []).reduce(
-                  (acc, ingredient, index) => {
-                    const section = ingredient.section || "none";
-                    if (!acc[section]) {
-                      acc[section] = [];
-                    }
-                    acc[section].push({ ingredient, index });
-                    return acc;
-                  },
-                  {} as Record<
-                    string,
-                    Array<{
-                      ingredient: Recipe["ingredients"][0];
-                      index: number;
-                    }>
-                  >
-                );
-
-                // Get sections in order: first unsectioned (none), then sections
-                const sections = [
-                  ...(groupedIngredients["none"] ? ["none"] : []),
-                  ...Object.keys(groupedIngredients).filter(
-                    (s) => s !== "none"
-                  ),
-                ];
-
-                const scalingFactor =
-                  recommendedPersonAmount /
-                  (recipe?.recommendedPersonAmount || 1);
-
-                return (
-                  <>
-                    {sections.map((section) => (
-                      <div key={section} className="w-full">
-                        {section !== "none" && (
-                          <h3 className="text-xl font-bold text-darkText mb-2 mt-4 pt-2 border-t border-darkgreyBackground first:border-t-0 first:mt-0 first:pt-0">
-                            {section}
-                          </h3>
-                        )}
-                        {groupedIngredients[section].map(
-                          ({ ingredient, index }) => {
-                            const adjustedWeight =
-                              ingredient.quantity * scalingFactor;
-
-                            return (
-                              <div
-                                key={index}
-                                className="flex flex-row w-full h-fit justify-between items-center p-2 border-b border-darkgreyBackground"
-                              >
-                                <input
-                                  className="w-6 h-6 mr-4"
-                                  type="checkbox"
-                                  checked={checkedIngredients.has(
-                                    String(index)
-                                  )}
-                                  onChange={() =>
-                                    toggleCheckedIngredient(index)
-                                  }
-                                />
-                                <div className="flex justify-start basis-1/4 flex-grow">
-                                  <p className="text-lg font-bold">
-                                    {ingredient.item.name}
-                                  </p>
-                                </div>
-                                <p className="flex justify-center items-center h-fit w-fit text-lg py-2 px-3 mx-2 bg-lightgreyBackground rounded-full">
-                                  {adjustedWeight.toFixed(1)} {ingredient.unit}
-                                </p>
-                              </div>
-                            );
-                          }
-                        )}
-                      </div>
-                    ))}
-                  </>
-                );
-              })()}
-            </div>
-            <div className="flex flex-col md:flex-row justify-between items-center border-darkgreyBackground mt-3 pt-3">
-              <button
+          {recipeId && (
+            <Link href={`/add-recipe?id=${recipeId}`}>
+              <Button
                 type="button"
-                onClick={handleAddCheckedToShoppingList}
-                className="flex h-10 p-2 justify-center items-center bg-action hover:bg-actionHover text-darkText font-bold rounded-lg w-full md:w-auto"
+                variant="secondary"
+                size="sm"
+                className="inline-flex items-center gap-2"
               >
-                Tilføj valgte til indkøbslisten
-              </button>
-            </div>
-          </div>
+                <Edit2 className="h-4 w-4" aria-hidden="true" />
+                Rediger
+              </Button>
+            </Link>
+          )}
         </div>
-        {/* Right column (Description) */}
-        <div className="flex flex-col md:w-1/2 w-full h-fit min-h-80 p-3">
-          {/* <h2 className="font-bold text-center mb-3">Beskrivelse</h2> */}
-          <div className="flex-1 rounded-lg p-5 bg-lightgreyBackground overflow-y-auto">
-            <p className="whitespace-pre-line">{recipe?.description}</p>
+
+        <div className="flex flex-col md:flex-row gap-6">
+          {/* Left column: image, title, meta, ingredients */}
+          <div className="flex flex-col md:w-1/2 w-full gap-4">
+            {/* Hero card */}
+            <section className="bg-surface rounded-2xl shadow-sm overflow-hidden">
+              <div className="relative w-full h-56 sm:h-64">
+                <Image
+                  className="object-cover"
+                  src={recipe?.image || "/fallback.jpg"}
+                  alt={recipe?.recipeName || "Recipe image"}
+                  fill
+                  sizes="(min-width: 1024px) 50vw, 100vw"
+                />
+              </div>
+              <div className="p-4 sm:p-5 flex flex-col gap-3">
+                <h2 className="text-xl sm:text-2xl font-semibold text-foreground">
+                  {recipe?.recipeName}
+                </h2>
+                <div className="flex flex-wrap items-center gap-3 text-sm text-secondary-hover">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-soft">
+                    <Clock className="h-4 w-4" aria-hidden="true" />
+                    <span>{recipe?.time} min</span>
+                  </div>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-soft">
+                    <Users className="h-4 w-4" aria-hidden="true" />
+                    <span>{recommendedPersonAmount} personer</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 mt-1">
+                  <span className="text-sm text-secondary-hover">
+                    Justér antal personer:
+                  </span>
+                  <div className="inline-flex items-center rounded-full bg-soft px-2 py-1 gap-1.5">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="min-h-[32px] min-w-[32px] p-0"
+                      aria-label="Færre personer"
+                      onClick={() =>
+                        setRecommendedPersonAmount((prev) =>
+                          Math.max(prev - 1, 1)
+                        )
+                      }
+                    >
+                      <Minus className="h-4 w-4" aria-hidden="true" />
+                    </Button>
+                    <span className="min-w-[2.5rem] text-center text-sm font-semibold text-foreground">
+                      {recommendedPersonAmount}
+                    </span>
+                    <Button
+                      type="button"
+                      variant="primary"
+                      size="sm"
+                      className="min-h-[32px] min-w-[32px] p-0"
+                      aria-label="Flere personer"
+                      onClick={() =>
+                        setRecommendedPersonAmount((prev) =>
+                          prev < maxRecipePersons ? prev + 1 : prev
+                        )
+                      }
+                    >
+                      <Plus className="h-4 w-4" aria-hidden="true" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Ingredients */}
+            <section
+              id="recipe_Items"
+              className="flex flex-col w-full rounded-2xl bg-surface p-4 sm:p-5 shadow-sm"
+            >
+              <h3 className="text-lg font-semibold text-foreground mb-3">
+                Ingredienser
+              </h3>
+              <div className="flex flex-col w-full h-fit justify-start items-start gap-1">
+                {(() => {
+                  // Group ingredients by section
+                  const groupedIngredients = (recipe?.ingredients || []).reduce(
+                    (acc, ingredient, index) => {
+                      const section = ingredient.section || "none";
+                      if (!acc[section]) {
+                        acc[section] = [];
+                      }
+                      acc[section].push({ ingredient, index });
+                      return acc;
+                    },
+                    {} as Record<
+                      string,
+                      Array<{
+                        ingredient: Recipe["ingredients"][0];
+                        index: number;
+                      }>
+                    >
+                  );
+
+                  // Get sections in order: first unsectioned (none), then sections
+                  const sections = [
+                    ...(groupedIngredients["none"] ? ["none"] : []),
+                    ...Object.keys(groupedIngredients).filter(
+                      (s) => s !== "none"
+                    ),
+                  ];
+
+                  const scalingFactor =
+                    recommendedPersonAmount /
+                    (recipe?.recommendedPersonAmount || 1);
+
+                  return (
+                    <>
+                      {sections.map((section) => (
+                        <div key={section} className="w-full">
+                          {section !== "none" && (
+                            <h4 className="text-base font-semibold text-foreground mb-2 mt-4 first:mt-0">
+                              {section}
+                            </h4>
+                          )}
+                          <div className="space-y-2">
+                            {groupedIngredients[section].map(
+                              ({ ingredient, index }) => {
+                                const adjustedWeight =
+                                  ingredient.quantity * scalingFactor;
+
+                                return (
+                                  <div
+                                    key={index}
+                                    className="flex w-full items-center justify-between gap-3 rounded-xl bg-white/70 px-3 py-2 border border-secondary/30"
+                                  >
+                                    <label className="flex items-center gap-3 flex-1">
+                                      <input
+                                        className="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary"
+                                        type="checkbox"
+                                        checked={checkedIngredients.has(
+                                          String(index)
+                                        )}
+                                        onChange={() =>
+                                          toggleCheckedIngredient(index)
+                                        }
+                                      />
+                                      <span className="text-sm sm:text-base font-medium text-foreground">
+                                        {ingredient.item.name}
+                                      </span>
+                                    </label>
+                                    <span className="inline-flex items-center justify-center rounded-full bg-soft px-3 py-1 text-xs sm:text-sm font-medium text-foreground whitespace-nowrap">
+                                      {adjustedWeight.toFixed(1)}{" "}
+                                      {ingredient.unit}
+                                    </span>
+                                  </div>
+                                );
+                              }
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </>
+                  );
+                })()}
+              </div>
+              <div className="mt-4 flex flex-col md:flex-row justify-between items-center gap-3">
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="md"
+                  fullWidth
+                  onClick={handleAddCheckedToShoppingList}
+                >
+                  Tilføj valgte til indkøbslisten
+                </Button>
+              </div>
+            </section>
           </div>
+
+          {/* Right column (Description) */}
+          <section className="flex flex-col md:w-1/2 w-full min-h-80">
+            <div className="flex-1 rounded-2xl p-5 bg-surface shadow-sm">
+              <h3 className="text-lg font-semibold text-foreground mb-3">
+                Beskrivelse
+              </h3>
+              <p className="whitespace-pre-line text-sm sm:text-base leading-relaxed text-foreground">
+                {recipe?.description}
+              </p>
+            </div>
+          </section>
         </div>
       </div>
     </div>

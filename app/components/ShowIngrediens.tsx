@@ -1,5 +1,6 @@
 import { Ingredient } from "../model/Ingredient";
-import { RemoveButton } from "./smallComponent/removeBtn";
+import Button from "./smallComponent/Button";
+import { Trash2 } from "lucide-react";
 
 interface IngredientsListProps {
   ingredients: Ingredient[];
@@ -58,11 +59,15 @@ export function IngredientsList({
                           {ingredient.quantity} {ingredient.unit}
                         </span>
                       </div>
-                      <RemoveButton
-                        onClickF={() => {
-                          onRemove(index);
-                        }}
-                      />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        aria-label={`Fjern ingrediens: ${ingredient.item.name}`}
+                        onClick={() => onRemove(index)}
+                        className="min-h-[44px] min-w-[44px] px-3 text-red-700 hover:bg-red-100"
+                      >
+                        <Trash2 className="h-4 w-4" aria-hidden="true" />
+                      </Button>
                     </div>
                   ))}
                 </div>

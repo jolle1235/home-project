@@ -1,14 +1,19 @@
 import { yupResolver } from "@hookform/resolvers/yup";
-import React from "react";
+import React, { type RefObject } from "react";
 import { useForm } from "react-hook-form";
 import { addToShoppingListSchema } from "../utils/validationSchema";
 
 interface SearchBarProps {
   onChange: (value: string) => void;
   placeholder: string;
+  inputRef?: RefObject<HTMLInputElement | null>;
 }
 
-export function SearchBarComponent({ onChange, placeholder }: SearchBarProps) {
+export function SearchBarComponent({
+  onChange,
+  placeholder,
+  inputRef,
+}: SearchBarProps) {
   const {
     setValue, // Manage value in React Hook Form
     formState: { errors },
@@ -36,6 +41,7 @@ export function SearchBarComponent({ onChange, placeholder }: SearchBarProps) {
           placeholder={placeholder}
           onChange={handleInputChange}
           onFocus={(e) => e.target.select()}
+          ref={inputRef}
           className={`w-full p-2 sm:p-3 pl-3 sm:pl-4 pr-10 sm:pr-12 border rounded-lg text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 
             ${errors.itemSearch ? "focus:ring-cancel" : ""}`}
         />
@@ -57,7 +63,9 @@ export function SearchBarComponent({ onChange, placeholder }: SearchBarProps) {
         </div>
       </div>
       {errors.itemSearch && getValues("itemSearch") && (
-        <p className="text-red-500 text-sm sm:text-base mt-1">{errors.itemSearch.message}</p>
+        <p className="text-red-500 text-sm sm:text-base mt-1">
+          {errors.itemSearch.message}
+        </p>
       )}
     </div>
   );

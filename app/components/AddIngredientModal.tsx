@@ -10,11 +10,11 @@ import { Ingredient } from "../model/Ingredient";
 import SearchBar from "./SearchBarComponent";
 import { AddIngredientComponent } from "./AddIngredientComponent";
 import { Item } from "../model/Item";
-import ActionBtn from "./smallComponent/actionBtn";
 import { IngredientsList } from "./ShowIngrediens";
 import { useShoppingListContext } from "../context/ShoppinglistContext";
 import { IconButton } from "./IconButton";
 import { Link2 } from "lucide-react";
+import Button from "./smallComponent/Button";
 
 interface AddIngredientModalProps {
   onClose: () => void;
@@ -35,8 +35,10 @@ export function AddIngredientModal({
   mode = "recipe",
   description,
 }: AddIngredientModalProps) {
-  const { addIngredient: addToShoppingList } = useShoppingListContext();
+  const { addIngredients: addIngredientsToShoppingList } =
+    useShoppingListContext();
   const searchBarRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [items, setItems] = useState<Item[]>([]);
@@ -47,6 +49,9 @@ export function AddIngredientModal({
   const [isClosing, setIsClosing] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const isShoppingListMode = mode === "shoppingList";
+  const [stagedIngredients, setStagedIngredients] = useState<Ingredient[]>(
+    mode === "recipe" ? ingredients : []
+  );
 
   const {
     register,
@@ -61,7 +66,7 @@ export function AddIngredientModal({
   });
 
   function handleOnIngredientRemove(index: number) {
-    setIngredients(ingredients.filter((_, i) => i !== index));
+    setStagedIngredients((prev) => prev.filter((_, i) => i !== index));
   }
 
   function handleAddSection() {
@@ -75,8 +80,8 @@ export function AddIngredientModal({
 
   function handleRemoveSection(sectionName: string) {
     // Remove section and reassign ingredients to no section
-    setIngredients(
-      ingredients.map((ing) =>
+    setStagedIngredients((prev) =>
+      prev.map((ing) =>
         ing.section === sectionName ? { ...ing, section: undefined } : ing
       )
     );
@@ -87,20 +92,16 @@ export function AddIngredientModal({
   }
 
   function handleAddIngredient(ingredient: Ingredient) {
-    if (isShoppingListMode) {
-      addToShoppingList({
-        ...ingredient,
-        _id: crypto.randomUUID(),
-        section: undefined,
-        marked: false,
-      });
-      return;
-    }
-    const ingredientWithSection: Ingredient = {
-      ...ingredient,
-      section: currentSection || undefined,
-    };
-    setIngredients([...ingredients, ingredientWithSection]);
+    const ingredientWithSection: Ingredient = isShoppingListMode
+      ? {
+          ...ingredient,
+          section: undefined,
+        }
+      : {
+          ...ingredient,
+          section: currentSection || undefined,
+        };
+    setStagedIngredients((prev) => [...prev, ingredientWithSection]);
   }
 
   useEffect(() => {
@@ -138,7 +139,7 @@ export function AddIngredientModal({
   useEffect(() => {
     setValue(
       "ingredients",
-      ingredients.map((ingredient: Ingredient) => ({
+      stagedIngredients.map((ingredient: Ingredient) => ({
         _id: "unknown",
         item: ingredient.item,
         unit: ingredient.unit,
@@ -147,17 +148,17 @@ export function AddIngredientModal({
         section: ingredient.section,
       }))
     );
-  }, [ingredients, setValue]);
+  }, [stagedIngredients, setValue]);
 
   // Initialize sections from existing ingredients when modal opens
   useEffect(() => {
     const existingSections = Array.from(
-      new Set(ingredients.map((ing) => ing.section).filter(Boolean))
+      new Set(stagedIngredients.map((ing) => ing.section).filter(Boolean))
     ) as string[];
     if (existingSections.length > 0) {
       setSections(existingSections);
     }
-  }, []);
+  }, [stagedIngredients]);
 
   // Disable scroll when modal is open and trigger mount animation
   useEffect(() => {
@@ -189,6 +190,16 @@ export function AddIngredientModal({
     }
     if (onRefreshItems) {
       onRefreshItems();
+    }
+  };
+
+  const handleIngredientAddedFromPicker = (ingredient: Ingredient) => {
+    handleAddIngredient(ingredient);
+    setSearchTerm("");
+    setIsDropdownOpen(false);
+    if (searchInputRef.current) {
+      searchInputRef.current.focus();
+      searchInputRef.current.select();
     }
   };
 
@@ -361,6 +372,7 @@ export function AddIngredientModal({
                 <SearchBar
                   onChange={setSearchTerm}
                   placeholder="Søg efter ingredienser..."
+                  inputRef={searchInputRef}
                 />
                 {isDropdownOpen && (
                   <div className="w-full mt-1 h-fit space-y-2">
@@ -370,9 +382,7 @@ export function AddIngredientModal({
                           onAdd={async (returnItem) => {
                             const newItem: Ingredient = returnItem;
                             await createItem(newItem);
-                            handleAddIngredient(returnItem);
-                            setSearchTerm("");
-                            setIsDropdownOpen(false);
+                            handleIngredientAddedFromPicker(returnItem);
                           }}
                           itemName={searchTerm}
                         />
@@ -382,13 +392,7 @@ export function AddIngredientModal({
                       <div key={item.name}>
                         <AddIngredientComponent
                           onAdd={async (newItem) => {
-                            handleAddIngredient(
-                              isShoppingListMode
-                                ? { ...newItem, _id: crypto.randomUUID() }
-                                : newItem
-                            );
-                            setSearchTerm("");
-                            setIsDropdownOpen(false);
+                            handleIngredientAddedFromPicker(newItem);
                           }}
                           itemName={item.name}
                           InputCategory={item.category}
@@ -401,26 +405,43 @@ export function AddIngredientModal({
                 )}
               </div>
             </div>
-            {!isShoppingListMode && (
-              <IngredientsList
-                ingredients={ingredients}
-                onRemove={(index) => handleOnIngredientRemove(index)}
-              />
-            )}
+            <IngredientsList
+              ingredients={stagedIngredients}
+              onRemove={(index) => handleOnIngredientRemove(index)}
+            />
             {isShoppingListMode && (
               <p className="text-sm text-gray-500 py-2">
-                Varer tilføjes direkte til indkøbslisten.
+                Varer tilføjes til indkøbslisten, når du trykker
+                &quot;Done&quot;.
               </p>
             )}
           </div>
         </div>
         <div className="flex justify-between items-center">
-          <ActionBtn
-            onClickF={handleClose}
-            Itext="Done"
-            color="bg-action"
-            extraCSS="w-full"
-          />
+          <Button
+            onClick={() => {
+              if (isShoppingListMode) {
+                if (stagedIngredients.length > 0) {
+                  const ingredientsForList = stagedIngredients.map(
+                    (ingredient) => ({
+                      ...ingredient,
+                      _id: crypto.randomUUID(),
+                      marked: ingredient.marked ?? false,
+                    })
+                  );
+                  addIngredientsToShoppingList(ingredientsForList);
+                }
+              } else {
+                setIngredients(stagedIngredients);
+              }
+              handleClose();
+            }}
+            variant="primary"
+            size="lg"
+            fullWidth
+          >
+            Done
+          </Button>
         </div>
       </div>
     </div>

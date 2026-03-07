@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import ActionBtn from "../smallComponent/actionBtn";
+import Button from "../smallComponent/Button";
 import { WebLinkInput } from "../WebLinkInput";
 import { Recipe } from "../../model/Recipe";
 
@@ -27,32 +27,76 @@ export function AddRecipeModalComponent({ handleClose, onRecipeSaved }: Props) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg p-6 max-w-md w-full">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold">Tilføj ny opskrift</h2>
+    <div
+      className="
+    fixed inset-0
+    bg-black/40
+    backdrop-blur-sm
+    flex items-end sm:items-center
+    justify-center
+    p-4
+    z-50
+  "
+    >
+      <div
+        className="
+      bg-background
+      w-full
+      max-w-md
+      rounded-t-2xl sm:rounded-2xl
+      shadow-xl
+      p-6
+      animate-slide-up
+    "
+      >
+        {/* Header */}
+        <div className="flex justify-between items-start mb-6">
+          <div>
+            <h2 className="text-xl sm:text-2xl font-semibold text-foreground">
+              Tilføj ny opskrift
+            </h2>
+            <p className="text-sm text-secondary-hover mt-1">
+              Importér automatisk eller opret manuelt
+            </p>
+          </div>
+
           <button
             onClick={handleClose}
-            className="text-gray-500 hover:text-gray-700 transition-all duration-150 cursor-pointer transform hover:scale-110 active:scale-95 active:opacity-80 p-1 rounded"
+            type="button"
+            aria-label="Luk"
+            className="min-h-[40px] min-w-[40px] flex items-center justify-center rounded-full text-secondary-hover hover:bg-soft transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             ✕
           </button>
         </div>
-        <div className="space-y-4">
-          <div className="flex flex-col items-center">
-            <label className="block text-gray-700 font-bold my-1 text-2xl">
-              Automatisk
-            </label>
+
+        {/* Content */}
+        <div className="flex flex-col gap-6">
+          {/* Automatic Option */}
+          <div className="bg-surface rounded-xl p-4 flex flex-col gap-3">
+            <div>
+              <h3 className="font-medium text-foreground">Automatisk import</h3>
+              <p className="text-sm text-secondary-hover">
+                Indsæt et link, så henter vi opskriften for dig.
+              </p>
+            </div>
+
             <WebLinkInput onScraped={handleScraped} />
           </div>
 
-          <div className="w-full flex justify-center items-center">
-            <ActionBtn
-              onClickF={handleManual}
-              Itext="Opret Manuelt"
-              extraCSS="w-full"
-            />
+          {/* Divider */}
+          <div className="flex items-center gap-3">
+            <div className="flex-1 h-px bg-secondary"></div>
+            <span className="text-xs text-secondary-hover uppercase tracking-wide">
+              Eller
+            </span>
+            <div className="flex-1 h-px bg-secondary"></div>
           </div>
+
+          {/* Manual Option */}
+          <Button onClick={handleManual} variant="primary" size="md" fullWidth>
+            Opret Manuelt
+          </Button>
         </div>
       </div>
     </div>

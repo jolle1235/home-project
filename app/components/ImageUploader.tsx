@@ -1,5 +1,5 @@
 import { useState, ChangeEvent, ClipboardEvent, useEffect } from "react";
-import ActionBtn from "./smallComponent/actionBtn";
+import Button from "./smallComponent/Button";
 
 interface ImageUploaderProps {
   onFileSelected: (file: File | null) => void;
@@ -40,13 +40,15 @@ export default function ImageUploader({
       )}
       <input type="file" accept="image/*" onChange={handleFileChange} />
       {preview && (
-        <ActionBtn
+        <Button
           type="button"
-          onClickF={handleClear}
-          Itext="Fjern billede"
-          color="bg-cancel"
-          hover="bg-cancelHover"
-        />
+          onClick={handleClear}
+          variant="secondary"
+          size="lg"
+          fullWidth
+        >
+          Fjern billede
+        </Button>
       )}
     </div>
   );

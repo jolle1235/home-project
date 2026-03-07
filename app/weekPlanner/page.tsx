@@ -3,8 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useRecipeContext } from "../context/RecipeContext";
 import CalendarDialog from "../components/CalenderDialog";
-import ActionBtn from "../components/smallComponent/actionBtn";
-import { RemoveButton } from "../components/smallComponent/removeBtn";
+import Button from "../components/smallComponent/Button";
 
 export default function WeeklyRecipePlanner() {
   const router = useRouter();
@@ -116,10 +115,14 @@ export default function WeeklyRecipePlanner() {
                   ✕
                 </button>
               </div>
-              <ActionBtn
-                onClickF={() => openDialogForRecipe(recipe)}
-                Itext="Tilføj til madplan"
-              />
+              <Button
+                onClick={() => openDialogForRecipe(recipe)}
+                variant="primary"
+                size="lg"
+                fullWidth
+              >
+                Tilføj til madplan
+              </Button>
             </div>
           ))}
         </div>

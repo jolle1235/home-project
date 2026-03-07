@@ -1,138 +1,195 @@
 "use client";
 import { Recipe } from "../../model/Recipe";
 import { useRecipeContext } from "../../context/RecipeContext";
-import ActionBtn from "../smallComponent/actionBtn";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useState } from "react";
-import { CalendarPlus, Eye } from "lucide-react";
-import { IconButton } from "../IconButton";
+import Button from "../smallComponent/Button";
+import { ArrowRight, Clock, Plus, Users } from "lucide-react";
 
 export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
-  const { addRecipeToTempWeekPlan } = useRecipeContext();
+  const { addRecipeToTempWeekPlan, tempWeekPlan } = useRecipeContext();
   const router = useRouter();
   const [loadingRecipeId, setLoadingRecipeId] = useState<string | null>(null);
 
   if (!recipes || recipes.length === 0) {
     return (
-      <p className="text-center py-4 text-gray-500">
+      <p className="text-center py-4 text-muted-foreground">
         Der er i øjeblikket ingen opskrifter
       </p>
     );
   }
 
   async function handleRouter(id?: string) {
-    if (id) {
-      setLoadingRecipeId(id);
-      try {
-        router.push(`/recipes/${id}`);
-      } catch (error) {
-        console.error("Navigation error:", error);
-      } finally {
-        // Reset loading state after a short delay to show the loader
-        setTimeout(() => setLoadingRecipeId(null), 500);
-      }
+    if (!id) return;
+
+    setLoadingRecipeId(id);
+    try {
+      router.push(`/recipes/${id}`);
+    } catch (error) {
+      console.error("Navigation error:", error);
+      setLoadingRecipeId(null);
     }
   }
 
   return (
     <div
       id="recipes"
-      className="grid grid-cols-1 sm:grid-cols-2 lg:flex flex-wrap lg:justify-center gap-4"
+      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 px-4 sm:px-0"
     >
       {recipes.map((recipe) => {
+        const isLoading = loadingRecipeId === recipe._id;
+        const isInTempPlan = tempWeekPlan?.some((r) => r._id === recipe._id);
+
         return (
-          <div key={recipe._id} className="w-full lg:max-w-sm">
+          <article key={recipe._id} className="w-full">
             <div
-              id="recipe_card"
-              className="flex flex-col cursor-pointer w-full h-fit shadow-even shadow-darkBackground rounded-lg mt-3 sm:mt-5 bg-neutral-100"
+              className="
+                group
+                relative
+                flex flex-col
+                bg-surface
+                rounded-2xl
+                overflow-hidden
+                shadow-sm
+                ring-1 ring-black/5
+                hover:shadow-md
+                transition-all duration-200
+                focus-within:ring-2 focus-within:ring-primary/50
+              "
             >
-              <div className="relative w-full h-48 sm:h-52 lg:h-56">
-                <Image
-                  src={
-                    recipe.image && recipe.image.trim() !== ""
-                      ? recipe.image
-                      : "/icon/swiftcart_logo.png"
-                  }
-                  alt={recipe.recipeName || "Opskrift"}
-                  fill
-                  className="object-cover rounded-t-lg"
-                  priority
-                />
-              </div>
-
-              <div className="flex flex-row flex-wrap">
-                {recipe.categories.map((category) => (
-                  <span
-                    key={category}
-                    id="recipe_categories"
-                    className="bg-darkgreyBackground font-bold p-1 sm:p-1.5 m-1 rounded-full text-xs"
-                  >
-                    {category}
-                  </span>
-                ))}
-              </div>
-
-              <div id="titel_and_price" className="flex flex-row">
-                <p className="truncate w-full text-darkText text-lg sm:text-xl pl-2 font-bold">
-                  {recipe.recipeName}
-                </p>
-              </div>
+              {/* Clickable card area */}
               <div
-                id="recipe_description"
-                className="flex flex-row justify-between p-1 mx-2"
+                role="link"
+                tabIndex={0}
+                aria-label={`Åbn opskrift: ${recipe.recipeName}`}
+                aria-busy={isLoading}
+                onClick={() =>
+                  isLoading ? undefined : handleRouter(recipe._id)
+                }
+                onKeyDown={(e) => {
+                  if (isLoading) return;
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    handleRouter(recipe._id);
+                  }
+                }}
+                className="cursor-pointer outline-none"
               >
-                <div id="time" className="flex flex-row items-center">
-                  <img
-                    src="./icon/recipes_page/time.png"
-                    alt="time"
-                    className="flex size-4 sm:size-5 mx-1"
-                  ></img>
-                  <p className="flex text-darkgreyText text-sm sm:text-base">
-                    {recipe.time}
-                  </p>
-                </div>
-                <div
-                  id="people"
-                  className="flex flex-row space-x-1 sm:space-x-2 text-darkgreyText text-sm sm:text-base"
-                >
-                  <p>{recipe.recommendedPersonAmount}</p>
-                  <p>personer</p>
-                </div>
-              </div>
-              <div className="flex flex-row justify-center items-center p-1 sm:p-2 gap-3">
-                <div className="flex items-center gap-1 group">
-                  <IconButton
-                    icon={CalendarPlus}
-                    variant="primary"
-                    ariaLabel="Tilføj til madplan"
-                    onClick={() => addRecipeToTempWeekPlan(recipe)}
-                  />
-                  <span className="hidden md:inline-flex text-xs text-darkText opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-150">
-                    Tilføj til madplan
-                  </span>
-                </div>
-                <div className="flex items-center gap-1 group">
-                  <IconButton
-                    icon={Eye}
-                    variant="secondary"
-                    ariaLabel={
-                      loadingRecipeId === recipe._id
-                        ? "Indlæser opskrift"
-                        : "Se opskrift"
+                {/* Image */}
+                <div className="relative w-full h-48 sm:h-52">
+                  <Image
+                    src={
+                      recipe.image && recipe.image.trim() !== ""
+                        ? recipe.image
+                        : "/icon/swiftcart_logo.png"
                     }
-                    onClick={() => handleRouter(recipe._id)}
-                    disabled={loadingRecipeId === recipe._id}
+                    alt={recipe.recipeName || "Opskrift"}
+                    fill
+                    sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                    className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                    priority
                   />
-                  <span className="hidden md:inline-flex text-xs text-darkText opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-150">
-                    {loadingRecipeId === recipe._id
-                      ? "Indlæser..."
-                      : "Se opskrift"}
-                  </span>
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 via-black/0 to-black/0" />
+                </div>
+
+                {/* Content */}
+                <div className="flex flex-col p-5 gap-3">
+                  {/* Categories */}
+                  {Array.isArray(recipe.categories) &&
+                    recipe.categories.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {recipe.categories.slice(0, 4).map((category) => (
+                          <span
+                            key={category}
+                            className="
+                          bg-secondary
+                          text-muted-foreground
+                          text-xs
+                          px-3
+                          py-1
+                          rounded-full
+                          font-medium
+                        "
+                          >
+                            {category}
+                          </span>
+                        ))}
+                        {recipe.categories.length > 4 && (
+                          <span className="text-xs text-muted-foreground px-1 py-1">
+                            +{recipe.categories.length - 4}
+                          </span>
+                        )}
+                      </div>
+                    )}
+
+                  {/* Title */}
+                  <h2 className="text-lg sm:text-xl font-semibold text-foreground leading-snug line-clamp-2">
+                    {recipe.recipeName}
+                  </h2>
+
+                  {/* Description */}
+                  {recipe.description && (
+                    <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
+                      {recipe.description}
+                    </p>
+                  )}
+
+                  {/* Meta Info */}
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground pt-1">
+                    <div className="inline-flex items-center gap-1.5">
+                      <Clock className="h-4 w-4" aria-hidden="true" />
+                      <span>{recipe.time} min</span>
+                    </div>
+                    <div className="inline-flex items-center gap-1.5">
+                      <Users className="h-4 w-4" aria-hidden="true" />
+                      <span>{recipe.recommendedPersonAmount} personer</span>
+                    </div>
+                  </div>
                 </div>
               </div>
+
+              {/* Actions */}
+              <div className="flex gap-3 px-5 pb-5 pt-1">
+                <Button
+                  variant={isInTempPlan ? "ghost" : "primary"}
+                  size="sm"
+                  fullWidth
+                  disabled={!!isInTempPlan}
+                  onClick={(e) => {
+                    e?.stopPropagation();
+                    addRecipeToTempWeekPlan(recipe);
+                  }}
+                  className="min-h-[44px]"
+                >
+                  <Plus className="h-4 w-4" aria-hidden="true" />
+                  {isInTempPlan ? "Tilføjet" : "Tilføj"}
+                </Button>
+
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  fullWidth
+                  isLoading={isLoading}
+                  loadingText="Indlæser..."
+                  onClick={(e) => {
+                    e?.stopPropagation();
+                    handleRouter(recipe._id);
+                  }}
+                  className="min-h-[44px]"
+                >
+                  <span className="inline-flex items-center justify-center gap-2">
+                    Se opskrift
+                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                  </span>
+                </Button>
+              </div>
+
+              {isLoading && (
+                <div className="absolute inset-0 pointer-events-none bg-black/5" />
+              )}
             </div>
-          </div>
+          </article>
         );
       })}
     </div>

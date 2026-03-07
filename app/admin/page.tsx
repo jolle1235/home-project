@@ -1,8 +1,8 @@
 "use client";
 import { useState } from "react";
 import { useConstants } from "../context/ConstantsContext";
-import ActionBtn from "../components/smallComponent/actionBtn";
-import { RemoveButton } from "../components/smallComponent/removeBtn";
+import Button from "../components/smallComponent/Button";
+import { Trash2 } from "lucide-react";
 
 export default function AdminPage() {
   const {
@@ -31,13 +31,17 @@ export default function AdminPage() {
             className="border rounded p-2 mr-2"
             placeholder="Tilføj ny kategori"
           />
-          <ActionBtn
-            onClickF={() => {
+          <Button
+            onClick={() => {
               addCategory(newCategory);
               setNewCategory("");
             }}
-            Itext="Tilføj"
-          />
+            variant="primary"
+            size="lg"
+            fullWidth
+          >
+            Tilføj
+          </Button>
         </div>
         <div className="w-1/2 my-2 p-1 bg-lightgreyBackground rounded-lg">
           {categories.map((c) => (
@@ -46,7 +50,15 @@ export default function AdminPage() {
               className="ml-2 w-full flex justify-between items-center"
             >
               <label>{c.name}</label>
-              <RemoveButton onClickF={() => removeCategory(c.name)} />
+              <Button
+                variant="ghost"
+                size="sm"
+                aria-label={`Fjern kategori: ${c.name}`}
+                onClick={() => removeCategory(c.name)}
+                className="min-h-[44px] min-w-[44px] px-3 text-red-700 hover:bg-red-100"
+              >
+                <Trash2 className="h-4 w-4" aria-hidden="true" />
+              </Button>
             </div>
           ))}
         </div>
@@ -62,13 +74,17 @@ export default function AdminPage() {
             className="border rounded p-2 mr-2"
             placeholder="Tilføj ny enhed"
           />
-          <ActionBtn
-            onClickF={() => {
+          <Button
+            onClick={() => {
               addUnit(newUnit);
               setNewUnit("");
             }}
-            Itext="Tilføj"
-          />
+            variant="primary"
+            size="lg"
+            fullWidth
+          >
+            Tilføj
+          </Button>
         </div>
         <ul className="w-1/2 my-2 py-1 px-2 bg-lightgreyBackground rounded-lg">
           {units.map((u) => (
@@ -77,7 +93,15 @@ export default function AdminPage() {
               className="ml-2 w-full flex justify-between items-center"
             >
               <label>{u.name}</label>
-              <RemoveButton onClickF={() => removeUnit(u.name)} />
+              <Button
+                variant="ghost"
+                size="sm"
+                aria-label={`Fjern enhed: ${u.name}`}
+                onClick={() => removeUnit(u.name)}
+                className="min-h-[44px] min-w-[44px] px-3 text-red-700 hover:bg-red-100"
+              >
+                <Trash2 className="h-4 w-4" aria-hidden="true" />
+              </Button>
             </li>
           ))}
         </ul>

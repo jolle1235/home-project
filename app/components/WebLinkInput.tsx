@@ -1,9 +1,9 @@
 "use client";
 
 import { useRef } from "react";
-import ActionBtn from "./smallComponent/actionBtn";
 import { Recipe } from "../model/Recipe";
 import { mapSchemaRecipeToRecipe } from "../utils/mummumRecipeConvertion";
+import Button from "./smallComponent/Button";
 
 type WebLinkInputProps = {
   onScraped?: (recipe: Recipe) => void;
@@ -48,13 +48,9 @@ export function WebLinkInput({ onScraped }: WebLinkInputProps) {
         type="text"
         placeholder="Indsæt Link"
       />
-      <ActionBtn
-        onClickF={sendWebpage}
-        Itext="Send"
-        color="bg-action"
-        hover="bg-actionHover"
-        extraCSS="flex-1 ml-2"
-      />
+      <Button onClick={sendWebpage} variant="primary" size="lg" fullWidth>
+        Send
+      </Button>
     </div>
   );
 }

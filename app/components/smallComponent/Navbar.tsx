@@ -12,28 +12,31 @@ import {
 export default function NavBar() {
   const pathname = usePathname();
 
+  // Base link classes
   const linkBaseClasses =
-    "flex flex-col items-center justify-center gap-1 text-xs sm:text-sm py-1 px-2 transition-colors";
+    "flex flex-col items-center justify-center gap-1 text-xs sm:text-sm py-2 px-3 rounded-lg transition-colors duration-200";
 
   const makeLinkClasses = (href: string) => {
     const isActive = pathname?.startsWith(href);
     return [
       linkBaseClasses,
-      isActive ? "text-action" : "text-white hover:text-gray-300",
+      isActive
+        ? "bg-secondary text-foreground shadow-md"
+        : "text-foreground hover:bg-secondary-hover hover:text-foreground/90",
     ]
       .filter(Boolean)
       .join(" ");
   };
 
   return (
-    <nav className="bg-gray-900 p-2 shadow-md sticky top-0 z-40">
-      <div className="flex justify-around max-w-xl mx-auto">
+    <nav className="bg-background shadow-md sticky top-0 z-40 border-b border-secondary/30">
+      <div className="flex justify-around max-w-xl mx-auto py-2">
         <Link
           href="/recipes"
           aria-label="Opskrifter"
           className={`${makeLinkClasses("/recipes")} group`}
         >
-          <BookOpen className="w-5 h-5" />
+          <BookOpen className="w-6 h-6 sm:w-5 sm:h-5" />
           <span className="hidden md:inline-flex text-[10px] opacity-0 group-hover:opacity-100 transition-opacity duration-150">
             Opskrifter
           </span>
@@ -43,7 +46,7 @@ export default function NavBar() {
           aria-label="Madplan"
           className={`${makeLinkClasses("/weekPlanner")} group`}
         >
-          <CalendarDays className="w-5 h-5" />
+          <CalendarDays className="w-6 h-6 sm:w-5 sm:h-5" />
           <span className="hidden md:inline-flex text-[10px] opacity-0 group-hover:opacity-100 transition-opacity duration-150">
             Madplan
           </span>
@@ -53,7 +56,7 @@ export default function NavBar() {
           aria-label="Indkøbsliste"
           className={`${makeLinkClasses("/shoppinglist")} group`}
         >
-          <ShoppingCart className="w-5 h-5" />
+          <ShoppingCart className="w-6 h-6 sm:w-5 sm:h-5" />
           <span className="hidden md:inline-flex text-[10px] opacity-0 group-hover:opacity-100 transition-opacity duration-150">
             Indkøbsliste
           </span>
@@ -63,7 +66,7 @@ export default function NavBar() {
           aria-label="Drinks"
           className={`${makeLinkClasses("/drinks")} group`}
         >
-          <Martini className="w-5 h-5" />
+          <Martini className="w-6 h-6 sm:w-5 sm:h-5" />
           <span className="hidden md:inline-flex text-[10px] opacity-0 group-hover:opacity-100 transition-opacity duration-150">
             Drinks
           </span>
@@ -73,7 +76,7 @@ export default function NavBar() {
           aria-label="Admin"
           className={`${makeLinkClasses("/admin")} group`}
         >
-          <Shield className="w-5 h-5" />
+          <Shield className="w-6 h-6 sm:w-5 sm:h-5" />
           <span className="hidden md:inline-flex text-[10px] opacity-0 group-hover:opacity-100 transition-opacity duration-150">
             Admin
           </span>

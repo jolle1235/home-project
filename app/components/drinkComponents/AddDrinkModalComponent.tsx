@@ -6,10 +6,10 @@ import { useForm } from "react-hook-form";
 import { drinkSchema } from "../../utils/validationSchema";
 import ImageUploader from "../ImageUploader";
 import { Drink } from "../../model/Drink";
-import ActionBtn from "../smallComponent/actionBtn";
 import { AddIngredientModal } from "../AddIngredientModal";
 import { Ingredient } from "@/app/model/Ingredient";
 import { IngredientsList } from "../ShowIngrediens";
+import Button from "../smallComponent/Button";
 
 interface Props {
   handleClose: () => void;
@@ -228,13 +228,14 @@ export function AddDrinkModalComponent({ handleClose }: Props) {
             </div>
           </div>
           <div className="w-full">
-            <ActionBtn
-              onClickF={() => setIsModalOpen(true)}
-              Itext="Tilføj ingredienser"
-              color="bg-action"
-              hover="bg-actionHover"
-              extraCSS="w-full"
-            />
+            <Button
+              onClick={() => setIsModalOpen(true)}
+              variant="primary"
+              size="lg"
+              fullWidth
+            >
+              Tilføj ingredienser
+            </Button>
 
             {isModalOpen && (
               <AddIngredientModal
@@ -252,21 +253,22 @@ export function AddDrinkModalComponent({ handleClose }: Props) {
           </div>
 
           <div className="flex flex-1 justify-end space-x-4">
-            <ActionBtn
-              onClickF={handleClose}
-              Itext="Annuller"
-              color="bg-cancel"
-              hover="bg-cancelHover"
-              extraCSS="w-full"
-            />
-            <ActionBtn
-              onClickF={handleSubmit(onSubmit)}
-              Itext="Gem drink"
-              color="bg-action"
-              hover="bg-actionHover"
-              extraCSS="w-full"
-              type="submit"
-            />
+            <Button
+              onClick={handleClose}
+              variant="secondary"
+              size="lg"
+              fullWidth
+            >
+              Annuller
+            </Button>
+            <Button
+              onClick={handleSubmit(onSubmit)}
+              variant="primary"
+              size="lg"
+              fullWidth
+            >
+              Gem drink
+            </Button>
           </div>
         </form>
       </div>

@@ -1,4 +1,5 @@
 /** @type {import('tailwindcss').Config} */
+/** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
@@ -8,34 +9,23 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // logo color schemes
-        logoText: "#248232",
-        logoShadow: "#63A375",
+        background: "var(--background)",
+        foreground: "var(--foreground)",
 
-        // text colors
-        lightText: "#FDFFFF",
-        darkText: "#212227",
-        lightgreytxt: "#8D8D92",
-        darkgreyText: "#A7A7A7",
+        muted: "var(--muted)",
+        "muted-foreground": "var(--muted-foreground)",
 
-        // background colors
-        lightBackground: "#F9F9F9",
-        darkBackground: "#212227",
-        lightgreyBackground: "#E5E5E5",
-        lightgreyBackgroundHover: "#D5D5D5",
-        darkgreyBackground: "#A7A7A7",
-        mediumgreyBackground: "#D9D9D9",
+        primary: "var(--primary)",
+        "primary-hover": "var(--primary-hover)",
 
-        // action color
-        action: "#2CB944",
-        secondary: "#D1FADA",
-        actionHover: "#4CD964",
-        secondaryHover: "#4CD964",
-        warningSecondary: "#FFCE51",
-        warning: "#F0AC00",
-        warningHover: "#FFBA08",
-        cancel: "#FF2B2B",
-        cancelHover: "#FF4B4B",
+        secondary: "var(--secondary)",
+        "secondary-hover": "var(--secondary-hover)",
+
+        danger: "var(--danger)",
+        "danger-hover": "var(--danger-hover)",
+
+        surface: "var(--surface)",
+        soft: "var(--soft)",
       },
     },
   },

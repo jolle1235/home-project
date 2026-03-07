@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { Drink } from "@/app/model/Drink";
-import ActionBtn from "@/app/components/smallComponent/actionBtn";
+import Button from "@/app/components/smallComponent/Button";
 
 export default function DrinkDetailsPage() {
   const [drink, setDrink] = useState<Drink | null>(null);
@@ -135,14 +135,16 @@ export default function DrinkDetailsPage() {
         </div>
       </div>
 
-      <ActionBtn
-        onClickF={async () => {
+      <Button
+        onClick={async () => {
           deleteDrink();
         }}
-        Itext="Slet drink"
-        color="bg-cancel"
-        hover="bg-cancelHover"
-      />
+        variant="secondary"
+        size="lg"
+        fullWidth
+      >
+        Slet drink
+      </Button>
     </div>
   );
 }

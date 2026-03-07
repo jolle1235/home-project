@@ -18,7 +18,6 @@ export default function RecipePage() {
   const [timeRange, setTimeRange] = useState<number[]>([0, 60]);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [showMyRecipes, setShowMyRecipes] = useState<boolean>(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { categories } = useConstants();
 
@@ -104,60 +103,131 @@ export default function RecipePage() {
     );
   };
 
+  const resultsCount = filteredRecipes.length;
+
   return (
-    <div className="flex flex-col w-full bg-lightBackground overflow-hidden">
-      <div className="flex flex-row w-full mb-4 items-center">
-        <input
-          onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Søg efter opskrifter..."
-          className="border border-gray-300 p-2 rounded-md w-full"
-        />
-        <div className="ml-2 flex items-center gap-1 group">
-          <IconButton
-            icon={Filter}
-            variant="secondary"
-            ariaLabel={isFilterSettingsOpen ? "Skjul filter" : "Vis filter"}
-            onClick={() => setIsFilterSettingsOpen(!isFilterSettingsOpen)}
-          />
-          <span className="hidden sm:inline-flex text-sm text-darkText opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-150">
-            {isFilterSettingsOpen ? "Skjul filter" : "Vis filter"}
-          </span>
-        </div>
-      </div>
-
-      {isFilterSettingsOpen && (
-        <div className="flex w-full md:flex-row flex-col h-fit p-2 rounded-lg bg-gray-200 items-center md:divide-x md:divide-gray-400">
-          <div className="flex-1 items-center p-1">
-            <CategoryWheelComponent
-              categories={categories}
-              selectedCategories={selectedCategories}
-              onCategoryToggle={handleCategoryToggle}
-            />
+    <div className="w-full bg-background overflow-hidden">
+      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 py-6">
+        {/* Header */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-1">
+            <div className="flex items-baseline gap-3">
+              <h1 className="text-xl sm:text-2xl font-semibold text-foreground">
+                Opskrifter
+              </h1>
+              {!isLoading && !error && (
+                <span className="text-sm text-muted-foreground">
+                  {resultsCount} resultat
+                  {resultsCount === 1 ? "" : "er"}
+                </span>
+              )}
+            </div>
+            <p className="text-sm text-muted-foreground max-w-xl">
+              Find, filtrer og tilføj opskrifter til din madplan.
+            </p>
           </div>
-          <div className="flex-1 p-1 h-full flex justify-center">
-            <TimeRangeSelectorComponent
-              timeRange={timeRange}
-              setTimeRange={setTimeRange}
-            />
+
+          <div className="w-full sm:max-w-md flex items-center gap-2">
+            <div className="relative flex-1">
+              <input
+                type="search"
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Søg efter opskrifter..."
+                className="w-full rounded-xl border border-gray-300 bg-white/80 px-3 py-2 pl-9 text-sm sm:text-base shadow-sm focus:outline-none focus:ring-2 focus:ring-secondary-hover"
+                aria-label="Søg efter opskrifter"
+              />
+              <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                🔍
+              </span>
+            </div>
+            <div className="flex items-center gap-1 group">
+              <IconButton
+                icon={Filter}
+                variant="secondary"
+                ariaLabel={isFilterSettingsOpen ? "Skjul filtre" : "Vis filtre"}
+                onClick={() => setIsFilterSettingsOpen(!isFilterSettingsOpen)}
+              />
+              <span className="hidden sm:inline-flex text-sm text-foreground opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-150">
+                {isFilterSettingsOpen ? "Skjul filtre" : "Vis filtre"}
+              </span>
+            </div>
           </div>
         </div>
-      )}
 
-      <div className="mt-2">
-        {isLoading ? (
-          <div>Loading recipes...</div>
-        ) : error ? (
-          <div className="text-red-500">Error loading recipes: {error}</div>
-        ) : (
-          <RecipeCardComponent recipes={filteredRecipes} />
+        {/* Filters */}
+        {isFilterSettingsOpen && (
+          <section
+            aria-label="Filtre"
+            className="mt-4 rounded-2xl bg-surface p-4 sm:p-5 shadow-sm"
+          >
+            <div className="flex flex-col gap-4 md:flex-row md:items-stretch md:gap-6">
+              <div className="flex-1">
+                <h2 className="text-sm font-medium text-foreground mb-2">
+                  Kategorier
+                </h2>
+                <CategoryWheelComponent
+                  categories={categories}
+                  selectedCategories={selectedCategories}
+                  onCategoryToggle={handleCategoryToggle}
+                />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-sm font-medium text-foreground mb-2">
+                  Tid (minutter)
+                </h2>
+                <TimeRangeSelectorComponent
+                  timeRange={timeRange}
+                  setTimeRange={setTimeRange}
+                />
+              </div>
+            </div>
+          </section>
         )}
-      </div>
 
-      <AddButtonComponent
-        onClick={handleOpen}
-        label="Add Recipe"
-        ariaLabel="add_recipe"
-      />
+        {/* Results */}
+        <div className="mt-5">
+          {isLoading ? (
+            <div className="py-12 text-center text-muted-foreground">
+              Indlæser opskrifter...
+            </div>
+          ) : error ? (
+            <div className="py-12 text-center text-red-600">
+              Der opstod en fejl ved indlæsning af opskrifter: {error}
+            </div>
+          ) : resultsCount === 0 ? (
+            <div className="py-12 text-center space-y-3">
+              <p className="text-foreground font-medium">
+                Ingen opskrifter matcher dine filtre.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Prøv at justere søgning eller filtre for at se flere resultater.
+              </p>
+              <button
+                type="button"
+                className="inline-flex items-center justify-center rounded-xl bg-secondary px-4 py-2 text-sm font-medium text-foreground hover:bg-secondary-hover transition-colors"
+                onClick={() => {
+                  setSearchTerm("");
+                  setSelectedCategories([]);
+                  setTimeRange([0, 60]);
+                }}
+              >
+                Nulstil filtre
+              </button>
+            </div>
+          ) : (
+            <RecipeCardComponent recipes={filteredRecipes} />
+          )}
+        </div>
+
+        {/* Add recipe CTA */}
+        <div className="mt-8 flex justify-end">
+          <AddButtonComponent
+            onClick={handleOpen}
+            label="Tilføj opskrift"
+            ariaLabel="Tilføj ny opskrift"
+          />
+        </div>
+      </div>
 
       {isModalOpen && (
         <AddRecipeModalComponent

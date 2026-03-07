@@ -11,7 +11,7 @@ import ImageUploader from "../components/ImageUploader";
 import { searchItem } from "../utils/apiHelperFunctions";
 import { AddIngredientModal } from "../components/AddIngredientModal";
 import { IngredientsList } from "../components/ShowIngrediens";
-import ActionBtn from "../components/smallComponent/actionBtn";
+import Button from "../components/smallComponent/Button";
 import ConfirmationDialog from "../components/ConfirmationDialog";
 import { useConstants } from "@/app/context/ConstantsContext";
 import { toast } from "react-toastify";
@@ -590,13 +590,14 @@ function AddRecipePageContent() {
             </div>
           </div>
           <div className="w-full">
-            <ActionBtn
-              onClickF={() => setIsModalOpen(true)}
-              Itext="Tilføj ingredienser"
-              color="bg-action"
-              hover="bg-actionHover"
-              extraCSS="w-full"
-            />
+            <Button
+              onClick={() => setIsModalOpen(true)}
+              variant="primary"
+              size="lg"
+              fullWidth
+            >
+              Tilføj ingredienser
+            </Button>
 
             {isModalOpen && (
               <AddIngredientModal
@@ -623,30 +624,36 @@ function AddRecipePageContent() {
 
           <div className="flex justify-between items-center space-x-4">
             {recipeId && (
-              <ActionBtn
-                onClickF={() => setShowDeleteDialog(true)}
-                Itext="Slet opskrift"
-                color="bg-cancel"
-                hover="bg-cancelHover"
-                extraCSS={isSaving ? "opacity-50 cursor-not-allowed" : ""}
-              />
+              <Button
+                onClick={() => setShowDeleteDialog(true)}
+                variant="secondary"
+                size="lg"
+                fullWidth
+                disabled={isSaving}
+              >
+                Slet opskrift
+              </Button>
             )}
             <div className="flex justify-end space-x-4 ml-auto">
-              <ActionBtn
-                onClickF={() => router.back()}
-                Itext="Annuller"
-                color="bg-cancel"
-                hover="bg-cancelHover"
-                extraCSS={isSaving ? "opacity-50 cursor-not-allowed" : ""}
-              />
-              <ActionBtn
+              <Button
+                onClick={() => router.back()}
+                variant="secondary"
+                size="lg"
+                fullWidth
+                disabled={isSaving}
+              >
+                Annuller
+              </Button>
+
+              <Button
                 type="submit"
-                Itext={recipeId ? "Opdater opskrift" : "Gem opskrift"}
-                color="bg-action"
-                hover="bg-actionHover"
-                isLoading={isSaving}
-                loadingText="Gemmer..."
-              />
+                variant="primary"
+                size="lg"
+                fullWidth
+                disabled={isSaving}
+              >
+                {recipeId ? "Opdater opskrift" : "Gem opskrift"}
+              </Button>
             </div>
           </div>
         </form>

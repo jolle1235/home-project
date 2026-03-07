@@ -1,9 +1,10 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
 import { Ingredient } from "../model/Ingredient";
-import { RemoveButton } from "./smallComponent/removeBtn";
 import { removeItem } from "../utils/apiHelperFunctions";
 import { useConstants } from "../context/ConstantsContext";
+import Button from "./smallComponent/Button";
+import { Loader2, Trash2 } from "lucide-react";
 
 interface Props {
   onAdd: (Ingredient: Ingredient) => void;
@@ -179,7 +180,23 @@ export function AddIngredientComponent({
         </button>
         {InputCategory && (
           <div onClick={(e) => e.stopPropagation()}>
-            <RemoveButton onClickF={async () => handleRemoveItem(itemName)} />
+            <Button
+              variant="ghost"
+              size="sm"
+              aria-label={`Fjern vare: ${itemName}`}
+              disabled={loading}
+              onClick={async (e) => {
+                e?.stopPropagation();
+                await handleRemoveItem(itemName);
+              }}
+              className="min-h-[44px] min-w-[44px] px-3 text-red-700 hover:bg-red-100"
+            >
+              {loading ? (
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+              ) : (
+                <Trash2 className="h-4 w-4" aria-hidden="true" />
+              )}
+            </Button>
           </div>
         )}
       </div>
@@ -191,7 +208,7 @@ export function AddIngredientComponent({
           onWheel={(e) => e.stopPropagation()}
           onTouchMove={(e) => e.stopPropagation()}
         >
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-col gap-3">
             <div className="flex w-full gap-1">
               <input
                 type="number"
@@ -206,6 +223,9 @@ export function AddIngredientComponent({
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     handleSubmit(e);
+                  } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    setIsPopoverOpen(false);
                   }
                 }}
                 autoFocus
@@ -221,6 +241,28 @@ export function AddIngredientComponent({
                   </option>
                 ))}
               </select>
+            </div>
+
+            {/* Frequently used units */}
+            <div className="flex flex-wrap gap-2">
+              {units
+                .filter((u) =>
+                  ["stk", "g", "kg", "ml", "l"].includes(u.name.toLowerCase())
+                )
+                .map((u) => (
+                  <button
+                    key={u._id}
+                    type="button"
+                    onClick={() => setUnit(u.name)}
+                    className={`px-3 py-1 rounded-full text-xs sm:text-sm border transition-colors ${
+                      unit === u.name
+                        ? "bg-secondary text-foreground border-secondary"
+                        : "bg-white text-foreground border-gray-300 hover:bg-soft"
+                    }`}
+                  >
+                    {u.name}
+                  </button>
+                ))}
             </div>
 
             <button

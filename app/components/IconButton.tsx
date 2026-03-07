@@ -26,13 +26,13 @@ export function IconButton({
   ...rest
 }: IconButtonProps) {
   const baseClasses =
-    "inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm sm:text-base font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-action disabled:opacity-50 disabled:cursor-not-allowed";
+    "inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm sm:text-base font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary/40 focus-visible:ring-offset-background disabled:opacity-50 disabled:cursor-not-allowed";
 
   const variantClasses: Record<IconButtonVariant, string> = {
-    primary: "bg-action hover:bg-actionHover text-darkText",
-    secondary: "bg-gray-200 hover:bg-gray-300 text-darkText",
-    danger: "bg-cancel hover:opacity-90 text-darkText",
-    ghost: "bg-transparent hover:bg-gray-100 text-gray-700",
+    primary: "bg-primary hover:bg-primary-hover text-white shadow-sm",
+    secondary: "bg-secondary hover:bg-secondary-hover text-foreground",
+    danger: "bg-red-600 hover:bg-red-700 text-white",
+    ghost: "bg-transparent hover:bg-soft text-foreground",
   };
 
   const widthClass = fullWidth ? "w-full" : "";
