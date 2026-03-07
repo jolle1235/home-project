@@ -44,7 +44,7 @@ export function ShoppingListItemComponent({
             type="number"
             min={0}
             step={0.1}
-            className="text-lightgreytxt p-1 rounded-lg w-10 sm:w-14 h-fit border border-lightgreyBackground text-sm sm:text-base"
+            className="text-muted-foreground p-0.5 rounded-lg w-10 sm:w-14 h-fit border border-lightgreyBackground text-sm sm:text-base"
             value={quantityValue}
             onChange={(e) => {
               const str = e.target.value;
@@ -63,7 +63,7 @@ export function ShoppingListItemComponent({
       </div>
       <div className="flex items-center gap-2 shrink-0">
         <select
-          className="text-sm sm:text-base p-1 rounded-lg border border-lightgreyBackground bg-white min-w-[80px]"
+          className="text-sm sm:text-base p-1 rounded-lg border border-lightgreyBackground bg-white min-w-[50px"
           value={ingredient.center ?? ""}
           onChange={(e) =>
             updateIngredientCenter(ingredient._id, e.target.value)
@@ -81,7 +81,7 @@ export function ShoppingListItemComponent({
           min={0}
           step={0.01}
           placeholder="Pris"
-          className="text-lightgreytxt p-1 rounded-lg w-14 sm:w-16 h-fit border border-lightgreyBackground text-sm sm:text-base"
+          className="text-lightgreytxt p-1 rounded-lg w-14 sm:w-16 h-fit text-sm sm:text-base"
           value={
             ingredient.price === undefined ||
             ingredient.price === null ||

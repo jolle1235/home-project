@@ -81,7 +81,6 @@ export default function RootLayout({
             <ConstantsProvider>
               <NavBar />
               <main className="bg-lightBackground">{children}</main>
-              <ToastProvider />
               <SpeedInsights />
             </ConstantsProvider>
           </ShoppingListProvider>
