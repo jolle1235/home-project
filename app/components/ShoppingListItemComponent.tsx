@@ -13,6 +13,7 @@ export function ShoppingListItemComponent({
     updateIngredientCenter,
     updateIngredientPrice,
     toggleMarkedIngredient,
+    updateIngredientNotes,
     removeIngredient,
   } = useShoppingListContext();
 
@@ -104,12 +105,14 @@ export function ShoppingListItemComponent({
             }
           }}
         />
-
         {/* Notes (full width row) */}
         <input
           className="col-span-4 text-muted-foreground p-1 rounded-lg text-sm sm:text-base bg-background mt-1"
           placeholder="Noter..."
           value={ingredient.notes ?? ""}
+          onChange={(e) =>
+            updateIngredientNotes(ingredient._id, e.target.value)
+          }
         />
       </div>
     </div>
