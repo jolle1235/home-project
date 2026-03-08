@@ -12,8 +12,6 @@ import { AddIngredientComponent } from "./AddIngredientComponent";
 import { Item } from "../model/Item";
 import { IngredientsList } from "./ShowIngrediens";
 import { useShoppingListContext } from "../context/ShoppinglistContext";
-import { IconButton } from "./IconButton";
-import { Link2, X } from "lucide-react";
 import Button from "./smallComponent/Button";
 
 interface AddIngredientModalProps {

@@ -2,6 +2,8 @@
 import { useShoppingListContext } from "../context/ShoppinglistContext";
 import { Ingredient } from "../model/Ingredient";
 import { shoppingStores } from "../constant/shoppingStores";
+import { IconButton } from "./IconButton";
+import { Trash2 } from "lucide-react";
 
 export function ShoppingListItemComponent({
   ingredient,
@@ -102,18 +104,14 @@ export function ShoppingListItemComponent({
           }}
         />
       </div>
-      <button
-        type="button"
+      <IconButton
+        icon={Trash2}
+        variant="ghost"
+        size="sm"
+        ariaLabel="Fjern"
         onClick={() => removeIngredient(ingredient._id)}
-        className="p-1 rounded hover:bg-gray-200 transition-colors shrink-0"
-        aria-label="Fjern"
-      >
-        <img
-          src="/icon/remove_button.png"
-          alt="Fjern"
-          className="w-5 h-5 sm:w-6 sm:h-6"
-        />
-      </button>
+        className="shrink-0"
+      />
     </div>
   );
 }

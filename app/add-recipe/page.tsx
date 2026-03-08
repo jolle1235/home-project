@@ -453,12 +453,15 @@ function AddRecipePageContent() {
           <h2 className="text-2xl font-bold">
             {recipeId ? "Rediger opskrift" : "Tilføj ny opskrift"}
           </h2>
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
+            type="button"
             onClick={() => router.back()}
-            className="text-gray-500 hover:text-gray-700 transition-all duration-150 cursor-pointer transform hover:scale-110 active:scale-95 active:opacity-80 p-1 rounded"
+            className="w-10 h-10 p-0"
           >
             ✕
-          </button>
+          </Button>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-4">

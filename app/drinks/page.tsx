@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AddButtonComponent } from "../components/AddButtonComponent";
 import { AddDrinkModalComponent } from "../components/drinkComponents/AddDrinkModalComponent";
 import { Drink } from "../model/Drink";
 import { DrinkCardComponent } from "../components/drinkComponents/DrinkCardComponent";
+import { IconButton } from "../components/IconButton";
+import { Plus } from "lucide-react";
 
 export default function DrinkPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -39,7 +40,13 @@ export default function DrinkPage() {
       <div className="container mx-auto px-4 py-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">Drinks</h1>
-          <AddButtonComponent onClick={handleOpen} />
+          <IconButton
+            icon={Plus}
+            variant="primary"
+            size="sm"
+            type="button"
+            onClick={() => handleOpen()}
+          ></IconButton>
         </div>
 
         {isLoading && (

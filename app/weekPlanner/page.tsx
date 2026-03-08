@@ -107,13 +107,16 @@ export default function WeeklyRecipePlanner() {
             >
               <div className="flex flex-row w-full items-center justify-between mb-2">
                 <p className="truncate flex-1">{recipe.recipeName}</p>
-                <button
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
                   onClick={() => removeRecipeFromTempWeekPlan(recipe._id)}
-                  className="text-gray-500 hover:text-gray-700 transition-all duration-150 cursor-pointer transform hover:scale-110 active:scale-95 active:opacity-80 p-1 rounded ml-2"
-                  title="Fjern opskrift"
+                  className="ml-2 w-8 h-8 p-0 text-gray-500 hover:text-gray-700"
+                  aria-label="Fjern opskrift"
                 >
                   ✕
-                </button>
+                </Button>
               </div>
               <Button
                 onClick={() => openDialogForRecipe(recipe)}
@@ -166,27 +169,33 @@ export default function WeeklyRecipePlanner() {
                             <p className="truncate flex-1 w-10/12">
                               {entry.recipe.recipeName}
                             </p>
-                            <button
-                              onClick={() => {
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() =>
                                 removeRecipeFromWeekPlan(
                                   dateKey,
                                   entry.recipe._id
-                                );
-                              }}
-                              className="text-gray-500 hover:text-gray-700 transition-all duration-150 cursor-pointer transform hover:scale-110 active:scale-95 active:opacity-80 p-1 rounded"
+                                )
+                              }
+                              className="w-8 h-8 p-0 text-gray-500 hover:text-gray-700"
+                              aria-label="Fjern opskrift fra dato"
                             >
                               ✕
-                            </button>
+                            </Button>
                           </div>
                           <div className="flex flex-row justify-evenly w-full gap-1">
-                            <button
-                              className="text-base p-1 bg-primary hover:bg-primaryHover rounded-lg w-10/12 transition-all duration-150 cursor-pointer transform hover:scale-105 active:scale-95 active:opacity-80"
-                              onClick={() => {
-                                handleRouter(entry.recipe._id);
-                              }}
+                            <Button
+                              type="button"
+                              variant="primary"
+                              size="sm"
+                              fullWidth
+                              className="w-10/12"
+                              onClick={() => handleRouter(entry.recipe._id)}
                             >
                               Opskrift
-                            </button>
+                            </Button>
                           </div>
                         </div>
                       ))}

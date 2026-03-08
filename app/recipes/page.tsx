@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useState, useMemo } from "react";
-import { Filter } from "lucide-react";
-import { AddButtonComponent } from "../components/AddButtonComponent";
+import { Filter, Plus, Trash2 } from "lucide-react";
 import { AddRecipeModalComponent } from "../components/recipeComponent/AddRecipeModalComponent";
 import { RecipeCardComponent } from "../components/recipeComponent/RecipeCardComponent";
 import { CategoryWheelComponent } from "../components/CategoryWheelComponent";
@@ -9,6 +8,7 @@ import { TimeRangeSelectorComponent } from "../components/TimeRangeSelectorCompo
 import { Recipe } from "../model/Recipe";
 import { useConstants } from "../context/ConstantsContext";
 import { IconButton } from "../components/IconButton";
+import Button from "../components/smallComponent/Button";
 
 export default function RecipePage() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
@@ -127,14 +127,6 @@ export default function RecipePage() {
                 Find, filtrer og tilføj opskrifter til din madplan.
               </p>
             </div>
-            {/* Add recipe CTA */}
-            <div className="flex justify-center items-center">
-              <AddButtonComponent
-                onClick={handleOpen}
-                label="Tilføj opskrift"
-                ariaLabel="Tilføj ny opskrift"
-              />
-            </div>
           </div>
 
           <div className="w-full sm:max-w-md flex items-center gap-2">
@@ -154,12 +146,22 @@ export default function RecipePage() {
               <IconButton
                 icon={Filter}
                 variant="secondary"
+                size="md"
                 ariaLabel={isFilterSettingsOpen ? "Skjul filtre" : "Vis filtre"}
                 onClick={() => setIsFilterSettingsOpen(!isFilterSettingsOpen)}
               />
               <span className="hidden sm:inline-flex text-sm text-foreground opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-150">
                 {isFilterSettingsOpen ? "Skjul filtre" : "Vis filtre"}
               </span>
+              <div className="flex justify-center items-center">
+                <IconButton
+                  icon={Plus}
+                  variant="primary"
+                  size="md"
+                  aria-label="Tilføj opskrift"
+                  onClick={() => handleOpen()}
+                ></IconButton>
+              </div>
             </div>
           </div>
         </div>
@@ -212,9 +214,10 @@ export default function RecipePage() {
               <p className="text-sm text-muted-foreground">
                 Prøv at justere søgning eller filtre for at se flere resultater.
               </p>
-              <button
+              <Button
                 type="button"
-                className="inline-flex items-center justify-center rounded-xl bg-secondary px-4 py-2 text-sm font-medium text-foreground hover:bg-secondary-hover transition-colors"
+                variant="secondary"
+                size="sm"
                 onClick={() => {
                   setSearchTerm("");
                   setSelectedCategories([]);
@@ -222,7 +225,7 @@ export default function RecipePage() {
                 }}
               >
                 Nulstil filtre
-              </button>
+              </Button>
             </div>
           ) : (
             <RecipeCardComponent recipes={filteredRecipes} />

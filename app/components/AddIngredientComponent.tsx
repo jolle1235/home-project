@@ -98,8 +98,7 @@ export function AddIngredientComponent({
     }
   }, [isPopoverOpen]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = () => {
     if (!unit) {
       console.warn("Cannot add ingredient: unit is required");
       return; // guard against empty unit list
@@ -222,7 +221,8 @@ export function AddIngredientComponent({
                 className="w-9/12 rounded-md border border-gray-300 p-2 text-sm sm:text-base"
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
-                    handleSubmit(e);
+                    e.preventDefault();
+                    handleSubmit();
                   } else if (e.key === "Escape") {
                     e.preventDefault();
                     setIsPopoverOpen(false);
@@ -265,13 +265,15 @@ export function AddIngredientComponent({
                 ))}
             </div>
 
-            <button
+            <Button
               type="button"
+              variant="primary"
+              size="sm"
+              fullWidth
               onClick={handleSubmit}
-              className="w-full bg-primary hover:bg-primaryHover font-semibold px-4 py-2 rounded-lg transition-colors"
             >
               Tilføj
-            </button>
+            </Button>
           </div>
         </div>
       )}

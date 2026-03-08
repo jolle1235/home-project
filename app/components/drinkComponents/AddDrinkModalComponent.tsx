@@ -10,6 +10,8 @@ import { AddIngredientModal } from "../AddIngredientModal";
 import { Ingredient } from "@/app/model/Ingredient";
 import { IngredientsList } from "../ShowIngrediens";
 import Button from "../smallComponent/Button";
+import { IconButton } from "../IconButton";
+import { X } from "lucide-react";
 
 interface Props {
   handleClose: () => void;
@@ -99,12 +101,13 @@ export function AddDrinkModalComponent({ handleClose }: Props) {
       <div className="bg-lightBackground rounded-lg">
         <div className="flex justify-between items-center px-6 py-2 bg-lightgreyBackground rounded-t-lg">
           <h2 className="text-2xl font-bold">Tilføj ny Drink</h2>
-          <button
+          <IconButton
+            icon={X}
+            variant="ghost"
+            size="sm"
+            ariaLabel="Luk"
             onClick={handleClose}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            ✕
-          </button>
+          />
         </div>
 
         <form

@@ -1,9 +1,11 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import { useRouter } from "next/navigation";
 import Button from "../smallComponent/Button";
 import { WebLinkInput } from "../WebLinkInput";
 import { Recipe } from "../../model/Recipe";
+import { IconButton } from "../IconButton";
+import { X } from "lucide-react";
 
 interface Props {
   handleClose: () => void;
@@ -60,14 +62,13 @@ export function AddRecipeModalComponent({ handleClose, onRecipeSaved }: Props) {
             </p>
           </div>
 
-          <button
+          <IconButton
+            icon={X}
+            variant="ghost"
+            size="sm"
+            ariaLabel="Luk"
             onClick={handleClose}
-            type="button"
-            aria-label="Luk"
-            className="min-h-[40px] min-w-[40px] flex items-center justify-center rounded-full text-muted-foreground hover:bg-soft transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-          >
-            ✕
-          </button>
+          />
         </div>
 
         {/* Content */}

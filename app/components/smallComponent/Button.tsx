@@ -45,9 +45,9 @@ export default function Button({
   `;
 
   const sizeStyles = {
-    sm: "min-h-[40px] px-4 text-sm",
-    md: "min-h-[48px] px-6 text-base",
-    lg: "min-h-[56px] px-8 text-lg",
+    sm: "min-h-[32px] px-2 text-sm",
+    md: "min-h-[40px] px-4 text-base",
+    lg: "min-h-[48px] px-6 text-lg",
   };
 
   const variantStyles = {
