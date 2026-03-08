@@ -2,8 +2,6 @@
 import { useShoppingListContext } from "../context/ShoppinglistContext";
 import { Ingredient } from "../model/Ingredient";
 import { shoppingStores } from "../constant/shoppingStores";
-import { IconButton } from "./IconButton";
-import { Trash2 } from "lucide-react";
 
 export function ShoppingListItemComponent({
   ingredient,
@@ -29,7 +27,7 @@ export function ShoppingListItemComponent({
   return (
     <div
       id="shopping_list_item"
-      className="flex flex-row flex-wrap w-full h-fit items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 border-b border-lightgreyBackground"
+      className="flex flex-row flex-wrap w-full h-fit items-center gap-4 p-2 bg-soft rounded-lg"
     >
       <input
         type="checkbox"
@@ -41,7 +39,7 @@ export function ShoppingListItemComponent({
         <p className="font-bold text-base sm:text-lg md:text-xl truncate">
           {ingredient.item.name || "Unnamed Item"}
         </p>
-        <div className="flex flex-row items-center flex-wrap gap-1">
+        <div className="flex flex-row items-center flex-wrap gap-1 mt-1">
           <input
             type="number"
             min={0}
@@ -63,9 +61,10 @@ export function ShoppingListItemComponent({
           <p className="text-lightgreytxt text-sm sm:text-base">{unit}</p>
         </div>
       </div>
-      <div className="flex items-center gap-2 shrink-0">
+      <div className="grid grid-cols-4 w-6/12">
+        {/* Store */}
         <select
-          className="text-sm sm:text-base p-1 rounded-lg border border-lightgreyBackground bg-white min-w-[50px"
+          className="text-sm sm:text-base col-span-3 p-1 rounded-lg bg-background mr-1"
           value={ingredient.center ?? ""}
           onChange={(e) =>
             updateIngredientCenter(ingredient._id, e.target.value)
@@ -78,12 +77,14 @@ export function ShoppingListItemComponent({
             </option>
           ))}
         </select>
+
+        {/* Price */}
         <input
           type="number"
           min={0}
-          step={0.01}
+          step={1}
           placeholder="Pris"
-          className="text-muted-foreground p-1 rounded-lg w-14 sm:w-16 h-fit text-sm sm:text-base"
+          className="text-muted-foreground p-1 rounded-lg text-sm sm:text-base"
           value={
             ingredient.price === undefined ||
             ingredient.price === null ||
@@ -102,6 +103,13 @@ export function ShoppingListItemComponent({
               updateIngredientPrice(ingredient._id, val);
             }
           }}
+        />
+
+        {/* Notes (full width row) */}
+        <input
+          className="col-span-4 text-muted-foreground p-1 rounded-lg text-sm sm:text-base bg-background mt-1"
+          placeholder="Noter..."
+          value={ingredient.notes ?? ""}
         />
       </div>
     </div>

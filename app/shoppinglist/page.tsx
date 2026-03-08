@@ -79,12 +79,14 @@ export default function ShoppingListPage() {
           eller fra en opskrift.
         </p>
       ) : (
-        <div className="bg-white rounded-lg border border-lightgreyBackground overflow-hidden">
+        <div className=" rounded-lg overflow-hidden">
           {shoppingList.map((ingredient) => (
-            <ShoppingListItemComponent
-              key={ingredient._id}
-              ingredient={ingredient}
-            />
+            <div className="mb-1">
+              <ShoppingListItemComponent
+                key={ingredient._id}
+                ingredient={ingredient}
+              />
+            </div>
           ))}
         </div>
       )}

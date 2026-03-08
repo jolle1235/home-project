@@ -9,4 +9,5 @@ export interface Ingredient {
   section?: string; // Optional section/category title (e.g., "Sauce", "Main course")
   center?: string; // Store name (e.g. "Netto", "Rema")
   price?: number;
+  notes?: string;
 }
