@@ -4,21 +4,22 @@ import { useForm } from "react-hook-form";
 import { addToShoppingListSchema } from "../utils/validationSchema";
 
 interface SearchBarProps {
+  value: string;
   onChange: (value: string) => void;
   placeholder: string;
   inputRef?: RefObject<HTMLInputElement | null>;
 }
 
 export function SearchBarComponent({
+  value,
   onChange,
   placeholder,
   inputRef,
 }: SearchBarProps) {
   const {
-    setValue, // Manage value in React Hook Form
+    setValue,
     formState: { errors },
     trigger,
-    getValues,
   } = useForm({
     resolver: yupResolver(addToShoppingListSchema),
     mode: "onChange",
@@ -26,11 +27,10 @@ export function SearchBarComponent({
 
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
     const newValue = e.target.value;
+
     onChange(newValue);
-    setTimeout(() => {
-      setValue("itemSearch", newValue); // Update React Hook Form's value
-      trigger("itemSearch"); // Trigger validation after setting the value
-    }, 100);
+    setValue("itemSearch", newValue);
+    trigger("itemSearch");
   }
 
   return (
@@ -38,13 +38,15 @@ export function SearchBarComponent({
       <div className="relative w-full">
         <input
           type="text"
+          value={value}
           placeholder={placeholder}
           onChange={handleInputChange}
           onFocus={(e) => e.target.select()}
           ref={inputRef}
-          className={`w-full p-2 sm:p-3 pl-3 sm:pl-4 pr-10 sm:pr-12 border rounded-lg text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 
-            ${errors.itemSearch ? "focus:ring-cancel" : ""}`}
+          className={`w-full p-2 sm:p-3 pl-3 sm:pl-4 pr-10 sm:pr-12 border rounded-lg text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-primary
+          ${errors.itemSearch ? "focus:ring-cancel" : ""}`}
         />
+
         <div className="absolute inset-y-0 right-2 sm:right-3 flex items-center">
           <svg
             className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400"
@@ -62,7 +64,8 @@ export function SearchBarComponent({
           </svg>
         </div>
       </div>
-      {errors.itemSearch && getValues("itemSearch") && (
+
+      {errors.itemSearch && value && (
         <p className="text-red-500 text-sm sm:text-base mt-1">
           {errors.itemSearch.message}
         </p>
@@ -70,5 +73,3 @@ export function SearchBarComponent({
     </div>
   );
 }
-
-export default SearchBarComponent;

@@ -83,7 +83,7 @@ export function ShoppingListItemComponent({
           min={0}
           step={0.01}
           placeholder="Pris"
-          className="text-lightgreytxt p-1 rounded-lg w-14 sm:w-16 h-fit text-sm sm:text-base"
+          className="text-muted-foreground p-1 rounded-lg w-14 sm:w-16 h-fit text-sm sm:text-base"
           value={
             ingredient.price === undefined ||
             ingredient.price === null ||
@@ -104,14 +104,6 @@ export function ShoppingListItemComponent({
           }}
         />
       </div>
-      <IconButton
-        icon={Trash2}
-        variant="ghost"
-        size="sm"
-        ariaLabel="Fjern"
-        onClick={() => removeIngredient(ingredient._id)}
-        className="shrink-0"
-      />
     </div>
   );
 }

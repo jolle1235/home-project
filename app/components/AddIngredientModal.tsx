@@ -7,7 +7,7 @@ import { Drink } from "../model/Drink";
 import { createItem } from "../utils/apiHelperFunctions";
 import { searchItem } from "../utils/apiHelperFunctions";
 import { Ingredient } from "../model/Ingredient";
-import SearchBar from "./SearchBarComponent";
+import { SearchBarComponent } from "./SearchBarComponent";
 import { AddIngredientComponent } from "./AddIngredientComponent";
 import { Item } from "../model/Item";
 import { IngredientsList } from "./ShowIngrediens";
@@ -193,12 +193,11 @@ export function AddIngredientModal({
 
   const handleIngredientAddedFromPicker = (ingredient: Ingredient) => {
     handleAddIngredient(ingredient);
-    setSearchTerm("");
+
+    setSearchTerm(""); // clears input
     setIsDropdownOpen(false);
-    if (searchInputRef.current) {
-      searchInputRef.current.focus();
-      searchInputRef.current.select();
-    }
+
+    searchInputRef.current?.focus();
   };
 
   return (
@@ -343,9 +342,10 @@ export function AddIngredientModal({
 
             <div className="space-y-4 relative">
               <div ref={searchBarRef} className="relative">
-                <SearchBar
+                <SearchBarComponent
+                  value={searchTerm}
                   onChange={setSearchTerm}
-                  placeholder="Søg efter ingredienser..."
+                  placeholder="Search ingredient..."
                   inputRef={searchInputRef}
                 />
                 {isDropdownOpen && (
