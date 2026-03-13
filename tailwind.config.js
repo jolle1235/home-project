@@ -26,6 +26,7 @@ module.exports = {
 
         surface: "var(--surface)",
         soft: "var(--soft)",
+        "surface-secondary": "var(--secondary-surface)",
       },
     },
   },

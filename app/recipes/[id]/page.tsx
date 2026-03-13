@@ -10,10 +10,12 @@ import { useShoppingListContext } from "../../context/ShoppinglistContext";
 import { toast } from "react-toastify";
 import Button from "../../components/smallComponent/Button";
 import { ArrowLeft, Clock, Edit2, Minus, Plus, Users } from "lucide-react";
+import { IconButton } from "@/app/components/IconButton";
 
 export default function RecipeDetailsPage() {
   const [recipe, setRecipe] = useState<Recipe | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingRecipe, setIsLoadingRecipes] = useState(true);
+  const [isAddingToList, setIsAddingToList] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [recommendedPersonAmount, setRecommendedPersonAmount] = useState(1);
   const [checkedIngredients, setCheckedIngredients] = useState<Set<string>>(
@@ -42,11 +44,11 @@ export default function RecipeDetailsPage() {
       if (!id) {
         setError("No recipe ID provided");
         console.log("ERROR fetch recipe id");
-        setIsLoading(false);
+        setIsLoadingRecipes(false);
         return;
       }
 
-      setIsLoading(true);
+      setIsLoadingRecipes(true);
       try {
         console.log(`Fetching recipe with ID: ${id}`);
         const response = await fetch(`/api/recipe/${id}`); // Note: changed to plural
@@ -65,7 +67,7 @@ export default function RecipeDetailsPage() {
           err instanceof Error ? err.message : "An unknown error occurred"
         );
       } finally {
-        setIsLoading(false);
+        setIsLoadingRecipes(false);
       }
     };
 
@@ -83,7 +85,7 @@ export default function RecipeDetailsPage() {
     }
   }, [recipe]);
 
-  if (isLoading)
+  if (isLoadingRecipe)
     return (
       <div className="w-full py-12 text-center text-muted-foreground">
         Indlæser opskrift...
@@ -99,6 +101,7 @@ export default function RecipeDetailsPage() {
 
   const handleAddCheckedToShoppingList = () => {
     if (!recipe?.ingredients?.length) return;
+    setIsAddingToList(true);
     const toAdd: Ingredient[] = recipe.ingredients
       .filter((_, i) => checkedIngredients.has(String(i)))
       .map((ing) => {
@@ -123,35 +126,12 @@ export default function RecipeDetailsPage() {
     toast.success(
       `${toAdd.length} ingrediens${toAdd.length === 1 ? "" : "er"} tilføjet til indkøbslisten`
     );
+    setIsAddingToList(false);
   };
 
   return (
     <div className="w-full bg-background">
-      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 py-6">
-        {/* Back Button and Edit Button */}
-        <div className="w-full mb-4 flex justify-between items-center gap-3">
-          <Link
-            href="/recipes"
-            className="flex flex-row justify-center items-center gap-2 bg-secondary rounded-lg p-2"
-          >
-            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-            <span>Tilbage til opskrifter</span>
-          </Link>
-          {recipeId && (
-            <Link href={`/add-recipe?id=${recipeId}`}>
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                className="inline-flex items-center gap-2"
-              >
-                <Edit2 className="h-4 w-4" aria-hidden="true" />
-                Rediger
-              </Button>
-            </Link>
-          )}
-        </div>
-
+      <div className="mx-auto w-full max-w-4xl p-2 sm:px-4">
         <div className="flex flex-col md:flex-row gap-6">
           {/* Left column: image, title, meta, ingredients */}
           <div className="flex flex-col md:w-1/2 w-full gap-4">
@@ -165,57 +145,74 @@ export default function RecipeDetailsPage() {
                   fill
                   sizes="(min-width: 1024px) 50vw, 100vw"
                 />
+
+                {/* Overlay buttons */}
+                <div className="absolute top-3 left-3 right-3 flex justify-between items-center">
+                  <Link
+                    href="/recipes"
+                    className="flex flex-row justify-center items-center gap-2 bg-black/40 backdrop-blur-sm text-white rounded-lg p-2 text-sm"
+                  >
+                    <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+                    <span>Tilbage</span>
+                  </Link>
+
+                  {recipeId && (
+                    <Link href={`/add-recipe?id=${recipeId}`}>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        className="inline-flex items-center gap-2 text-foreground"
+                      >
+                        <Edit2 className="h-4 w-4" aria-hidden="true" />
+                        Rediger
+                      </Button>
+                    </Link>
+                  )}
+                </div>
               </div>
               <div className="p-4 sm:p-5 flex flex-col gap-3">
                 <h2 className="text-xl sm:text-2xl font-semibold text-foreground">
                   {recipe?.recipeName}
                 </h2>
                 <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-soft">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary">
                     <Clock className="h-4 w-4" aria-hidden="true" />
                     <span>{recipe?.time} min</span>
                   </div>
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-soft">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary">
                     <Users className="h-4 w-4" aria-hidden="true" />
                     <span>{recommendedPersonAmount} personer</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 mt-1">
+                <div className="flex items-center gap-3 mt-1 -">
                   <span className="text-sm text-muted-foreground">
                     Justér antal personer:
                   </span>
-                  <div className="inline-flex items-center rounded-full bg-soft px-2 py-1 gap-1.5">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="min-h-[32px] min-w-[32px] p-0"
-                      aria-label="Færre personer"
+                  <div className="inline-flex items-center rounded-xl bg-secondary p-1  gap-1.5">
+                    <IconButton
+                      icon={Minus}
+                      variant="primary"
+                      size="xs"
                       onClick={() =>
                         setRecommendedPersonAmount((prev) =>
                           Math.max(prev - 1, 1)
                         )
                       }
-                    >
-                      <Minus className="h-4 w-4" aria-hidden="true" />
-                    </Button>
-                    <span className="min-w-[2.5rem] text-center text-sm font-semibold text-foreground">
+                    ></IconButton>
+                    <span className="w-fit px-2 text-center text-sm font-semibold text-foreground">
                       {recommendedPersonAmount}
                     </span>
-                    <Button
-                      type="button"
+                    <IconButton
+                      icon={Plus}
                       variant="primary"
-                      size="sm"
-                      className="min-h-[32px] min-w-[32px] p-0"
-                      aria-label="Flere personer"
+                      size="xs"
                       onClick={() =>
                         setRecommendedPersonAmount((prev) =>
                           prev < maxRecipePersons ? prev + 1 : prev
                         )
                       }
-                    >
-                      <Plus className="h-4 w-4" aria-hidden="true" />
-                    </Button>
+                    ></IconButton>
                   </div>
                 </div>
               </div>
@@ -319,8 +316,11 @@ export default function RecipeDetailsPage() {
                   size="md"
                   fullWidth
                   onClick={handleAddCheckedToShoppingList}
+                  disabled={isAddingToList}
                 >
-                  Tilføj valgte til indkøbslisten
+                  {isAddingToList
+                    ? "Tilføjer..."
+                    : "Tilføj valgte til indkøbslisten"}
                 </Button>
               </div>
             </section>

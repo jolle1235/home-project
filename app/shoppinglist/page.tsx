@@ -81,7 +81,7 @@ export default function ShoppingListPage() {
       ) : (
         <div className=" rounded-lg overflow-hidden">
           {shoppingList.map((ingredient) => (
-            <div className="mb-1">
+            <div key={ingredient._id} className="mb-1">
               <ShoppingListItemComponent
                 key={ingredient._id}
                 ingredient={ingredient}
