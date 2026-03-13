@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import clientPromise from "../../lib/mongodb";
+import { capitalise } from "@/app/utils/stringUtils";
 
 const databaseName = process.env.MONGO_DATABASE_NAME;
 
@@ -16,7 +17,9 @@ export async function GET(request: NextRequest) {
       })
       .toArray();
 
-    return NextResponse.json(Items);
+    return NextResponse.json(
+      Items.map((item) => ({ ...item, name: capitalise(item.name) }))
+    );
   } catch (error) {
     console.error("Failed to fetch Items:", error);
     return NextResponse.json(
@@ -42,6 +45,8 @@ export async function POST(request: NextRequest) {
     const db = client.db(databaseName);
 
     // Check if Item already exists
+    Item.name = capitalise(Item.name.trim());
+
     const existingItem = await db
       .collection("Items")
       .findOne({ name: Item.name });
