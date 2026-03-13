@@ -74,24 +74,8 @@ export async function saveWeekPlanToDatabase(
   });
 
   if (!response.ok) {
+    const errorText = await response.text();
+    console.error("WeekPlan API error:", errorText);
     throw new Error("Failed to save week plan");
-  }
-}
-
-export async function saveTempWeekPlanToDatabase(
-  tempWeekPlan: Recipe[]
-): Promise<void> {
-  const response = await fetch("/api/tempWeekPlan", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      tempWeekPlan: tempWeekPlan,
-    }),
-  });
-
-  if (!response.ok) {
-    throw new Error("Failed to save temporary week plan");
   }
 }

@@ -1,6 +1,5 @@
-import { Recipe } from "./Recipe";
-
 export interface WeekPlan {
-    date: string,
-    recipe: Recipe,
-  }
+  date: string;
+  recipeId: string;
+  recipeName: string;
+}

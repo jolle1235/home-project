@@ -9,19 +9,12 @@ import React, {
 import { Recipe } from "../model/Recipe";
 import { WeekPlan } from "../model/weekPlan";
 import { toast } from "react-toastify";
-import {
-  saveWeekPlanToDatabase,
-  saveTempWeekPlanToDatabase,
-} from "../utils/apiHelperFunctions";
+import { saveWeekPlanToDatabase } from "../utils/apiHelperFunctions";
 
 interface RecipeContextProps {
   weekPlan: WeekPlan[];
-  tempWeekPlan: Recipe[];
-  addRecipeToWeekPlan: (date: string, recipe: Recipe) => void;
   addRecipesToWeekPlan: (dates: string[], recipe: Recipe) => void;
   removeRecipeFromWeekPlan: (date: string, recipeId: string) => void;
-  addRecipeToTempWeekPlan: (recipe: Recipe) => void;
-  removeRecipeFromTempWeekPlan: (recipeId: string) => void;
   clearPlan: () => void;
   getDatesForNext4Weeks: () => Date[];
 }
@@ -30,87 +23,80 @@ const RecipeContext = createContext<RecipeContextProps | undefined>(undefined);
 
 export function RecipeProvider({ children }: { children: ReactNode }) {
   const [weekPlan, setWeekPlan] = useState<WeekPlan[]>([]);
-  const [tempWeekPlan, setTempWeekPlan] = useState<Recipe[]>([]);
 
   useEffect(() => {
     loadData();
   }, []);
 
   const loadData = async () => {
-    // Fetch weekPlan and tempWeekPlan from the database
     try {
-      const weekPlanResponse = await fetch("/api/weekPlan");
-      const tempWeekPlanResponse = await fetch("/api/tempWeekPlan");
+      const response = await fetch("/api/weekPlan");
 
-      if (weekPlanResponse.ok && tempWeekPlanResponse.ok) {
-        const weekPlanData = await weekPlanResponse.json();
-        const tempWeekPlanData = await tempWeekPlanResponse.json();
-
-        setWeekPlan(weekPlanData);
-        setTempWeekPlan(tempWeekPlanData);
+      if (response.ok) {
+        const data = await response.json();
+        setWeekPlan(data);
       }
     } catch (error) {
-      console.error("Error loading data:", error);
+      console.error("Error loading week plan:", error);
     }
   };
 
-  const addRecipeToWeekPlan = (date: string, recipe: Recipe) => {
-    setWeekPlan((prevWeekPlan) => {
-      const newWeekPlan = [...prevWeekPlan, { date, recipe }];
-      saveWeekPlanToDatabase(newWeekPlan);
-      return newWeekPlan;
-    });
-    toast.success("Opskrift er nu tilføjet til din madplan");
+  const save = async (newPlan: WeekPlan[]) => {
+    setWeekPlan(newPlan);
+
+    try {
+      await saveWeekPlanToDatabase(newPlan);
+    } catch (error) {
+      console.error(error);
+      toast.error("Kunne ikke gemme madplan");
+    }
   };
 
   const addRecipesToWeekPlan = (dates: string[], recipe: Recipe) => {
-    setWeekPlan((prevWeekPlan) => {
-      const newEntries = dates.map((date) => ({ date, recipe }));
-      const newWeekPlan = [...prevWeekPlan, ...newEntries];
-      saveWeekPlanToDatabase(newWeekPlan);
-      return newWeekPlan;
+    setWeekPlan((prev) => {
+      const newEntries: WeekPlan[] = dates.map((date) => ({
+        date,
+        recipeId: recipe._id,
+        recipeName: recipe.recipeName,
+      }));
+
+      const combined = [...prev];
+
+      newEntries.forEach((entry) => {
+        const exists = combined.some(
+          (e) => e.date === entry.date && e.recipeId === entry.recipeId
+        );
+
+        if (!exists) {
+          combined.push(entry);
+        }
+      });
+
+      saveWeekPlanToDatabase(combined);
+
+      return combined;
     });
+
     toast.success(
-      `Opskrift er nu tilføjet til ${dates.length} ${dates.length === 1 ? "dato" : "datoer"} i din madplan`
+      `Opskrift tilføjet til ${dates.length} ${
+        dates.length === 1 ? "dato" : "datoer"
+      }`
     );
   };
 
   const removeRecipeFromWeekPlan = (date: string, recipeId: string) => {
     const newWeekPlan = weekPlan.filter(
-      (entry) => entry.date !== date || entry.recipe._id !== recipeId
-    );
-    setWeekPlan(newWeekPlan);
-    toast.success("Opskrift er fjernet fra din madplan");
-    saveWeekPlanToDatabase(newWeekPlan);
-  };
-
-  const addRecipeToTempWeekPlan = (recipe: Recipe) => {
-    const isIdInTempWeekPlan = tempWeekPlan.some(
-      (item) => recipe._id === item._id
+      (entry) => !(entry.date === date && entry.recipeId === recipeId)
     );
 
-    if (!isIdInTempWeekPlan) {
-      const newTempWeekPlan = [...tempWeekPlan, recipe];
-      setTempWeekPlan(newTempWeekPlan);
-      toast.success("Opskrift er nu tilføjet til din midlertidige madplan");
-      saveTempWeekPlanToDatabase(newTempWeekPlan);
-    }
-  };
+    save(newWeekPlan);
 
-  const removeRecipeFromTempWeekPlan = (recipeId: string) => {
-    const newTempWeekPlan = tempWeekPlan.filter(
-      (recipe) => recipe._id !== recipeId
-    );
-    setTempWeekPlan(newTempWeekPlan);
-    toast.success("Opskrift er fjernet fra din midlertidige madplan");
-    saveTempWeekPlanToDatabase(newTempWeekPlan);
+    toast.success("Opskrift fjernet fra madplan");
   };
 
   const clearPlan = () => {
-    setWeekPlan([]);
-    toast.success("Din madplan er nulstillet");
-    saveWeekPlanToDatabase([]);
-    saveTempWeekPlanToDatabase([]);
+    save([]);
+    toast.success("Madplan nulstillet");
   };
 
   const getDatesForNext4Weeks = () => {
@@ -118,9 +104,9 @@ export function RecipeProvider({ children }: { children: ReactNode }) {
     const today = new Date();
 
     for (let i = 0; i < 28; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() + i);
-      dates.push(date);
+      const d = new Date(today);
+      d.setDate(today.getDate() + i);
+      dates.push(d);
     }
 
     return dates;
@@ -130,12 +116,8 @@ export function RecipeProvider({ children }: { children: ReactNode }) {
     <RecipeContext.Provider
       value={{
         weekPlan,
-        tempWeekPlan,
-        addRecipeToWeekPlan,
         addRecipesToWeekPlan,
         removeRecipeFromWeekPlan,
-        addRecipeToTempWeekPlan,
-        removeRecipeFromTempWeekPlan,
         clearPlan,
         getDatesForNext4Weeks,
       }}
@@ -147,8 +129,10 @@ export function RecipeProvider({ children }: { children: ReactNode }) {
 
 export function useRecipeContext() {
   const context = useContext(RecipeContext);
-  if (context === undefined) {
-    throw new Error("useRecipe must be used within a RecipeProvider");
+
+  if (!context) {
+    throw new Error("useRecipeContext must be used within RecipeProvider");
   }
+
   return context;
 }

@@ -2,60 +2,45 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useRecipeContext } from "../context/RecipeContext";
-import CalendarDialog from "../components/CalenderDialog";
 import Button from "../components/smallComponent/Button";
 
 export default function WeeklyRecipePlanner() {
   const router = useRouter();
-  const {
-    weekPlan,
-    tempWeekPlan,
-    addRecipeToWeekPlan,
-    addRecipesToWeekPlan,
-    removeRecipeFromTempWeekPlan,
-    removeRecipeFromWeekPlan,
-    getDatesForNext4Weeks,
-  } = useRecipeContext();
-  const availableDates = getDatesForNext4Weeks();
+  const { weekPlan, removeRecipeFromWeekPlan } = useRecipeContext();
 
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedRecipe, setSelectedRecipe] = useState<any>(null);
   const [weekDates, setWeekDates] = useState<(Date | null)[]>([]);
 
-  // Helper to get Monday of the current week
   function getMonday(d: Date) {
     const date = new Date(d);
     const day = date.getDay();
-    const diff = day === 0 ? -6 : 1 - day; // Sunday (0) should go back 6 days
+    const diff = day === 0 ? -6 : 1 - day;
     date.setDate(date.getDate() + diff);
     date.setHours(0, 0, 0, 0);
     return date;
   }
 
-  // Build a 3-week (21 days) grid, starting from today, always Mon–Sun columns
   useEffect(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+
     const monday = getMonday(today);
-    const weekDayIdx = today.getDay() === 0 ? 6 : today.getDay() - 1; // 0=Mon, 6=Sun
+    const weekDayIdx = today.getDay() === 0 ? 6 : today.getDay() - 1;
+
     const grid: (Date | null)[] = [];
-    // First week: fill empty for days before today, then fill from today to Sunday
+
     for (let i = 0; i < 7; i++) {
       if (i < weekDayIdx) {
         grid.push(null);
       } else {
         const d = new Date(monday);
         d.setDate(monday.getDate() + i);
-        if (d >= today) {
-          grid.push(d);
-        } else {
-          grid.push(null);
-        }
+        grid.push(d >= today ? d : null);
       }
     }
-    // Next 2 weeks: fill all days
+
     let start = new Date(today);
     start.setDate(today.getDate() + (7 - weekDayIdx));
+
     for (let w = 0; w < 2; w++) {
       for (let i = 0; i < 7; i++) {
         const d = new Date(start);
@@ -63,155 +48,87 @@ export default function WeeklyRecipePlanner() {
         grid.push(d);
       }
     }
+
     setWeekDates(grid);
   }, []);
 
   function handleRouter(id?: string) {
-    if (id) {
-      router.push(`/recipes/${id}`);
-    }
+    if (id) router.push(`/recipes/${id}`);
   }
-
-  const openDialogForRecipe = (recipe: any) => {
-    setSelectedRecipe(recipe);
-    setDialogOpen(true);
-  };
-
-  const handleDialogClose = () => {
-    setDialogOpen(false);
-    setSelectedRecipe(null);
-  };
-
-  const handleDialogDone = (selectedDates: string[]) => {
-    if (selectedRecipe) {
-      if (selectedDates.length > 0) {
-        addRecipesToWeekPlan(selectedDates, selectedRecipe);
-      }
-      removeRecipeFromTempWeekPlan(selectedRecipe._id);
-    }
-  };
 
   return (
     <div className="p-4">
-      <h5 className="text-2xl font-semibold mb-4">
-        Opskrift der mangler en dato
-      </h5>
+      <h5 className="text-2xl font-semibold mb-4">Madplan</h5>
 
-      {tempWeekPlan.length > 0 ? (
-        // On mobile: stack vertically; on md+ screens: display in a grid with 3 columns.
-        <div className="space-y-2 md:space-y-0 md:grid md:grid-cols-3 md:gap-4">
-          {tempWeekPlan.map((recipe) => (
-            <div
-              key={recipe._id}
-              className="flex flex-col w-full items-center justify-between border rounded-lg p-2"
-            >
-              <div className="flex flex-row w-full items-center justify-between mb-2">
-                <p className="truncate flex-1">{recipe.recipeName}</p>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => removeRecipeFromTempWeekPlan(recipe._id)}
-                  className="ml-2 w-8 h-8 p-0 text-gray-500 hover:text-gray-700"
-                  aria-label="Fjern opskrift"
-                >
-                  ✕
-                </Button>
-              </div>
-              <Button
-                onClick={() => openDialogForRecipe(recipe)}
-                variant="primary"
-                size="lg"
-                fullWidth
+      <div className="flex flex-col gap-4">
+        {weekDates
+          .filter((date) => date !== null)
+          .map((date) => {
+            const dateKey = date!.toISOString().split("T")[0];
+
+            const displayText = date!.toLocaleDateString("da-DK", {
+              month: "short",
+              day: "numeric",
+              weekday: "short",
+            });
+
+            const entriesForDate = weekPlan.filter(
+              (entry) => entry.date === dateKey
+            );
+
+            return (
+              <div
+                key={dateKey}
+                className="border rounded p-4 flex flex-col min-h-[120px]"
               >
-                Tilføj til madplan
-              </Button>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p className="text-gray-500">No recipes added yet.</p>
-      )}
-      <div className="mt-8">
-        <div className="flex flex-col gap-4">
-          {weekDates
-            .filter((date) => date !== null)
-            .map((date) => {
-              const dateKey = date!.toISOString().split("T")[0];
-              const displayText = date!.toLocaleDateString("da-DK", {
-                month: "short",
-                day: "numeric",
-                weekday: "short",
-              });
-              const entriesForDate = weekPlan.filter(
-                (entry) => entry.date === dateKey
-              );
-              return (
-                <div
-                  key={dateKey}
-                  className="border rounded p-4 flex flex-col min-h-[120px]"
-                >
-                  <h6 className="text-base font-semibold mb-2 text-center">
-                    {displayText}
-                  </h6>
-                  {entriesForDate.length === 0 ? (
-                    <p className="text-gray-500 text-sm text-center">
-                      Ingen opskrifter planlagt.
-                    </p>
-                  ) : (
-                    <div className="space-y-1">
-                      {entriesForDate.map((entry) => (
-                        <div
-                          key={entry.recipe._id}
-                          className="flex flex-col items-center "
-                        >
-                          <div className="flex flex-row w-full justify-center items-center bg-gray-100 rounded-lg m-1 p-1">
-                            <p className="truncate flex-1 w-10/12">
-                              {entry.recipe.recipeName}
-                            </p>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() =>
-                                removeRecipeFromWeekPlan(
-                                  dateKey,
-                                  entry.recipe._id
-                                )
-                              }
-                              className="w-8 h-8 p-0 text-gray-500 hover:text-gray-700"
-                              aria-label="Fjern opskrift fra dato"
-                            >
-                              ✕
-                            </Button>
-                          </div>
-                          <div className="flex flex-row justify-evenly w-full gap-1">
-                            <Button
-                              type="button"
-                              variant="primary"
-                              size="sm"
-                              fullWidth
-                              className="w-10/12"
-                              onClick={() => handleRouter(entry.recipe._id)}
-                            >
-                              Opskrift
-                            </Button>
-                          </div>
+                <h6 className="text-base font-semibold mb-2 text-center">
+                  {displayText}
+                </h6>
+
+                {entriesForDate.length === 0 ? (
+                  <p className="text-gray-500 text-sm text-center">
+                    Ingen opskrifter planlagt.
+                  </p>
+                ) : (
+                  <div className="space-y-1">
+                    {entriesForDate.map((entry) => (
+                      <div
+                        key={`${entry.date}-${entry.recipeId}`}
+                        className="flex flex-col items-center"
+                      >
+                        <div className="flex flex-row w-full justify-center items-center bg-gray-100 rounded-lg m-1 p-1">
+                          <p className="truncate flex-1 w-10/12">
+                            {entry.recipeName}
+                          </p>
+
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() =>
+                              removeRecipeFromWeekPlan(dateKey, entry.recipeId)
+                            }
+                            className="w-8 h-8 p-0"
+                          >
+                            ✕
+                          </Button>
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-        </div>
+
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          fullWidth
+                          onClick={() => handleRouter(entry.recipeId)}
+                        >
+                          Opskrift
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
       </div>
-      <CalendarDialog
-        open={dialogOpen}
-        onClose={handleDialogClose}
-        onDone={handleDialogDone}
-        availableDates={availableDates}
-      />
     </div>
   );
 }

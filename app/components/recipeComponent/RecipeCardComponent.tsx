@@ -6,11 +6,18 @@ import Image from "next/image";
 import { useState } from "react";
 import Button from "../smallComponent/Button";
 import { ArrowRight, Clock, Plus, Users } from "lucide-react";
+import CalendarDialog from "../../components/CalenderDialog";
 
 export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
-  const { addRecipeToTempWeekPlan, tempWeekPlan } = useRecipeContext();
   const router = useRouter();
+
+  const { addRecipesToWeekPlan, getDatesForNext4Weeks } = useRecipeContext();
+
   const [loadingRecipeId, setLoadingRecipeId] = useState<string | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
+
+  const availableDates = getDatesForNext4Weeks();
 
   if (!recipes || recipes.length === 0) {
     return (
@@ -32,19 +39,28 @@ export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
     }
   }
 
-  return (
-    <div
-      id="recipes"
-      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 px-0"
-    >
-      {recipes.map((recipe) => {
-        const isLoading = loadingRecipeId === recipe._id;
-        const isInTempPlan = tempWeekPlan?.some((r) => r._id === recipe._id);
+  const handleDialogDone = (selectedDates: string[]) => {
+    if (!selectedRecipe) return;
 
-        return (
-          <article key={recipe._id} className="w-full">
-            <div
-              className="
+    addRecipesToWeekPlan(selectedDates, selectedRecipe);
+
+    setDialogOpen(false);
+    setSelectedRecipe(null);
+  };
+
+  return (
+    <>
+      <div
+        id="recipes"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 px-0"
+      >
+        {recipes.map((recipe) => {
+          const isLoading = loadingRecipeId === recipe._id;
+
+          return (
+            <article key={recipe._id} className="w-full">
+              <div
+                className="
                 group
                 relative
                 flex flex-col
@@ -55,26 +71,7 @@ export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
                 ring-1 ring-black/5
                 hover:shadow-md
                 transition-all duration-200
-                focus-within:ring-2 focus-within:ring-primary/50
               "
-            >
-              {/* Clickable card area */}
-              <div
-                role="link"
-                tabIndex={0}
-                aria-label={`Åbn opskrift: ${recipe.recipeName}`}
-                aria-busy={isLoading}
-                onClick={() =>
-                  isLoading ? undefined : handleRouter(recipe._id)
-                }
-                onKeyDown={(e) => {
-                  if (isLoading) return;
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    handleRouter(recipe._id);
-                  }
-                }}
-                className="cursor-pointer outline-none"
               >
                 {/* Image */}
                 <div className="relative w-full h-48 sm:h-52">
@@ -87,7 +84,7 @@ export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
                     alt={recipe.recipeName || "Opskrift"}
                     fill
                     sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                    className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                    className="object-cover"
                     priority
                   />
                   <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 via-black/0 to-black/0" />
@@ -95,103 +92,93 @@ export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
 
                 {/* Content */}
                 <div className="flex flex-col p-2 gap-3">
-                  {/* Categories */}
                   {Array.isArray(recipe.categories) &&
                     recipe.categories.length > 0 && (
                       <div className="flex flex-wrap gap-2">
                         {recipe.categories.slice(0, 4).map((category) => (
                           <span
                             key={category}
-                            className="
-                          bg-secondary
-                          text-muted-foreground
-                          text-xs
-                          px-3
-                          py-1
-                          rounded-full
-                          font-medium
-                        "
+                            className="bg-secondary text-muted-foreground text-xs px-3 py-1 rounded-full font-medium"
                           >
                             {category}
                           </span>
                         ))}
-                        {recipe.categories.length > 4 && (
-                          <span className="text-xs text-muted-foreground px-1 py-1">
-                            +{recipe.categories.length - 4}
-                          </span>
-                        )}
                       </div>
                     )}
 
-                  {/* Title */}
-                  <h2 className="text-lg sm:text-xl font-semibold text-foreground leading-snug line-clamp-2">
+                  <h2 className="text-lg sm:text-xl font-semibold text-foreground line-clamp-2">
                     {recipe.recipeName}
                   </h2>
 
-                  {/* Description */}
                   {recipe.description && (
-                    <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
+                    <p className="text-sm text-muted-foreground line-clamp-2">
                       {recipe.description}
                     </p>
                   )}
 
-                  {/* Meta Info */}
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground pt-1">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
                     <div className="inline-flex items-center gap-1.5">
-                      <Clock className="h-4 w-4" aria-hidden="true" />
+                      <Clock className="h-4 w-4" />
                       <span>{recipe.time} min</span>
                     </div>
+
                     <div className="inline-flex items-center gap-1.5">
-                      <Users className="h-4 w-4" aria-hidden="true" />
+                      <Users className="h-4 w-4" />
                       <span>{recipe.recommendedPersonAmount} personer</span>
                     </div>
                   </div>
                 </div>
+
+                {/* Actions */}
+                <div className="flex gap-3 px-2 pb-2 pt-1">
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    fullWidth
+                    onClick={() => {
+                      setSelectedRecipe(recipe);
+                      setDialogOpen(true);
+                    }}
+                    className="min-h-[44px]"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Tilføj til madplan
+                  </Button>
+
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    fullWidth
+                    isLoading={isLoading}
+                    loadingText="Indlæser..."
+                    onClick={() => {
+                      handleRouter(recipe._id);
+                    }}
+                    className="min-h-[44px]"
+                  >
+                    <span className="inline-flex items-center justify-center gap-2">
+                      Se opskrift
+                      <ArrowRight className="h-4 w-4" />
+                    </span>
+                  </Button>
+                </div>
+
+                {isLoading && (
+                  <div className="absolute inset-0 pointer-events-none bg-black/5" />
+                )}
               </div>
+            </article>
+          );
+        })}
+      </div>
 
-              {/* Actions */}
-              <div className="flex gap-3 px-2 pb-2 pt-1">
-                <Button
-                  variant={isInTempPlan ? "ghost" : "primary"}
-                  size="sm"
-                  fullWidth
-                  disabled={!!isInTempPlan}
-                  onClick={(e) => {
-                    e?.stopPropagation();
-                    addRecipeToTempWeekPlan(recipe);
-                  }}
-                  className="min-h-[44px]"
-                >
-                  <Plus className="h-4 w-4" aria-hidden="true" />
-                  {isInTempPlan ? "Tilføjet" : "Tilføj"}
-                </Button>
-
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  fullWidth
-                  isLoading={isLoading}
-                  loadingText="Indlæser..."
-                  onClick={(e) => {
-                    e?.stopPropagation();
-                    handleRouter(recipe._id);
-                  }}
-                  className="min-h-[44px]"
-                >
-                  <span className="inline-flex items-center justify-center gap-2">
-                    Se opskrift
-                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                  </span>
-                </Button>
-              </div>
-
-              {isLoading && (
-                <div className="absolute inset-0 pointer-events-none bg-black/5" />
-              )}
-            </div>
-          </article>
-        );
-      })}
-    </div>
+      {/* SINGLE dialog for all cards */}
+      <CalendarDialog
+        open={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        onDone={handleDialogDone}
+        availableDates={availableDates}
+      />
+    </>
   );
 }

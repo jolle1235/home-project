@@ -5,23 +5,12 @@ import { WeekPlan } from "@/app/model/weekPlan";
 const databaseName = process.env.MONGO_DATABASE_NAME;
 
 export async function GET() {
-  try {
-    const client = await clientPromise;
-    const db = client.db(databaseName);
+  const client = await clientPromise;
+  const db = client.db(databaseName);
 
-    // Retrieve the week plan
-    const weekPlan = (await db.collection("weekPlan").findOne({})) || {
-      weekPlan: [],
-    };
+  const data = await db.collection("weekPlan").findOne({ type: "weekPlan" });
 
-    return NextResponse.json(weekPlan.weekPlan || []);
-  } catch (error) {
-    console.error("Failed to fetch week plan:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch week plan" },
-      { status: 500 }
-    );
-  }
+  return NextResponse.json(data?.weekPlan || []);
 }
 
 export async function POST(request: Request) {
@@ -31,17 +20,17 @@ export async function POST(request: Request) {
     const client = await clientPromise;
     const db = client.db(databaseName);
 
-    // Update or insert the week plan
-    const result = await db
-      .collection("weekPlan")
-      .updateOne({}, { $set: { weekPlan } }, { upsert: true });
-
-    if (result.modifiedCount === 0 && result.upsertedCount === 0) {
-      return NextResponse.json(
-        { error: "Failed to save week plan" },
-        { status: 400 }
-      );
-    }
+    await db.collection("weekPlan").updateOne(
+      { type: "weekPlan" },
+      {
+        $set: {
+          type: "weekPlan",
+          weekPlan,
+          updatedAt: new Date(),
+        },
+      },
+      { upsert: true }
+    );
 
     return NextResponse.json({ success: true });
   } catch (error) {

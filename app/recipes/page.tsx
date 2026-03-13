@@ -135,12 +135,9 @@ export default function RecipePage() {
                 type="search"
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Søg efter opskrifter..."
-                className="w-full rounded-xl border border-gray-300 bg-white/80 px-3 py-2 pl-9 text-sm sm:text-base shadow-sm focus:outline-none focus:ring-2 focus:ring-secondary-hover"
+                className="w-full rounded-xl border border-gray-300 bg-background p-2 text-sm sm:text-base shadow-sm focus:outline-none focus:ring-2 focus:ring-secondary-hover"
                 aria-label="Søg efter opskrifter"
               />
-              <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                🔍
-              </span>
             </div>
             <div className="flex items-center gap-1 group">
               <IconButton
