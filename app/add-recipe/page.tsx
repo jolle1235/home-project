@@ -16,6 +16,7 @@ import ConfirmationDialog from "../components/ConfirmationDialog";
 import { useConstants } from "@/app/context/ConstantsContext";
 import { toast } from "react-toastify";
 import * as Yup from "yup";
+import { unifyUnit } from "../utils/unitHelper";
 
 function AddRecipePageContent() {
   const router = useRouter();
@@ -196,9 +197,9 @@ function AddRecipePageContent() {
           _id: ing.item?._id || "unknown",
           name: ing.item?.name || "Unknown",
           category: ing.item?.category || "unknown",
-          defaultUnit: ing.item?.defaultUnit || ing.unit || "stk",
+          defaultUnit: unifyUnit(ing.unit || "stk"),
         },
-        unit: ing.unit || "stk",
+        unit: unifyUnit(ing.unit || "stk"),
         marked: ing.marked || false,
         quantity: ing.quantity || 0,
         section: ing.section,
