@@ -1,4 +1,5 @@
 "use client";
+import { useRef, useEffect } from "react";
 import { useShoppingListContext } from "../context/ShoppinglistContext";
 import { Ingredient } from "../model/Ingredient";
 import { shoppingStores } from "../constant/shoppingStores";
@@ -15,6 +16,8 @@ export function ShoppingListItemComponent({
     toggleMarkedIngredient,
     updateIngredientNotes,
     removeIngredient,
+    saveList,
+    shoppingList,
   } = useShoppingListContext();
 
   const quantityValue =
@@ -25,6 +28,27 @@ export function ShoppingListItemComponent({
       : ingredient.quantity;
   const unit = ingredient.unit || "stk";
 
+  const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const shoppingListRef = useRef(shoppingList);
+
+  useEffect(() => {
+    shoppingListRef.current = shoppingList;
+  }, [shoppingList]);
+
+  const debouncedSave = () => {
+    if (saveTimeout.current) clearTimeout(saveTimeout.current);
+    saveTimeout.current = setTimeout(() => {
+      saveList(shoppingListRef.current);
+    }, 2000);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (saveTimeout.current) clearTimeout(saveTimeout.current);
+    };
+  }, []);
+
   return (
     <div
       id="shopping_list_item"
@@ -34,7 +58,10 @@ export function ShoppingListItemComponent({
         type="checkbox"
         checked={ingredient.marked}
         className="w-6 h-6 sm:w-8 sm:h-8 shrink-0"
-        onChange={() => toggleMarkedIngredient(ingredient._id)}
+        onChange={() => {
+          toggleMarkedIngredient(ingredient._id);
+          debouncedSave();
+        }}
       />
       <div className="flex flex-grow flex-col min-w-0 flex-1">
         <p className="font-bold text-base sm:text-lg md:text-xl truncate">
@@ -51,11 +78,13 @@ export function ShoppingListItemComponent({
               const str = e.target.value;
               if (str === "") {
                 updateIngredientQuantity(ingredient._id, 0);
+                debouncedSave();
                 return;
               }
               const val = parseFloat(str);
               if (!Number.isNaN(val)) {
                 updateIngredientQuantity(ingredient._id, val);
+                debouncedSave();
               }
             }}
           />
@@ -67,9 +96,10 @@ export function ShoppingListItemComponent({
         <select
           className="text-sm sm:text-base col-span-3 p-1 rounded-lg bg-background mr-1"
           value={ingredient.center ?? ""}
-          onChange={(e) =>
-            updateIngredientCenter(ingredient._id, e.target.value)
-          }
+          onChange={(e) => {
+            updateIngredientCenter(ingredient._id, e.target.value);
+            debouncedSave();
+          }}
         >
           <option value="">Vælg butik</option>
           {shoppingStores.map((store) => (
@@ -97,11 +127,13 @@ export function ShoppingListItemComponent({
             const str = e.target.value;
             if (str === "") {
               updateIngredientPrice(ingredient._id, 0);
+              debouncedSave();
               return;
             }
             const val = parseFloat(str);
             if (!Number.isNaN(val)) {
               updateIngredientPrice(ingredient._id, val);
+              debouncedSave();
             }
           }}
         />
@@ -110,9 +142,10 @@ export function ShoppingListItemComponent({
           className="col-span-4 text-muted-foreground p-1 rounded-lg text-sm sm:text-base bg-background mt-1"
           placeholder="Noter..."
           value={ingredient.notes ?? ""}
-          onChange={(e) =>
-            updateIngredientNotes(ingredient._id, e.target.value)
-          }
+          onChange={(e) => {
+            updateIngredientNotes(ingredient._id, e.target.value);
+            debouncedSave();
+          }}
         />
       </div>
     </div>

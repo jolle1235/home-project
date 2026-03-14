@@ -33,8 +33,11 @@ export function AddIngredientModal({
   mode = "recipe",
   description,
 }: AddIngredientModalProps) {
-  const { addIngredients: addIngredientsToShoppingList } =
-    useShoppingListContext();
+  const {
+    addIngredients: addIngredientsToShoppingList,
+    saveList,
+    shoppingList,
+  } = useShoppingListContext();
   const searchBarRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -393,18 +396,19 @@ export function AddIngredientModal({
         </div>
         <div className="flex justify-between items-center">
           <Button
-            onClick={() => {
+            onClick={async () => {
               if (isShoppingListMode) {
-                if (stagedIngredients.length > 0) {
-                  const ingredientsForList = stagedIngredients.map(
-                    (ingredient) => ({
-                      ...ingredient,
-                      _id: crypto.randomUUID(),
-                      marked: ingredient.marked ?? false,
-                    })
-                  );
+                const ingredientsForList = stagedIngredients.map(
+                  (ingredient) => ({
+                    ...ingredient,
+                    _id: crypto.randomUUID(),
+                    marked: ingredient.marked ?? false,
+                  })
+                );
+                if (ingredientsForList.length > 0) {
                   addIngredientsToShoppingList(ingredientsForList);
                 }
+                await saveList([...shoppingList, ...ingredientsForList]);
               } else {
                 setIngredients(stagedIngredients);
               }

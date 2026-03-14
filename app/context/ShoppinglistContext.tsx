@@ -1,12 +1,20 @@
 "use client";
 
-import React, { createContext, useContext, useReducer, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useReducer,
+  ReactNode,
+  useEffect,
+} from "react";
 import { Ingredient } from "../model/Ingredient";
 
 interface ShoppingListContextProps {
   shoppingList: Ingredient[];
   addIngredient: (ingredient: Ingredient) => void;
   addIngredients: (ingredients: Ingredient[]) => void;
+  saveList: (list: Ingredient[]) => Promise<void>;
+  loadList: () => Promise<void>;
   removeIngredient: (ingredientId: string) => void;
   updateIngredientQuantity: (ingredientId: string, quantity: number) => void;
   updateIngredientCenter: (ingredientId: string, center: string) => void;
@@ -26,6 +34,7 @@ interface ShoppingListProviderProps {
 type Action =
   | { type: "ADD_INGREDIENT"; payload: Ingredient }
   | { type: "ADD_INGREDIENTS"; payload: Ingredient[] }
+  | { type: "LOAD_LIST"; payload: Ingredient[] }
   | { type: "REMOVE_INGREDIENT"; payload: string }
   | { type: "UPDATE_QUANTITY"; payload: { id: string; quantity: number } }
   | { type: "UPDATE_CENTER"; payload: { id: string; center: string } }
@@ -50,6 +59,9 @@ function shoppingListReducer(
 
     case "ADD_INGREDIENTS":
       return [...state, ...action.payload];
+
+    case "LOAD_LIST":
+      return action.payload;
 
     case "REMOVE_INGREDIENT":
       return state.filter((ingredient) => ingredient._id !== action.payload);
@@ -123,6 +135,22 @@ export function ShoppingListProvider({ children }: ShoppingListProviderProps) {
     dispatch({ type: "ADD_INGREDIENTS", payload: ingredients });
   };
 
+  const saveList = async (list?: Ingredient[]) => {
+    await fetch("/api/shopping-list", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(list ?? shoppingList),
+    });
+  };
+
+  const loadList = async () => {
+    const res = await fetch("/api/shopping-list");
+    const data = await res.json();
+    if (Array.isArray(data)) {
+      dispatch({ type: "LOAD_LIST", payload: data });
+    }
+  };
+
   const removeIngredient = (ingredientId: string) => {
     dispatch({ type: "REMOVE_INGREDIENT", payload: ingredientId });
   };
@@ -175,12 +203,18 @@ export function ShoppingListProvider({ children }: ShoppingListProviderProps) {
     return shoppingList.some((ingredient) => ingredient.marked);
   };
 
+  useEffect(() => {
+    loadList();
+  }, []);
+
   return (
     <ShoppingListContext.Provider
       value={{
         shoppingList,
         addIngredient,
         addIngredients,
+        saveList,
+        loadList,
         removeIngredient,
         updateIngredientQuantity,
         updateIngredientCenter,

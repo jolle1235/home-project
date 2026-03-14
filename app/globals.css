@@ -178,3 +178,35 @@ input[type="number"] {
 .animate-slide-up {
   animation: slide-up 0.2s ease-out;
 }
+
+/* ...existing input/textarea styles... */
+
+input[type="checkbox"] {
+  @apply appearance-none w-7 h-7 rounded-full border-2 cursor-pointer shrink-0;
+  border-color: var(--primary);
+  background-color: var(--background);
+  transition: all 0.2s ease-in-out;
+  position: relative;
+}
+
+input[type="checkbox"]:checked {
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -60%) rotate(45deg);
+  width: 5px;
+  height: 9px;
+  border-right: 2px solid white;
+  border-bottom: 2px solid white;
+}
+
+input[type="checkbox"]:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 30%, transparent);
+}
