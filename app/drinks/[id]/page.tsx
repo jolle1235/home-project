@@ -71,11 +71,11 @@ export default function DrinkDetailsPage() {
             src={drink?.image}
             alt={drink?.title}
           />
-          <div className="flex flex-col items-center bg-lightgreyBackground rounded-lg p-2 mb-1 w-full">
+          <div className="flex flex-col items-center bg-background rounded-lg p-2 mb-1 w-full">
             <h2 className="text-2xl font-bold text-center">{drink?.title}</h2>
           </div>
           <div className="flex flex-row w-full justify-around">
-            <div className="flex flex-row w-fit justify-center items-center py-1 px-4 m-2 bg-lightgreyBackground h-12 rounded-full">
+            <div className="flex flex-row w-fit justify-center items-center py-1 px-4 m-2 bg-background h-12 rounded-full">
               <img
                 src="/icon/recipes_page/time.png"
                 alt="Time"
@@ -85,7 +85,7 @@ export default function DrinkDetailsPage() {
             </div>
             <div
               id="portion_div"
-              className="flex flex-row w-fit h-12 justify-center items-center py-1 px-4 m-2 bg-lightgreyBackground space-x-2 rounded-full"
+              className="flex flex-row w-fit h-12 justify-center items-center py-1 px-4 m-2 bg-background space-x-2 rounded-full"
             >
               <img
                 src="/icon/recipes_page/person.png"
@@ -114,7 +114,7 @@ export default function DrinkDetailsPage() {
                   <div className="flex justify-start basis-1/4 flex-grow">
                     <p className="text-lg font-bold">{ingredient.item.name}</p>
                   </div>
-                  <p className="flex justify-center items-center h-fit w-fit text-lg py-2 px-3 mx-2 bg-lightgreyBackground rounded-full">
+                  <p className="flex justify-center items-center h-fit w-fit text-lg py-2 px-3 mx-2 bg-background rounded-full">
                     {ingredient.quantity} {ingredient.unit}
                   </p>
                 </div>
@@ -125,12 +125,12 @@ export default function DrinkDetailsPage() {
       </div>
 
       <div className="flex flex-col md:w-1/2 w-full h-fit min-h-80 p-3">
-        <div className="flex-1 rounded-lg p-5 bg-lightgreyBackground overflow-y-auto">
+        <div className="flex-1 rounded-lg p-5 bg-background overflow-y-auto">
           <p className="whitespace-pre-line">{drink?.description}</p>
         </div>
       </div>
       <div className="flex flex-col md:w-1/2 w-full h-fit min-h-80 p-3">
-        <div className="flex-1 rounded-lg p-5 bg-lightgreyBackground overflow-y-auto">
+        <div className="flex-1 rounded-lg p-5 bg-background overflow-y-auto">
           <p className="whitespace-pre-line">{drink?.alternatives}</p>
         </div>
       </div>

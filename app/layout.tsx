@@ -80,7 +80,7 @@ export default function RootLayout({
           <ShoppingListProvider>
             <ConstantsProvider>
               <NavBar />
-              <main className="bg-lightBackground">{children}</main>
+              <main className="bg-background">{children}</main>
               <SpeedInsights />
             </ConstantsProvider>
           </ShoppingListProvider>

@@ -211,7 +211,7 @@ export function AddIngredientModal({
       onClick={handleClose}
     >
       <div
-        className={`flex justify-between flex-col bg-lightBackground rounded-t-lg md:rounded-lg w-full md:w-2/3 h-full md:h-auto md:max-h-[90vh] transform transition-all duration-300 ease-out ${
+        className={`flex justify-between flex-col bg-background rounded-t-lg md:rounded-lg w-full md:w-2/3 h-full md:h-auto md:max-h-[90vh] transform transition-all duration-300 ease-out ${
           isClosing
             ? "translate-y-full md:translate-y-0 md:scale-95 md:opacity-0"
             : isMounted
@@ -221,7 +221,7 @@ export function AddIngredientModal({
         onClick={(e) => e.stopPropagation()}
       >
         <div>
-          <div className="flex justify-start items-center p-2 bg-lightgreyBackground rounded-t-lg">
+          <div className="flex justify-start items-center p-2 bg-background rounded-t-lg">
             <div>
               <h2 className="text-2xl font-bold">Tilføj ingredienser</h2>
               {isShoppingListMode && description && (
@@ -229,7 +229,7 @@ export function AddIngredientModal({
               )}
             </div>
           </div>
-          <div className="w-full bg-lightBackground p-2 space-y-2">
+          <div className="w-full bg-background p-2 space-y-2">
             {/* Section Management - only for recipe mode */}
             {!isShoppingListMode && (
               <div className="mb-2 space-y-2">

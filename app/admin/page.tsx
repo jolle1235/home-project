@@ -43,7 +43,7 @@ export default function AdminPage() {
             Tilføj
           </Button>
         </div>
-        <div className="w-1/2 my-2 p-1 bg-lightgreyBackground rounded-lg">
+        <div className="w-1/2 my-2 p-1 bg-background rounded-lg">
           {categories.map((c) => (
             <div
               key={c._id}
@@ -86,7 +86,7 @@ export default function AdminPage() {
             Tilføj
           </Button>
         </div>
-        <ul className="w-1/2 my-2 py-1 px-2 bg-lightgreyBackground rounded-lg">
+        <ul className="w-1/2 my-2 py-1 px-2 bg-background rounded-lg">
           {units.map((u) => (
             <li
               key={u._id}

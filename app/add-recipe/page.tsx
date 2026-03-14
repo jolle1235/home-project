@@ -438,7 +438,7 @@ function AddRecipePageContent() {
 
   if (isLoadingRecipe) {
     return (
-      <div className="w-full min-h-screen bg-lightBackground p-4 flex items-center justify-center">
+      <div className="w-full min-h-screen bg-background p-4 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-action mx-auto"></div>
           <p className="mt-4 text-gray-600">Indlæser opskrift...</p>
@@ -448,7 +448,7 @@ function AddRecipePageContent() {
   }
 
   return (
-    <div className="w-full min-h-screen bg-lightBackground p-4">
+    <div className="w-full min-h-screen bg-background p-4">
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold">
@@ -678,7 +678,7 @@ export default function AddRecipePage() {
   return (
     <Suspense
       fallback={
-        <div className="w-full min-h-screen bg-lightBackground p-4 flex items-center justify-center">
+        <div className="w-full min-h-screen bg-background p-4 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-action mx-auto"></div>
             <p className="mt-4 text-gray-600">Indlæser...</p>

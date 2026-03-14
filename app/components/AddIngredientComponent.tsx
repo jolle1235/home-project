@@ -203,7 +203,7 @@ export function AddIngredientComponent({
       {isPopoverOpen && (
         <div
           ref={popoverRef}
-          className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg p-3 max-h-[80vh] overflow-y-auto"
+          className="absolute z-50 w-full mt-1 bg-background border border-gray-200 rounded-lg p-3 max-h-[80vh] overflow-y-auto"
           onWheel={(e) => e.stopPropagation()}
           onTouchMove={(e) => e.stopPropagation()}
         >
