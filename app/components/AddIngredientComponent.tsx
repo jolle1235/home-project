@@ -5,6 +5,7 @@ import { removeItem } from "../utils/apiHelperFunctions";
 import { useConstants } from "../context/ConstantsContext";
 import Button from "./smallComponent/Button";
 import { Loader2, Trash2 } from "lucide-react";
+import { normalizeIngredient } from "../utils/shoppinglistHelper";
 
 interface Props {
   onAdd: (Ingredient: Ingredient) => void;
@@ -24,7 +25,7 @@ export function AddIngredientComponent({
   const { units } = useConstants();
   const [quantity, setQuantity] = useState<number | "">("");
   const [unit, setUnit] = useState<string>(
-    defaultUnit ?? (units[0].name || "")
+    defaultUnit ?? (units[0].name || ""),
   );
   const [category, setCategory] = useState<string>("");
 
@@ -103,10 +104,6 @@ export function AddIngredientComponent({
       console.warn("Cannot add ingredient: unit is required");
       return; // guard against empty unit list
     }
-    if (quantity === "" || quantity === null || quantity === undefined) {
-      console.warn("Cannot add ingredient: quantity is required");
-      return; // Quantity is required - don't add ingredient if quantity is missing
-    }
 
     // Ensure defaultUnit is never empty - use unit if defaultUnit is not provided
     const finalDefaultUnit = defaultUnit || unit || units[0]?.name || "";
@@ -118,18 +115,13 @@ export function AddIngredientComponent({
     // Ensure category is never empty
     const finalCategory = category || InputCategory || "unknown";
 
-    const newIngredient: Ingredient = {
-      _id: "unknown",
-      item: {
-        _id: "unknown",
-        name: itemName,
-        category: finalCategory,
-        defaultUnit: finalDefaultUnit,
-      },
-      quantity: Number(quantity),
-      unit: unit,
-      marked: false,
-    };
+    const newIngredient = normalizeIngredient({
+      itemName,
+      quantity,
+      unit,
+      defaultUnit,
+      category: category || InputCategory,
+    });
 
     console.log("Adding ingredient:", newIngredient);
     onAdd(newIngredient);
@@ -215,7 +207,7 @@ export function AddIngredientComponent({
                 placeholder="Mængde"
                 onChange={(e) =>
                   setQuantity(
-                    e.target.value === "" ? "" : Number(e.target.value)
+                    e.target.value === "" ? "" : Number(e.target.value),
                   )
                 }
                 className="w-9/12 rounded-md border border-gray-300 p-2 text-sm sm:text-base"
@@ -247,7 +239,7 @@ export function AddIngredientComponent({
             <div className="flex flex-wrap gap-2">
               {units
                 .filter((u) =>
-                  ["stk", "g", "kg", "ml", "l"].includes(u.name.toLowerCase())
+                  ["stk", "g", "kg", "ml", "l"].includes(u.name.toLowerCase()),
                 )
                 .map((u) => (
                   <button

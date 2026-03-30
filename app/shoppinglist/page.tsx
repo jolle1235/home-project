@@ -17,11 +17,11 @@ export default function ShoppingListPage() {
   const [addModalOpen, setAddModalOpen] = useState(false);
 
   return (
-    <div className="w-full max-w-4xl mx-auto p-4">
+    <div className="w-full max-w-4xl mx-auto p-1">
       <h1 className="text-2xl sm:text-3xl font-bold text-muted-foreground mb-4">
         Indkøbsliste
       </h1>
-      <div className="flex flex-wrap gap-3 mb-4 items-center">
+      <div className="flex flex-wrap gap-2 mb-4 items-center">
         <div className="flex items-center gap-1 group">
           <IconButton
             icon={Plus}
@@ -74,12 +74,12 @@ export default function ShoppingListPage() {
         )}
       </div>
       {shoppingList.length === 0 ? (
-        <p className="text-lightgreytxt text-lg py-8">
+        <p className="text-muted-foreground text-lg py-8">
           Ingen varer på listen endnu. Tilføj ingredienser via knappen ovenfor
           eller fra en opskrift.
         </p>
       ) : (
-        <div className=" rounded-lg overflow-hidden">
+        <div className="rounded-lg overflow-hidden">
           {shoppingList.map((ingredient) => (
             <div key={ingredient._id} className="mb-1">
               <ShoppingListItemComponent

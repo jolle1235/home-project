@@ -3,18 +3,18 @@ import React, { type RefObject } from "react";
 import { useForm } from "react-hook-form";
 import { addToShoppingListSchema } from "../utils/validationSchema";
 
-interface SearchBarProps {
+interface SearchBarProps
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange"> {
   value: string;
   onChange: (value: string) => void;
-  placeholder: string;
   inputRef?: RefObject<HTMLInputElement | null>;
 }
-
 export function SearchBarComponent({
   value,
   onChange,
-  placeholder,
   inputRef,
+  onKeyDown,
+  ...rest
 }: SearchBarProps) {
   const {
     setValue,
@@ -39,12 +39,13 @@ export function SearchBarComponent({
         <input
           type="text"
           value={value}
-          placeholder={placeholder}
           onChange={handleInputChange}
           onFocus={(e) => e.target.select()}
           ref={inputRef}
+          onKeyDown={onKeyDown}
+          {...rest}
           className={`w-full p-2 sm:p-3 pl-3 sm:pl-4 pr-10 sm:pr-12 border rounded-lg text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-primary
-          ${errors.itemSearch ? "focus:ring-cancel" : ""}`}
+  ${errors.itemSearch ? "focus:ring-cancel" : ""}`}
         />
 
         <div className="absolute inset-y-0 right-2 sm:right-3 flex items-center">

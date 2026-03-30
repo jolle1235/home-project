@@ -52,19 +52,19 @@ export function ShoppingListItemComponent({
   return (
     <div
       id="shopping_list_item"
-      className="flex flex-row flex-wrap w-full h-fit items-center gap-4 p-2 bg-soft rounded-lg"
+      className="flex flex-row flex-wrap w-full h-fit items-center gap-2 p-1.5 bg-soft rounded-lg"
     >
       <input
         type="checkbox"
         checked={ingredient.marked}
-        className="w-6 h-6 sm:w-8 sm:h-8 shrink-0"
+        className="w-5 h-5 sm:w-7 sm:h-7 shrink-0 m-0"
         onChange={() => {
           toggleMarkedIngredient(ingredient._id);
           debouncedSave();
         }}
       />
       <div className="flex flex-grow flex-col min-w-0 flex-1">
-        <p className="font-bold text-base sm:text-lg md:text-xl truncate">
+        <p className="font-bold text-base sm:text-lg md:text-lg truncate">
           {ingredient.item.name || "Unnamed Item"}
         </p>
         <div className="flex flex-row items-center flex-wrap gap-1 mt-1">
@@ -88,13 +88,15 @@ export function ShoppingListItemComponent({
               }
             }}
           />
-          <p className="text-lightgreytxt text-sm sm:text-base">{unit}</p>
+          {!(ingredient.quantity === 1 && unit === "stk") && (
+            <p className="text-muted-foreground text-sm sm:text-base">{unit}</p>
+          )}
         </div>
       </div>
-      <div className="grid grid-cols-4 w-6/12">
+      <div className="grid grid-cols-6 w-6/12">
         {/* Store */}
         <select
-          className="text-sm sm:text-base col-span-3 p-1 rounded-lg bg-background mr-1"
+          className="text-sm sm:text-base col-span-4 p-1 rounded-lg bg-background mr-1"
           value={ingredient.center ?? ""}
           onChange={(e) => {
             updateIngredientCenter(ingredient._id, e.target.value);
@@ -110,36 +112,39 @@ export function ShoppingListItemComponent({
         </select>
 
         {/* Price */}
-        <input
-          type="number"
-          min={0}
-          step={1}
-          placeholder="Pris"
-          className="text-muted-foreground p-1 rounded-lg text-sm sm:text-base"
-          value={
-            ingredient.price === undefined ||
-            ingredient.price === null ||
-            ingredient.price === 0
-              ? ""
-              : ingredient.price
-          }
-          onChange={(e) => {
-            const str = e.target.value;
-            if (str === "") {
-              updateIngredientPrice(ingredient._id, 0);
-              debouncedSave();
-              return;
+        <div className="flex flex-row items-center gap-1 min-w-0 col-span-2">
+          <input
+            type="number"
+            min={0}
+            step={1}
+            placeholder="Pris"
+            className="w-full min-w-0 text-muted-foreground p-0.5 rounded-lg text-sm sm:text-base"
+            value={
+              ingredient.price === undefined ||
+              ingredient.price === null ||
+              ingredient.price === 0
+                ? ""
+                : ingredient.price
             }
-            const val = parseFloat(str);
-            if (!Number.isNaN(val)) {
-              updateIngredientPrice(ingredient._id, val);
-              debouncedSave();
-            }
-          }}
-        />
+            onChange={(e) => {
+              const str = e.target.value;
+              if (str === "") {
+                updateIngredientPrice(ingredient._id, 0);
+                debouncedSave();
+                return;
+              }
+              const val = parseFloat(str);
+              if (!Number.isNaN(val)) {
+                updateIngredientPrice(ingredient._id, val);
+                debouncedSave();
+              }
+            }}
+          />
+          <p>kr</p>
+        </div>
         {/* Notes (full width row) */}
         <input
-          className="col-span-4 text-muted-foreground p-1 rounded-lg text-sm sm:text-base bg-background mt-1"
+          className="col-span-6 text-muted-foreground p-1 rounded-lg text-sm sm:text-base bg-background mt-1"
           placeholder="Noter..."
           value={ingredient.notes ?? ""}
           onChange={(e) => {

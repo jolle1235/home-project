@@ -13,6 +13,7 @@ import { Item } from "../model/Item";
 import { IngredientsList } from "./ShowIngrediens";
 import { useShoppingListContext } from "../context/ShoppinglistContext";
 import Button from "./smallComponent/Button";
+import { normalizeIngredient } from "../utils/shoppinglistHelper";
 
 interface AddIngredientModalProps {
   onClose: () => void;
@@ -51,8 +52,9 @@ export function AddIngredientModal({
   const [isMounted, setIsMounted] = useState(false);
   const isShoppingListMode = mode === "shoppingList";
   const [stagedIngredients, setStagedIngredients] = useState<Ingredient[]>(
-    mode === "recipe" ? ingredients : []
+    mode === "recipe" ? ingredients : [],
   );
+  const textOnDoneButton = "Tilføj til liste";
 
   const {
     register,
@@ -83,8 +85,8 @@ export function AddIngredientModal({
     // Remove section and reassign ingredients to no section
     setStagedIngredients((prev) =>
       prev.map((ing) =>
-        ing.section === sectionName ? { ...ing, section: undefined } : ing
-      )
+        ing.section === sectionName ? { ...ing, section: undefined } : ing,
+      ),
     );
     setSections(sections.filter((s) => s !== sectionName));
     if (currentSection === sectionName) {
@@ -147,14 +149,14 @@ export function AddIngredientModal({
         marked: ingredient.marked,
         quantity: ingredient.quantity,
         section: ingredient.section,
-      }))
+      })),
     );
   }, [stagedIngredients, setValue]);
 
   // Initialize sections from existing ingredients when modal opens
   useEffect(() => {
     const existingSections = Array.from(
-      new Set(stagedIngredients.map((ing) => ing.section).filter(Boolean))
+      new Set(stagedIngredients.map((ing) => ing.section).filter(Boolean)),
     ) as string[];
     if (existingSections.length > 0) {
       setSections(existingSections);
@@ -201,6 +203,23 @@ export function AddIngredientModal({
     setIsDropdownOpen(false);
 
     searchInputRef.current?.focus();
+  };
+
+  const handleQuickAdd = async () => {
+    const name = searchTerm.trim();
+    if (!name) return;
+
+    const newIngredient = normalizeIngredient({
+      itemName: searchTerm,
+    });
+
+    // optional: create item in DB
+    await createItem(newIngredient);
+
+    handleAddIngredient(newIngredient);
+
+    setSearchTerm("");
+    setIsDropdownOpen(false);
   };
 
   return (
@@ -350,6 +369,12 @@ export function AddIngredientModal({
                   onChange={setSearchTerm}
                   placeholder="Search ingredient..."
                   inputRef={searchInputRef}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleQuickAdd();
+                    }
+                  }}
                 />
                 {isDropdownOpen && (
                   <div className="w-full mt-1 h-fit space-y-2">
@@ -386,15 +411,9 @@ export function AddIngredientModal({
               ingredients={stagedIngredients}
               onRemove={(index) => handleOnIngredientRemove(index)}
             />
-            {isShoppingListMode && (
-              <p className="text-sm text-gray-500 py-2">
-                Varer tilføjes til indkøbslisten, når du trykker
-                &quot;Done&quot;.
-              </p>
-            )}
           </div>
         </div>
-        <div className="flex justify-between items-center">
+        <div className="sticky bottom-0 left-0 w-full bg-background z-50">
           <Button
             onClick={async () => {
               if (isShoppingListMode) {
@@ -403,7 +422,7 @@ export function AddIngredientModal({
                     ...ingredient,
                     _id: crypto.randomUUID(),
                     marked: ingredient.marked ?? false,
-                  })
+                  }),
                 );
                 if (ingredientsForList.length > 0) {
                   addIngredientsToShoppingList(ingredientsForList);
@@ -418,7 +437,7 @@ export function AddIngredientModal({
             size="lg"
             fullWidth
           >
-            Done
+            {textOnDoneButton}
           </Button>
         </div>
       </div>
