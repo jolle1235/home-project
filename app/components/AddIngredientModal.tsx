@@ -213,9 +213,6 @@ export function AddIngredientModal({
       itemName: searchTerm,
     });
 
-    // optional: create item in DB
-    await createItem(newIngredient);
-
     handleAddIngredient(newIngredient);
 
     setSearchTerm("");
