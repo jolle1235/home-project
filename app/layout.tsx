@@ -2,7 +2,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import NavBar from "./components/smallComponent/Navbar";
 import { RecipeProvider } from "./context/RecipeContext";
-import { ShoppingListProvider } from "./context/ShoppinglistContext";
+import { Providers } from "./providers"; // your TanStack provider
 import ToastProvider from "./components/ToastComponent";
 import Script from "next/script";
 import type { Metadata, Viewport } from "next";
@@ -76,15 +76,15 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col bg-`}
       >
-        <RecipeProvider>
-          <ShoppingListProvider>
+        <Providers>
+          <RecipeProvider>
             <ConstantsProvider>
               <NavBar />
               <main className="bg-background">{children}</main>
               <SpeedInsights />
             </ConstantsProvider>
-          </ShoppingListProvider>
-        </RecipeProvider>
+          </RecipeProvider>
+        </Providers>
         <Script src="/sw-register.js" strategy="afterInteractive" />
       </body>
     </html>

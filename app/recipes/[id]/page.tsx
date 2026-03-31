@@ -6,7 +6,7 @@ import { maxRecipePersons } from "../../utils/validationVariables";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { useShoppingListContext } from "../../context/ShoppinglistContext";
+import { useShoppingList } from "../../hooks/useShoppinglist";
 import { toast } from "react-toastify";
 import Button from "../../components/smallComponent/Button";
 import { ArrowLeft, Clock, Edit2, Minus, Plus, Users } from "lucide-react";
@@ -19,10 +19,10 @@ export default function RecipeDetailsPage() {
   const [error, setError] = useState<string | null>(null);
   const [recommendedPersonAmount, setRecommendedPersonAmount] = useState(1);
   const [checkedIngredients, setCheckedIngredients] = useState<Set<string>>(
-    new Set()
+    new Set(),
   );
   const params = useParams();
-  const { addIngredients } = useShoppingListContext();
+  const { addIngredients } = useShoppingList();
 
   const toggleCheckedIngredient = (index: number) => {
     setCheckedIngredients((prev) => {
@@ -64,7 +64,7 @@ export default function RecipeDetailsPage() {
       } catch (err) {
         console.error("Fetch error:", err);
         setError(
-          err instanceof Error ? err.message : "An unknown error occurred"
+          err instanceof Error ? err.message : "An unknown error occurred",
         );
       } finally {
         setIsLoadingRecipes(false);
@@ -80,7 +80,7 @@ export default function RecipeDetailsPage() {
     }
     if (recipe?.ingredients?.length) {
       setCheckedIngredients(
-        new Set(recipe.ingredients.map((_, index) => String(index)))
+        new Set(recipe.ingredients.map((_, index) => String(index))),
       );
     }
   }, [recipe]);
@@ -124,7 +124,7 @@ export default function RecipeDetailsPage() {
     }
     addIngredients(toAdd);
     toast.success(
-      `${toAdd.length} ingrediens${toAdd.length === 1 ? "" : "er"} tilføjet til indkøbslisten`
+      `${toAdd.length} ingrediens${toAdd.length === 1 ? "" : "er"} tilføjet til indkøbslisten`,
     );
     setIsAddingToList(false);
   };
@@ -196,7 +196,7 @@ export default function RecipeDetailsPage() {
                       size="xs"
                       onClick={() =>
                         setRecommendedPersonAmount((prev) =>
-                          Math.max(prev - 1, 1)
+                          Math.max(prev - 1, 1),
                         )
                       }
                     ></IconButton>
@@ -209,7 +209,7 @@ export default function RecipeDetailsPage() {
                       size="xs"
                       onClick={() =>
                         setRecommendedPersonAmount((prev) =>
-                          prev < maxRecipePersons ? prev + 1 : prev
+                          prev < maxRecipePersons ? prev + 1 : prev,
                         )
                       }
                     ></IconButton>
@@ -244,14 +244,14 @@ export default function RecipeDetailsPage() {
                         ingredient: Recipe["ingredients"][0];
                         index: number;
                       }>
-                    >
+                    >,
                   );
 
                   // Get sections in order: first unsectioned (none), then sections
                   const sections = [
                     ...(groupedIngredients["none"] ? ["none"] : []),
                     ...Object.keys(groupedIngredients).filter(
-                      (s) => s !== "none"
+                      (s) => s !== "none",
                     ),
                   ];
 
@@ -284,7 +284,7 @@ export default function RecipeDetailsPage() {
                                         className="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary"
                                         type="checkbox"
                                         checked={checkedIngredients.has(
-                                          String(index)
+                                          String(index),
                                         )}
                                         onChange={() =>
                                           toggleCheckedIngredient(index)
@@ -300,7 +300,7 @@ export default function RecipeDetailsPage() {
                                     </span>
                                   </div>
                                 );
-                              }
+                              },
                             )}
                           </div>
                         </div>
