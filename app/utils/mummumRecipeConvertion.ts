@@ -41,29 +41,54 @@ function parseIngredient(line: string): Ingredient {
 export function mapSchemaRecipeToRecipe(data: any): Recipe {
   const parseDuration = (iso: string | undefined): number => {
     if (!iso) return 0;
-    const match = iso.match(/PT(\d+)M/);
-    console.log("duration:", match);
-    return match ? parseInt(match[1], 10) : 0;
+
+    // Supports PT30M and PT1H30M
+    const hours = iso.match(/(\d+)H/)?.[1];
+    const minutes = iso.match(/(\d+)M/)?.[1];
+
+    return (
+      (hours ? parseInt(hours) * 60 : 0) + (minutes ? parseInt(minutes) : 0)
+    );
   };
 
   const parseYield = (yieldStr: string | undefined): number => {
     if (!yieldStr) return 0;
     const match = yieldStr.match(/(\d+)/);
-    console.log("yield:", match);
     return match ? parseInt(match[1], 10) : 0;
   };
 
+  // 🔑 Support BOTH formats
+  const recipe = data.recipe ?? data;
+
   return {
     _id: "",
-    recipeName: data.recipe.name ?? "",
-    description: data.recipe.recipeInstructions ?? data.description ?? "",
-    image: data.recipe.image ?? "",
-    ingredients: (data.recipe.recipeIngredient ?? []).map(parseIngredient),
+    recipeName: recipe?.name || data?.title || "",
+    description:
+      typeof recipe?.recipeInstructions === "string"
+        ? recipe.recipeInstructions
+        : Array.isArray(recipe?.recipeInstructions)
+          ? recipe.recipeInstructions
+              .map((i: any) => (typeof i === "string" ? i : i?.text))
+              .join("\n")
+          : data?.description || "",
+    image:
+      typeof recipe?.image === "string"
+        ? recipe.image
+        : Array.isArray(recipe?.image)
+          ? recipe.image[0]
+          : recipe?.image?.url || data?.image || "",
+    ingredients: (recipe?.recipeIngredient || data?.ingredients || []).map(
+      parseIngredient,
+    ),
     time:
-      parseDuration(data.recipe.totalTime) ||
-      parseDuration(data.recipe.prepTime) + parseDuration(data.cookTime),
+      parseDuration(recipe?.totalTime) ||
+      parseDuration(recipe?.prepTime) + parseDuration(recipe?.cookTime) ||
+      0,
     categories: [],
-    recommendedPersonAmount: parseYield(data.recipe.recipeYield),
-    author: data.recipe.author ?? "",
+    recommendedPersonAmount: parseYield(recipe?.recipeYield),
+    author:
+      typeof recipe?.author === "string"
+        ? recipe.author
+        : recipe?.author?.name || "",
   };
 }
