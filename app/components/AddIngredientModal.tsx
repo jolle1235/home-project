@@ -28,11 +28,10 @@ export function AddIngredientModal({
   onClose,
   ingredients,
   setIngredients,
-  onRefreshItems,
   mode = "recipe",
   description,
 }: AddIngredientModalProps) {
-  const { addIngredients, isSaving } = useShoppingList(); // ✅ ONLY THIS
+  const { addIngredients, isSaving } = useShoppingList();
 
   const searchBarRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
@@ -147,7 +146,7 @@ export function AddIngredientModal({
       onClick={handleClose}
     >
       <div
-        className={`flex flex-col bg-background rounded-t-lg md:rounded-lg w-full md:w-2/3 transform transition-all duration-300 ${
+        className={`flex flex-col h-full md:max-h-[90vh] overflow-hidden bg-background rounded-t-lg md:rounded-lg w-full md:w-2/3 transform transition-all duration-300 ${
           isClosing
             ? "translate-y-full md:scale-95 opacity-0"
             : isMounted
@@ -156,63 +155,78 @@ export function AddIngredientModal({
         }`}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* HEADER */}
-        <div className="p-2">
-          <h2 className="text-2xl font-bold">Tilføj ingredienser</h2>
-          {isShoppingListMode && description && (
-            <p className="text-sm text-gray-500">{description}</p>
-          )}
-        </div>
-
-        {/* SEARCH */}
-        <div className="p-2 space-y-2">
-          <div ref={searchBarRef}>
-            <SearchBarComponent
-              value={searchTerm}
-              onChange={setSearchTerm}
-              placeholder="Search ingredient..."
-              inputRef={searchInputRef}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  handleQuickAdd();
-                }
-              }}
-            />
-
-            {isDropdownOpen && (
-              <div className="mt-2 space-y-2">
-                {searchTerm.trim() && (
-                  <AddIngredientComponent
-                    onAdd={async (item) => {
-                      await createItem(item);
-                      handleIngredientAddedFromPicker(item);
-                    }}
-                    itemName={searchTerm}
-                  />
-                )}
-
-                {items.map((item) => (
-                  <AddIngredientComponent
-                    key={item.name}
-                    onAdd={handleIngredientAddedFromPicker}
-                    itemName={item.name}
-                    InputCategory={item.category}
-                    defaultUnit={item.defaultUnit}
-                  />
-                ))}
-              </div>
+        {/* CONTENT */}
+        <div className="flex flex-col flex-1 min-h-0">
+          {/* HEADER */}
+          <div className="p-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="mb-2 flex items-center gap-1"
+              onClick={handleClose}
+            >
+              ← Tilbage
+            </Button>
+            <h2 className="text-2xl font-bold">Tilføj ingredienser</h2>
+            {isShoppingListMode && description && (
+              <p className="text-sm text-gray-500">{description}</p>
             )}
           </div>
 
-          <IngredientsList
-            ingredients={stagedIngredients}
-            onRemove={handleOnIngredientRemove}
-          />
+          {/* SEARCH + LIST */}
+          <div className="flex flex-col flex-1 min-h-0 p-2 space-y-2">
+            {/* SEARCH */}
+            <div ref={searchBarRef}>
+              <SearchBarComponent
+                value={searchTerm}
+                onChange={setSearchTerm}
+                placeholder="Search ingredient..."
+                inputRef={searchInputRef}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleQuickAdd();
+                  }
+                }}
+              />
+
+              {isDropdownOpen && (
+                <div className="mt-2 space-y-2">
+                  {searchTerm.trim() && (
+                    <AddIngredientComponent
+                      onAdd={async (item) => {
+                        await createItem(item);
+                        handleIngredientAddedFromPicker(item);
+                      }}
+                      itemName={searchTerm}
+                    />
+                  )}
+
+                  {items.map((item) => (
+                    <AddIngredientComponent
+                      key={item.name}
+                      onAdd={handleIngredientAddedFromPicker}
+                      itemName={item.name}
+                      InputCategory={item.category}
+                      defaultUnit={item.defaultUnit}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* INGREDIENT LIST (SCROLL AREA) */}
+            <div className="flex-1 min-h-0 overflow-y-auto">
+              <IngredientsList
+                ingredients={stagedIngredients}
+                onRemove={handleOnIngredientRemove}
+              />
+            </div>
+          </div>
         </div>
 
-        {/* ACTION */}
-        <div className="p-2">
+        {/* ACTION BUTTON */}
+        <div className="bg-background">
           <Button
             onClick={handleSubmitIngredients}
             disabled={isSaving}

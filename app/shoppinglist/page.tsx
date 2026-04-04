@@ -8,14 +8,7 @@ import { AddIngredientModal } from "../components/AddIngredientModal";
 import { IconButton } from "../components/IconButton";
 
 export default function ShoppingListPage() {
-  const {
-    shoppingList,
-    removeIngredient,
-    updateQuantity,
-    toggleMarked,
-    addIngredient,
-    isSaving,
-  } = useShoppingList();
+  const { shoppingList, removeIngredient, isSaving } = useShoppingList();
 
   const [addModalOpen, setAddModalOpen] = useState(false);
 

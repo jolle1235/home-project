@@ -21,7 +21,7 @@ export function IngredientsList({
       acc[section].push({ ingredient, index });
       return acc;
     },
-    {} as Record<string, Array<{ ingredient: Ingredient; index: number }>>
+    {} as Record<string, Array<{ ingredient: Ingredient; index: number }>>,
   );
 
   // Get sections in order: first unsectioned (none), then sections
@@ -31,10 +31,7 @@ export function IngredientsList({
   ];
 
   return (
-    <div>
-      <label className="block text-gray-700 text-sm font-bold mb-2">
-        Ingredienser
-      </label>
+    <div className="h-full">
       <div className="mb-4">
         {ingredients.length > 0 ? (
           <div className="space-y-4">
