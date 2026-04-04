@@ -50,11 +50,13 @@ export default function ShoppingListPage() {
 
   return (
     <div className="w-full max-w-4xl mx-auto p-1">
-      <h1 className="text-2xl sm:text-3xl font-bold text-muted-foreground mb-4">
-        Indkøbsliste
-      </h1>
+      <div className="flex flex-row text-base">
+        <h1 className="text-2xl sm:text-3xl font-bold text-muted-foreground mb-4">
+          Indkøbsliste
+        </h1>
+      </div>
 
-      <div className="flex flex-wrap gap-2 mb-4 items-center">
+      <div className="flex flex-wrap gap-2 mb-1 items-center">
         {/* ADD */}
         <div className="flex items-center gap-1 group">
           <IconButton
@@ -119,6 +121,10 @@ export default function ShoppingListPage() {
           </div>
         )}
       </div>
+      <p className="text-muted-foreground w-fit">
+        {shoppingList.filter((item) => item.marked).length} /{" "}
+        {shoppingList.length}
+      </p>
 
       {/* LIST */}
       {shoppingList.length === 0 ? (
