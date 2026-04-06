@@ -7,10 +7,12 @@ import { ShoppingListItemComponent } from "../components/ShoppingListItemCompone
 import { AddIngredientModal } from "../components/AddIngredientModal";
 import { IconButton } from "../components/IconButton";
 import { sortByCenter } from "../utils/shoppinglistHelper";
+import { useScrollRefresh } from "../hooks/useScrollRefresh";
 
 export default function ShoppingListPage() {
-  const { shoppingList, removeIngredient, isSaving, setList } =
-    useShoppingList();
+  const { shoppingList, refresh, isSaving, setList } = useShoppingList();
+
+  useScrollRefresh(refresh);
 
   const [addModalOpen, setAddModalOpen] = useState(false);
 

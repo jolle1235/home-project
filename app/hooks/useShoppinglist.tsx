@@ -7,7 +7,11 @@ export function useShoppingList() {
   const queryClient = useQueryClient();
 
   // 🔹 FETCH
-  const { data: shoppingList = [], isLoading } = useQuery({
+  const {
+    data: shoppingList = [],
+    isLoading,
+    refetch, // <-- added
+  } = useQuery({
     queryKey: ["shoppingList"],
     queryFn: async (): Promise<Ingredient[]> => {
       const res = await fetch("/api/shopping-list");
@@ -126,6 +130,7 @@ export function useShoppingList() {
     shoppingList,
     isLoading,
     isSaving: mutation.isPending,
+    refresh: refetch,
 
     addIngredient,
     addIngredients,
