@@ -1,11 +1,11 @@
 "use client";
 
 import { useRef } from "react";
-import { useShoppingList } from "../hooks/useShoppinglist"; // ✅ FIXED IMPORT
+import { useShoppingList } from "../hooks/useShoppinglist";
 import { Ingredient } from "../model/Ingredient";
 import { shoppingStores } from "../constant/shoppingStores";
+import { CategorySelector } from "./CategorySelector";
 
-// ✅ simple debounce helper
 function debounce(fn: (...args: any[]) => void, delay: number) {
   let timer: ReturnType<typeof setTimeout>;
   return (...args: any[]) => {
@@ -23,6 +23,7 @@ export function ShoppingListItemComponent({
     updateQuantity,
     toggleMarked,
     updateCenter,
+    updateCategory,
     updatePrice,
     updateNotes,
   } = useShoppingList();
@@ -88,6 +89,13 @@ export function ShoppingListItemComponent({
           {!(ingredient.quantity === 1 && unit === "stk") && (
             <p className="text-muted-foreground text-sm">{unit}</p>
           )}
+          {/* CATEGORY ICON */}
+          <div className="mx-1">
+            <CategorySelector
+              value={ingredient.item?.category}
+              onChange={(category) => updateCategory(ingredient._id, category)}
+            />
+          </div>
         </div>
       </div>
 

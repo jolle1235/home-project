@@ -16,7 +16,7 @@ export function useShoppingList() {
     },
   });
 
-  // 🔹 MUTATION (🔥 OPTIMISTIC)
+  // 🔹 MUTATION
   const mutation = useMutation({
     mutationFn: async (updatedList: Ingredient[]) => {
       const res = await fetch("/api/shopping-list", {
@@ -28,35 +28,33 @@ export function useShoppingList() {
       if (!res.ok) throw new Error("Failed to save");
     },
 
-    // ✅ Optimistic update
     onMutate: async (updatedList) => {
       await queryClient.cancelQueries({ queryKey: ["shoppingList"] });
-
       const previous = queryClient.getQueryData<Ingredient[]>(["shoppingList"]);
-
       queryClient.setQueryData(["shoppingList"], updatedList);
-
       return { previous };
     },
 
-    // ❌ Rollback on error
     onError: (_, __, context) => {
       if (context?.previous) {
         queryClient.setQueryData(["shoppingList"], context.previous);
       }
     },
 
-    // 🔄 Ensure sync with server
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["shoppingList"] });
     },
   });
 
-  // ---------------- CORE UPDATE ---------------- //
+  // ---------------- CORE ---------------- //
 
   const updateList = (updater: (list: Ingredient[]) => Ingredient[]) => {
     const updated = updater(shoppingList);
     mutation.mutate(updated);
+  };
+
+  const setList = (newList: Ingredient[]) => {
+    mutation.mutate(newList);
   };
 
   // ---------------- ACTIONS ---------------- //
@@ -106,6 +104,22 @@ export function useShoppingList() {
     updateList((list) => list.map((i) => (i._id === id ? { ...i, notes } : i)));
   };
 
+  const updateCategory = (id: string, category: string) => {
+    updateList((list) =>
+      list.map((i) =>
+        i._id === id
+          ? {
+              ...i,
+              item: {
+                ...i.item,
+                category,
+              },
+            }
+          : i,
+      ),
+    );
+  };
+
   // ---------------- RETURN ---------------- //
 
   return {
@@ -120,7 +134,9 @@ export function useShoppingList() {
     updateQuantity,
     toggleMarked,
     updateCenter,
+    updateCategory,
     updatePrice,
     updateNotes,
+    setList,
   };
 }
