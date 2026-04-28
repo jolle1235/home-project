@@ -59,6 +59,26 @@ export async function removeItem(itemName: string): Promise<void> {
   }
 }
 
+export async function updateItemCategory(
+  itemId: string | undefined,
+  itemName: string,
+  category: string,
+  defaultUnit?: string
+): Promise<void> {
+  try {
+    const response = await fetch("/api/item", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ itemId, name: itemName, category, defaultUnit }),
+    });
+
+    if (!response.ok) throw new Error("Failed to update item category");
+  } catch (error) {
+    console.error("Error updating item category:", error);
+    throw error;
+  }
+}
+
 //------------------ WEEK PLANNER ------------------------//
 export async function saveWeekPlanToDatabase(
   weekPlanData: WeekPlan[]

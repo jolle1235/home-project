@@ -5,6 +5,7 @@ import { useShoppingList } from "../hooks/useShoppinglist";
 import { Ingredient } from "../model/Ingredient";
 import { shoppingStores } from "../constant/shoppingStores";
 import { CategorySelector } from "./CategorySelector";
+import { updateItemCategory } from "../utils/apiHelperFunctions";
 
 function debounce(fn: (...args: any[]) => void, delay: number) {
   let timer: ReturnType<typeof setTimeout>;
@@ -93,7 +94,19 @@ export function ShoppingListItemComponent({
           <div className="mx-1">
             <CategorySelector
               value={ingredient.item?.category}
-              onChange={(category) => updateCategory(ingredient._id, category)}
+              onChange={(category) => {
+                // Update shopping-list row immediately
+                updateCategory(ingredient._id, category);
+                // Persist category on the base item for future uses
+                updateItemCategory(
+                  ingredient.item._id,
+                  ingredient.item.name,
+                  category,
+                  ingredient.item.defaultUnit || ingredient.unit || "stk"
+                ).catch((err) =>
+                  console.error("Failed to persist item category:", err)
+                );
+              }}
             />
           </div>
         </div>

@@ -202,9 +202,9 @@ export function AddIngredientModal({
                     />
                   )}
 
-                  {items.map((item) => (
+                    {items.map((item, index) => (
                     <AddIngredientComponent
-                      key={item.name}
+                        key={`${item._id || item.name}-${index}`}
                       onAdd={handleIngredientAddedFromPicker}
                       itemName={item.name}
                       InputCategory={item.category}

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import clientPromise from "../../lib/mongodb";
 import { capitalise } from "@/app/utils/stringUtils";
+import { ObjectId } from "mongodb";
 
 const databaseName = process.env.MONGO_DATABASE_NAME;
 
@@ -94,6 +95,56 @@ export async function DELETE(request: NextRequest) {
     console.error("Failed to remove item:", error);
     return NextResponse.json(
       { error: "Failed to remove item" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(request: NextRequest) {
+  try {
+    const { itemId, name, category, defaultUnit } = await request.json();
+
+    if (!category || (!itemId && !name)) {
+      return NextResponse.json(
+        { error: "Category and (itemId or name) are required" },
+        { status: 400 }
+      );
+    }
+
+    const client = await clientPromise;
+    const db = client.db(databaseName);
+    const itemsCollection = db.collection("items");
+    let filter: Record<string, unknown> | null = null;
+
+    if (itemId && ObjectId.isValid(itemId)) {
+      filter = { _id: new ObjectId(itemId) };
+    } else if (name?.trim()) {
+      const escaped = name.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const existingByName = await itemsCollection.findOne({
+        name: { $regex: `^${escaped}$`, $options: "i" },
+      });
+      if (existingByName?._id) {
+        filter = { _id: existingByName._id };
+      }
+    }
+
+    if (!filter) {
+      return NextResponse.json({ error: "Item not found" }, { status: 404 });
+    }
+
+    const updateResult = await itemsCollection.updateOne(filter, {
+      $set: { category, defaultUnit: defaultUnit || "stk" },
+    });
+
+    if (updateResult.matchedCount === 0) {
+      return NextResponse.json({ error: "Item not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Failed to update item category:", error);
+    return NextResponse.json(
+      { error: "Failed to update item category" },
       { status: 500 }
     );
   }
