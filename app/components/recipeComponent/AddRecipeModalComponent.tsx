@@ -16,10 +16,16 @@ export function AddRecipeModalComponent({ handleClose, onRecipeSaved }: Props) {
   const router = useRouter();
 
   const handleScraped = (data: Recipe) => {
-    // Save scraped data to sessionStorage and navigate to recipe page
-    sessionStorage.setItem("addRecipe_data", JSON.stringify(data));
-    router.push("/add-recipe");
-    handleClose();
+    try {
+      // Save scraped data to sessionStorage and navigate to recipe page
+      sessionStorage.setItem("addRecipe_data", JSON.stringify(data));
+      handleClose();
+      window.location.assign(`/add-recipe?from=scrape&t=${Date.now()}`);
+    } catch (error) {
+      console.error("Failed to handle scraped recipe data:", error);
+      // Fallback navigation if router/sessionStorage flow fails in-browser
+      window.location.href = "/add-recipe";
+    }
   };
 
   const handleManual = () => {

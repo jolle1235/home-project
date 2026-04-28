@@ -47,6 +47,34 @@ function extractRecipe($: cheerio.CheerioAPI) {
   return recipe;
 }
 
+function normalizeInstructions(recipe: any): string[] {
+  const instructions = recipe?.recipeInstructions;
+  if (!instructions) return [];
+
+  if (typeof instructions === "string") {
+    return [instructions];
+  }
+
+  if (Array.isArray(instructions)) {
+    return instructions
+      .map((i: any) => (typeof i === "string" ? i : i?.text))
+      .filter(Boolean);
+  }
+
+  if (typeof instructions === "object") {
+    if (typeof instructions.text === "string") {
+      return [instructions.text];
+    }
+    if (Array.isArray(instructions.itemListElement)) {
+      return instructions.itemListElement
+        .map((i: any) => (typeof i === "string" ? i : i?.text))
+        .filter(Boolean);
+    }
+  }
+
+  return [];
+}
+
 export async function POST(req: Request) {
   try {
     const { url } = await req.json();
@@ -93,10 +121,7 @@ export async function POST(req: Request) {
 
       ingredients: recipe?.recipeIngredient || [],
 
-      instructions:
-        recipe?.recipeInstructions?.map((i: any) =>
-          typeof i === "string" ? i : i?.text,
-        ) || [],
+      instructions: normalizeInstructions(recipe),
     });
   } catch (err: any) {
     return NextResponse.json({

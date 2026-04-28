@@ -59,18 +59,22 @@ export function mapSchemaRecipeToRecipe(data: any): Recipe {
 
   // 🔑 Support BOTH formats
   const recipe = data.recipe ?? data;
+  const mappedInstructions =
+    typeof recipe?.recipeInstructions === "string"
+      ? recipe.recipeInstructions
+      : Array.isArray(recipe?.recipeInstructions)
+        ? recipe.recipeInstructions
+            .map((i: any) => (typeof i === "string" ? i : i?.text))
+            .filter(Boolean)
+            .join("\n")
+        : Array.isArray(data?.instructions)
+          ? data.instructions.filter(Boolean).join("\n")
+          : "";
 
   return {
     _id: "",
     recipeName: recipe?.name || data?.title || "",
-    description:
-      typeof recipe?.recipeInstructions === "string"
-        ? recipe.recipeInstructions
-        : Array.isArray(recipe?.recipeInstructions)
-          ? recipe.recipeInstructions
-              .map((i: any) => (typeof i === "string" ? i : i?.text))
-              .join("\n")
-          : data?.description || "",
+    description: mappedInstructions || data?.description || "",
     image:
       typeof recipe?.image === "string"
         ? recipe.image

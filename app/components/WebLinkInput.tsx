@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Recipe } from "../model/Recipe";
 import { mapSchemaRecipeToRecipe } from "../utils/mummumRecipeConvertion";
 import Button from "./smallComponent/Button";
@@ -12,21 +12,35 @@ type WebLinkInputProps = {
 
 export function WebLinkInput({ onScraped }: WebLinkInputProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   async function sendWebpage() {
-    if (!inputRef.current) return;
+    if (!inputRef.current || isLoading) return;
 
-    const url = inputRef.current.value;
-    if (!url) return;
+    const rawUrl = inputRef.current.value.trim();
+    if (!rawUrl) {
+      toast.info("Indsæt et link først.");
+      return;
+    }
+
+    const normalizedUrl = /^https?:\/\//i.test(rawUrl)
+      ? rawUrl
+      : `https://${rawUrl}`;
 
     try {
+      setIsLoading(true);
       const res = await fetch("/api/scrape", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify({ url: normalizedUrl }),
       });
+
+      if (!res.ok) {
+        toast.error("Kunne ikke hente siden.");
+        return;
+      }
 
       const data = await res.json();
 
@@ -43,6 +57,8 @@ export function WebLinkInput({ onScraped }: WebLinkInputProps) {
     } catch (err) {
       console.error("Scraping failed:", err);
       toast.error("Noget gik galt ved scraping");
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -55,7 +71,7 @@ export function WebLinkInput({ onScraped }: WebLinkInputProps) {
         type="text"
         placeholder="Indsæt Link"
       />
-      <Button onClick={sendWebpage} variant="primary" size="md">
+      <Button onClick={sendWebpage} variant="primary" size="md" isLoading={isLoading}>
         Send
       </Button>
     </div>
