@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AddDrinkModalComponent } from "../components/drinkComponents/AddDrinkModalComponent";
 import { Drink } from "../model/Drink";
 import { DrinkCardComponent } from "../components/drinkComponents/DrinkCardComponent";
 import { IconButton } from "../components/IconButton";
 import { Plus } from "lucide-react";
+import { useScrollRefresh } from "../hooks/useScrollRefresh";
+import { PullToRefreshIndicator } from "../components/PullToRefreshIndicator";
 
 export default function DrinkPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -16,7 +18,7 @@ export default function DrinkPage() {
   const handleOpen = () => setIsModalOpen(true);
   const handleClose = () => setIsModalOpen(false);
 
-  async function loadDrinks() {
+  const loadDrinks = useCallback(async () => {
     try {
       setIsLoading(true);
       setError("");
@@ -29,15 +31,19 @@ export default function DrinkPage() {
     } finally {
       setIsLoading(false);
     }
-  }
+  }, []);
+
+  const { isRefreshing } = useScrollRefresh(loadDrinks);
 
   useEffect(() => {
-    loadDrinks();
-  }, []);
+    void loadDrinks();
+  }, [loadDrinks]);
 
   return (
     <main className="bg-background w-full text-muted-foreground">
       <div className="container mx-auto px-4 py-6">
+        <PullToRefreshIndicator isRefreshing={isRefreshing} />
+
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">Drinks</h1>
           <IconButton

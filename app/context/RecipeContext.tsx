@@ -17,6 +17,7 @@ interface RecipeContextProps {
   removeRecipeFromWeekPlan: (date: string, recipeId: string) => void;
   clearPlan: () => void;
   getDatesForNext4Weeks: () => Date[];
+  refreshWeekPlan: () => Promise<void>;
 }
 
 const RecipeContext = createContext<RecipeContextProps | undefined>(undefined);
@@ -39,6 +40,10 @@ export function RecipeProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error("Error loading week plan:", error);
     }
+  };
+
+  const refreshWeekPlan = async () => {
+    await loadData();
   };
 
   const save = async (newPlan: WeekPlan[]) => {
@@ -120,6 +125,7 @@ export function RecipeProvider({ children }: { children: ReactNode }) {
         removeRecipeFromWeekPlan,
         clearPlan,
         getDatesForNext4Weeks,
+        refreshWeekPlan,
       }}
     >
       {children}

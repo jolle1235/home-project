@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { Filter, Plus, Trash2 } from "lucide-react";
 import { AddRecipeModalComponent } from "../components/recipeComponent/AddRecipeModalComponent";
 import { RecipeCardComponent } from "../components/recipeComponent/RecipeCardComponent";
@@ -9,6 +9,8 @@ import { Recipe } from "../model/Recipe";
 import { useConstants } from "../context/ConstantsContext";
 import { IconButton } from "../components/IconButton";
 import Button from "../components/smallComponent/Button";
+import { useScrollRefresh } from "../hooks/useScrollRefresh";
+import { PullToRefreshIndicator } from "../components/PullToRefreshIndicator";
 
 export default function RecipePage() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
@@ -24,14 +26,14 @@ export default function RecipePage() {
   const handleOpen = () => setIsModalOpen(true);
   const handleClose = () => setIsModalOpen(false);
 
-  const handleRecipeSaved = async () => {
-    // Refresh recipes after saving
+  const fetchRecipes = useCallback(async () => {
     setIsLoading(true);
     try {
       const response = await fetch("/api/recipe");
       if (!response.ok) throw new Error("Failed to fetch recipes");
       const data = await response.json();
       setRecipes(data);
+      setError(null);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "An unknown error occurred"
@@ -39,6 +41,13 @@ export default function RecipePage() {
     } finally {
       setIsLoading(false);
     }
+  }, []);
+
+  const { isRefreshing } = useScrollRefresh(fetchRecipes);
+
+  const handleRecipeSaved = async () => {
+    // Refresh recipes after saving
+    await fetchRecipes();
   };
 
   useEffect(() => {
@@ -53,24 +62,8 @@ export default function RecipePage() {
   }, [isModalOpen]);
 
   useEffect(() => {
-    const fetchRecipes = async () => {
-      setIsLoading(true);
-      try {
-        const response = await fetch("/api/recipe");
-        if (!response.ok) throw new Error("Failed to fetch recipes");
-        const data = await response.json();
-        setRecipes(data);
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "An unknown error occurred"
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchRecipes();
-  }, []);
+    void fetchRecipes();
+  }, [fetchRecipes]);
 
   const filteredRecipes = useMemo(() => {
     const lowerCaseSearchTerm = searchTerm.toLowerCase();
@@ -108,6 +101,8 @@ export default function RecipePage() {
   return (
     <div className="w-full bg-background overflow-hidden">
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 py-6">
+        <PullToRefreshIndicator isRefreshing={isRefreshing} />
+
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-row justify-between items-center">

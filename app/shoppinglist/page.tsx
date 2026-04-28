@@ -8,11 +8,12 @@ import { AddIngredientModal } from "../components/AddIngredientModal";
 import { IconButton } from "../components/IconButton";
 import { sortByCenter } from "../utils/shoppinglistHelper";
 import { useScrollRefresh } from "../hooks/useScrollRefresh";
+import { PullToRefreshIndicator } from "../components/PullToRefreshIndicator";
 
 export default function ShoppingListPage() {
   const { shoppingList, refresh, isSaving, setList } = useShoppingList();
 
-  useScrollRefresh(refresh);
+  const { isRefreshing } = useScrollRefresh(refresh);
 
   const [addModalOpen, setAddModalOpen] = useState(false);
 
@@ -41,6 +42,8 @@ export default function ShoppingListPage() {
 
   return (
     <div className="w-full max-w-4xl mx-auto p-1">
+      <PullToRefreshIndicator isRefreshing={isRefreshing} />
+
       <div className="flex flex-row text-base">
         <h1 className="text-2xl sm:text-3xl font-bold text-muted-foreground mb-4">
           Indkøbsliste

@@ -3,12 +3,16 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useRecipeContext } from "../context/RecipeContext";
 import Button from "../components/smallComponent/Button";
+import { useScrollRefresh } from "../hooks/useScrollRefresh";
+import { PullToRefreshIndicator } from "../components/PullToRefreshIndicator";
 
 export default function WeeklyRecipePlanner() {
   const router = useRouter();
-  const { weekPlan, removeRecipeFromWeekPlan } = useRecipeContext();
+  const { weekPlan, removeRecipeFromWeekPlan, refreshWeekPlan } =
+    useRecipeContext();
 
   const [weekDates, setWeekDates] = useState<(Date | null)[]>([]);
+  const { isRefreshing } = useScrollRefresh(refreshWeekPlan);
 
   function getMonday(d: Date) {
     const date = new Date(d);
@@ -58,6 +62,8 @@ export default function WeeklyRecipePlanner() {
 
   return (
     <div className="p-4">
+      <PullToRefreshIndicator isRefreshing={isRefreshing} />
+
       <h5 className="text-2xl font-semibold mb-4">Madplan</h5>
 
       <div className="flex flex-col gap-4">
