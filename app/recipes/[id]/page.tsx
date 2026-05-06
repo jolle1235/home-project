@@ -9,7 +9,15 @@ import Link from "next/link";
 import { useShoppingList } from "../../hooks/useShoppinglist";
 import { toast } from "react-toastify";
 import Button from "../../components/smallComponent/Button";
-import { ArrowLeft, Clock, Edit2, Minus, Plus, Users } from "lucide-react";
+import {
+  ArrowLeft,
+  Clock,
+  Edit2,
+  ExternalLink,
+  Minus,
+  Plus,
+  Users,
+} from "lucide-react";
 import { IconButton } from "@/app/components/IconButton";
 
 export default function RecipeDetailsPage() {
@@ -185,6 +193,17 @@ export default function RecipeDetailsPage() {
                     <span>{recommendedPersonAmount} personer</span>
                   </div>
                 </div>
+                {recipe?.sourceUrl && (
+                  <a
+                    href={recipe.sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex w-fit items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm text-foreground hover:bg-secondary transition-colors"
+                  >
+                    <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                    Gå til kilde
+                  </a>
+                )}
                 <div className="flex items-center gap-3 mt-1 -">
                   <span className="text-sm text-muted-foreground">
                     Justér antal personer:

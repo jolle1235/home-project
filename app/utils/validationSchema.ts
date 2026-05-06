@@ -112,11 +112,56 @@ export const loginSchema = Yup.object({
 
 export const recipeSchema = Yup.object({
   _id: Yup.string().optional().nullable(),
-  recipeName: recipeNameSchema,
+  sourceUrl: Yup.string()
+    .default("")
+    .test(
+      "is-url-or-empty",
+      "Ugyldig kilde-URL",
+      (value) => !value || Yup.string().url().isValidSync(value)
+    ),
+  recipeName: Yup.string().when("sourceUrl", {
+    is: (value: string | undefined) => !value,
+    then: () => recipeNameSchema,
+    otherwise: (schema) =>
+      schema.max(maxRecipeNameLength, `Navn kan maks være ${maxRecipeNameLength} tegn`).default(""),
+  }),
   image: recipeImgSchema,
-  time: recipeTimeSchema,
-  recommendedPersonAmount: recipePersonAmountSchema,
-  description: recipeDescriptionSchema,
+  time: Yup.number().when("sourceUrl", {
+    is: (value: string | undefined) => !value,
+    then: () => recipeTimeSchema,
+    otherwise: (schema) =>
+      schema
+        .transform((value, originalValue) =>
+          typeof originalValue === "string" && originalValue.trim() === ""
+            ? 0
+            : Number(originalValue)
+        )
+        .min(0, "Skal være mindst 0")
+        .max(maxRecipeTime, `Kan ikke være mere end ${maxRecipeTime}`)
+        .default(0),
+  }),
+  recommendedPersonAmount: Yup.number().when("sourceUrl", {
+    is: (value: string | undefined) => !value,
+    then: () => recipePersonAmountSchema,
+    otherwise: (schema) =>
+      schema
+        .transform((value, originalValue) =>
+          typeof originalValue === "string" && originalValue.trim() === ""
+            ? 0
+            : Number(originalValue)
+        )
+        .min(0, "Må ikke være mindre end 0")
+        .max(maxRecipePersons, `Max ${maxRecipePersons}`)
+        .default(0),
+  }),
+  description: Yup.string().when("sourceUrl", {
+    is: (value: string | undefined) => !value,
+    then: () => recipeDescriptionSchema,
+    otherwise: (schema) =>
+      schema
+        .max(maxRecipeDescriptionLength, `Max ${maxRecipeDescriptionLength} tegn`)
+        .default(""),
+  }),
   categories: Yup.array().of(Yup.string().required()).default([]),
   ingredients: Yup.array()
     .of(
@@ -134,11 +179,17 @@ export const recipeSchema = Yup.object({
         section: Yup.string().optional(),
       })
     )
-    .required("Ingredienser er påkrævet")
-    .min(
-      minRecipeItems,
-      `Opskriften skal indeholde mindst ${minRecipeItems} ingrediens`
-    ),
+    .when("sourceUrl", {
+      is: (value: string | undefined) => !value,
+      then: (schema) =>
+        schema
+          .required("Ingredienser er påkrævet")
+          .min(
+            minRecipeItems,
+            `Opskriften skal indeholde mindst ${minRecipeItems} ingrediens`
+          ),
+      otherwise: (schema) => schema.default([]),
+    }),
   author: recipeAuthorSchema,
 });
 

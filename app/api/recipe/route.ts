@@ -25,17 +25,18 @@ export async function POST(request: Request) {
     const data = await request.json();
     
     // Validate required fields
-    if (!data.recipeName || !data.description || !data.ingredients || !Array.isArray(data.ingredients)) {
+    if (!Array.isArray(data.ingredients)) {
       return NextResponse.json(
-        { error: "Missing required fields: recipeName, description, or ingredients" },
+        { error: "Missing required fields: ingredients must be an array" },
         { status: 400 }
       );
     }
 
     const recipe: Omit<Recipe, "_id"> = {
-      recipeName: data.recipeName,
-      description: data.description,
+      recipeName: data.recipeName || "",
+      description: data.description || "",
       image: data.image || "",
+      sourceUrl: data.sourceUrl || "",
       ingredients: data.ingredients,
       time: data.time || 0,
       categories: data.categories || [],
@@ -62,14 +63,15 @@ export async function PUT(request: Request) {
     const data = await request.json();
     const recipe: Recipe = {
       _id: data._id,
-      recipeName: data.recipeName,
-      description: data.description,
-      image: data.image,
-      ingredients: data.ingredients,
-      time: data.time,
-      categories: data.categories,
-      recommendedPersonAmount: data.recommendedPersonAmount,
-      author: data.author,
+      recipeName: data.recipeName || "",
+      description: data.description || "",
+      image: data.image || "",
+      sourceUrl: data.sourceUrl || "",
+      ingredients: Array.isArray(data.ingredients) ? data.ingredients : [],
+      time: data.time || 0,
+      categories: data.categories || [],
+      recommendedPersonAmount: data.recommendedPersonAmount || 0,
+      author: data.author || "",
     };
     const updatedRecipe = await updateRecipe(recipe);
     return NextResponse.json(updatedRecipe);

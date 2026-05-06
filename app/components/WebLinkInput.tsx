@@ -14,6 +14,21 @@ export function WebLinkInput({ onScraped }: WebLinkInputProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  function createEmptyRecipeFromUrl(url: string): Recipe {
+    return {
+      _id: "",
+      recipeName: "",
+      description: "",
+      image: "",
+      sourceUrl: url,
+      ingredients: [],
+      time: 0,
+      categories: [],
+      recommendedPersonAmount: 0,
+      author: "",
+    };
+  }
+
   async function sendWebpage() {
     if (!inputRef.current || isLoading) return;
 
@@ -38,25 +53,31 @@ export function WebLinkInput({ onScraped }: WebLinkInputProps) {
       });
 
       if (!res.ok) {
-        toast.error("Kunne ikke hente siden.");
+        toast.info("Kunne ikke hente data fra linket. Starter med tom opskrift.");
+        onScraped?.(createEmptyRecipeFromUrl(normalizedUrl));
         return;
       }
 
       const data = await res.json();
 
       if (!data.success) {
-        toast.error(data.error || "Kunne ikke hente opskrift");
+        toast.info("Kunne ikke hente data fra linket. Starter med tom opskrift.");
+        onScraped?.(createEmptyRecipeFromUrl(normalizedUrl));
         return;
       }
 
-      const recipe: Recipe = mapSchemaRecipeToRecipe(data);
+      const recipe: Recipe = {
+        ...mapSchemaRecipeToRecipe(data),
+        sourceUrl: normalizedUrl,
+      };
 
       if (onScraped) {
         onScraped(recipe);
       }
     } catch (err) {
       console.error("Scraping failed:", err);
-      toast.error("Noget gik galt ved scraping");
+      toast.info("Kunne ikke hente data fra linket. Starter med tom opskrift.");
+      onScraped?.(createEmptyRecipeFromUrl(normalizedUrl));
     } finally {
       setIsLoading(false);
     }

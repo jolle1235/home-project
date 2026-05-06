@@ -90,6 +90,7 @@ export function mapSchemaRecipeToRecipe(data: any): Recipe {
       0,
     categories: [],
     recommendedPersonAmount: parseYield(recipe?.recipeYield),
+    sourceUrl: data?.url || "",
     author:
       typeof recipe?.author === "string"
         ? recipe.author

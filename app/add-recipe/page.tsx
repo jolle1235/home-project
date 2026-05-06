@@ -37,6 +37,7 @@ function AddRecipePageContent() {
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [imageUrl, setImageUrl] = useState<string>("");
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [sourceUrl, setSourceUrl] = useState<string>("");
 
   type RecipeFormType = Yup.InferType<typeof recipeSchema>;
 
@@ -177,21 +178,12 @@ function AddRecipePageContent() {
 
       let finalIngredients =
         data.ingredients || currentFormData.ingredients || ingredients;
-
-      if (!finalIngredients || finalIngredients.length === 0) {
-        console.warn("No ingredients in form data, using ingredients state");
-        finalIngredients = ingredients;
+      const hasIngredients = Boolean(finalIngredients && finalIngredients.length > 0);
+      if (!hasIngredients) {
+        finalIngredients = [];
       }
 
-      if (!finalIngredients || finalIngredients.length === 0) {
-        toast.error(
-          "Du skal tilføje mindst én ingrediens før opskriften kan gemmes."
-        );
-        setIsSaving(false);
-        return;
-      }
-
-      const validIngredients = finalIngredients.map((ing: any) => ({
+      const validIngredients = (finalIngredients || []).map((ing: any) => ({
         _id: ing._id || "unknown",
         item: {
           _id: ing.item?._id || "unknown",
@@ -205,13 +197,15 @@ function AddRecipePageContent() {
         section: ing.section,
       }));
 
-      try {
-        await checkAndAddUnitType(validIngredients as Ingredient[]);
-      } catch (unitError) {
-        console.warn(
-          "Unit type sync failed, continuing with recipe submission:",
-          unitError
-        );
+      if (validIngredients.length > 0) {
+        try {
+          await checkAndAddUnitType(validIngredients as Ingredient[]);
+        } catch (unitError) {
+          console.warn(
+            "Unit type sync failed, continuing with recipe submission:",
+            unitError
+          );
+        }
       }
 
       let finalImage = imageUrl || "";
@@ -230,6 +224,7 @@ function AddRecipePageContent() {
         ...data,
         ingredients: validIngredients,
         image: finalImage || "",
+        sourceUrl: (sourceUrl || "").trim(),
         categories: selectedCategories,
         author: "",
       };
@@ -403,6 +398,9 @@ function AddRecipePageContent() {
       setValue("image", "");
     }
 
+    setSourceUrl(data.sourceUrl || "");
+    setValue("sourceUrl", data.sourceUrl || "");
+
     if (data.categories) {
       setSelectedCategories(data.categories);
       setValue("categories", data.categories);
@@ -487,6 +485,31 @@ function AddRecipePageContent() {
                   {errors.recipeName.message}
                 </p>
               )}
+            </div>
+
+            <div className="w-full md:col-span-2">
+              <label
+                className="block text-gray-700 text-sm font-bold mb-2"
+                htmlFor="kilde-link"
+              >
+                Kilde-link
+              </label>
+              <input
+                id="kilde-link"
+                type="url"
+                value={sourceUrl}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setSourceUrl(value);
+                  setValue("sourceUrl", value, { shouldValidate: true });
+                }}
+                className="w-full p-3 border rounded-lg"
+                placeholder="https://..."
+              />
+              {errors.sourceUrl && (
+                <p className="text-red-500 text-xs">{errors.sourceUrl.message}</p>
+              )}
+              <input type="hidden" {...register("sourceUrl")} />
             </div>
 
             <div className="w-full">
