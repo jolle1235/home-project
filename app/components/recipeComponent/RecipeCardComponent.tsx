@@ -74,7 +74,7 @@ export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
               "
               >
                 {/* Image */}
-                <div className="relative w-full h-48 sm:h-52">
+                <div className="relative w-full h-44 sm:h-48">
                   <Image
                     src={
                       recipe.image && recipe.image.trim() !== ""
@@ -109,12 +109,6 @@ export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
                   <h2 className="text-lg sm:text-xl font-semibold text-foreground line-clamp-2">
                     {recipe.recipeName}
                   </h2>
-
-                  {recipe.description && (
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {recipe.description}
-                    </p>
-                  )}
 
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
                     <div className="inline-flex items-center gap-1.5">
