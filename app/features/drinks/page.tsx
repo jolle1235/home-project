@@ -1,0 +1,77 @@
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+import { AddDrinkModalComponent } from "./components/AddDrinkModalComponent";
+import { Drink } from "./utils/Drink";
+import { DrinkCardComponent } from "./components/DrinkCardComponent";
+import { IconButton } from "../../components/IconButton";
+import { Plus } from "lucide-react";
+import { useScrollRefresh } from "../../hooks/useScrollRefresh";
+import { PullToRefreshIndicator } from "../../components/PullToRefreshIndicator";
+
+export default function DrinkPage() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [drinks, setDrinks] = useState<Drink[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>("");
+
+  const handleOpen = () => setIsModalOpen(true);
+  const handleClose = () => setIsModalOpen(false);
+
+  const loadDrinks = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setError("");
+      const res = await fetch("/api/drink");
+      if (!res.ok) throw new Error("Failed to fetch drinks");
+      const data: Drink[] = await res.json();
+      setDrinks(data);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Unknown error");
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const { isRefreshing } = useScrollRefresh(loadDrinks);
+
+  useEffect(() => {
+    void loadDrinks();
+  }, [loadDrinks]);
+
+  return (
+    <main className="bg-background w-full text-muted-foreground">
+      <div className="container mx-auto px-4 py-6">
+        <PullToRefreshIndicator isRefreshing={isRefreshing} />
+
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold">Drinks</h1>
+          <IconButton
+            icon={Plus}
+            variant="primary"
+            size="sm"
+            type="button"
+            onClick={() => handleOpen()}
+          ></IconButton>
+        </div>
+
+        {isLoading && (
+          <p className="text-center py-8 text-gray-500">Indlæser drinks...</p>
+        )}
+        {error && <p className="text-center py-8 text-red-500">{error}</p>}
+
+        {!isLoading && !error && <DrinkCardComponent drinks={drinks} />}
+      </div>
+
+      {isModalOpen && (
+        <AddDrinkModalComponent
+          handleClose={() => {
+            handleClose();
+            // Refresh list after closing modal (new drink may have been added)
+            loadDrinks();
+          }}
+        />
+      )}
+    </main>
+  );
+}

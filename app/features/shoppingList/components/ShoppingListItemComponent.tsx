@@ -1,0 +1,170 @@
+"use client";
+
+import { useRef, useState } from "react";
+import { useShoppingList } from "../hooks/useShoppinglist";
+import { Ingredient } from "../../../model/Ingredient";
+import { shoppingStores } from "../types/shoppingStores";
+import { CategorySelector } from "../../recipes/components/CategorySelector";
+import { updateItemCategory } from "../../../utils/apiHelperFunctions";
+
+function debounce(fn: (...args: any[]) => void, delay: number) {
+  let timer: ReturnType<typeof setTimeout>;
+  return (...args: any[]) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), delay);
+  };
+}
+
+export function ShoppingListItemComponent({
+  ingredient,
+}: {
+  ingredient: Ingredient;
+}) {
+  const {
+    updateQuantity,
+    toggleMarked,
+    updateCenter,
+    updateCategory,
+    updatePrice,
+    updateNotes,
+  } = useShoppingList();
+
+  const unit = ingredient.unit || "stk";
+
+  const [notes, setNotes] = useState(ingredient.notes ?? "");
+  const [quantityInput, setQuantityInput] = useState(
+    !ingredient.quantity || ingredient.quantity === 0
+      ? ""
+      : String(ingredient.quantity),
+  );
+  const [priceInput, setPriceInput] = useState(
+    !ingredient.price || ingredient.price === 0 ? "" : String(ingredient.price),
+  );
+
+  const debouncedUpdateNotes = useRef(
+    debounce((id: string, value: string) => {
+      updateNotes(id, value);
+    }, 300),
+  ).current;
+
+  const debouncedUpdatePrice = useRef(
+    debounce((id: string, value: number) => {
+      updatePrice(id, value);
+    }, 300),
+  ).current;
+
+  const debouncedUpdateQuantity = useRef(
+    debounce((id: string, value: number) => {
+      updateQuantity(id, value);
+    }, 300),
+  ).current;
+
+  return (
+    <div className="flex flex-row flex-wrap w-full items-center gap-2 p-1.5 bg-soft rounded-lg">
+      {/* MARK */}
+      <input
+        type="checkbox"
+        checked={ingredient.marked}
+        className="w-5 h-5 sm:w-7 sm:h-7"
+        onChange={() => toggleMarked(ingredient._id)}
+      />
+
+      {/* NAME + QUANTITY */}
+      <div className="flex flex-grow flex-col min-w-0 flex-1">
+        <p className="font-bold text-base sm:text-lg truncate">
+          {ingredient.item.name || "Unnamed Item"}
+        </p>
+
+        <div className="flex items-center gap-1 mt-1">
+          <input
+            type="number"
+            min={0}
+            step={0.1}
+            className="p-0.5 rounded-lg w-10 sm:w-14 border text-sm"
+            value={quantityInput}
+            onChange={(e) => {
+              const raw = e.target.value;
+              setQuantityInput(raw);
+              const val = parseFloat(raw);
+              debouncedUpdateQuantity(
+                ingredient._id,
+                Number.isNaN(val) ? 0 : val,
+              );
+            }}
+          />
+
+          {!(ingredient.quantity === 1 && unit === "stk") && (
+            <p className="text-muted-foreground text-sm">{unit}</p>
+          )}
+          {/* CATEGORY ICON */}
+          <div className="mx-1">
+            <CategorySelector
+              value={ingredient.item?.category}
+              onChange={(category) => {
+                // Update shopping-list row immediately
+                updateCategory(ingredient._id, category);
+                // Persist category on the base item for future uses
+                updateItemCategory(
+                  ingredient.item._id,
+                  ingredient.item.name,
+                  category,
+                  ingredient.item.defaultUnit || ingredient.unit || "stk",
+                ).catch((err) =>
+                  console.error("Failed to persist item category:", err),
+                );
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* STORE + PRICE + NOTES */}
+      <div className="grid grid-cols-6 w-6/12">
+        {/* STORE (no debounce needed) */}
+        <select
+          className="col-span-4 p-1 rounded-lg bg-background"
+          value={ingredient.center ?? ""}
+          onChange={(e) => updateCenter(ingredient._id, e.target.value)}
+        >
+          <option value="">Vælg butik</option>
+          {shoppingStores.map((store) => (
+            <option key={store} value={store}>
+              {store}
+            </option>
+          ))}
+        </select>
+
+        {/* PRICE */}
+        <div className="flex items-center gap-1 col-span-2">
+          <input
+            type="number"
+            min={0}
+            step={1}
+            placeholder="Pris"
+            className="w-full p-0.5 rounded-lg text-sm"
+            value={priceInput}
+            onChange={(e) => {
+              const raw = e.target.value;
+              setPriceInput(raw);
+              const val = parseFloat(raw);
+              debouncedUpdatePrice(ingredient._id, Number.isNaN(val) ? 0 : val);
+            }}
+          />
+          <p>kr</p>
+        </div>
+
+        {/* NOTES */}
+        <input
+          className="col-span-6 p-1 rounded-lg text-sm bg-background mt-1"
+          placeholder="Noter..."
+          value={notes}
+          onChange={(e) => {
+            const value = e.target.value;
+            setNotes(value);
+            debouncedUpdateNotes(ingredient._id, value);
+          }}
+        />
+      </div>
+    </div>
+  );
+}

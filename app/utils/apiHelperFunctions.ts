@@ -1,15 +1,15 @@
 "use cliet";
 import { Item } from "../model/Item";
 import { Ingredient } from "../model/Ingredient";
-import { Recipe } from "../model/Recipe";
-import { WeekPlan } from "../model/weekPlan";
+import { Recipe } from "../features/recipes/types/Recipe";
+import { WeekPlan } from "../features/weekplanner/types/weekPlan";
 
 // API client function
 //------------------ ITEMs ------------------------//
 export async function searchItem(searchTerm: string): Promise<Item[]> {
   try {
     const response = await fetch(
-      `/api/item?term=${encodeURIComponent(searchTerm)}`
+      `/api/item?term=${encodeURIComponent(searchTerm)}`,
     );
     if (!response.ok) throw new Error("Failed to fetch Items");
     const data = await response.json();
@@ -63,7 +63,7 @@ export async function updateItemCategory(
   itemId: string | undefined,
   itemName: string,
   category: string,
-  defaultUnit?: string
+  defaultUnit?: string,
 ): Promise<void> {
   try {
     const response = await fetch("/api/item", {
@@ -81,7 +81,7 @@ export async function updateItemCategory(
 
 //------------------ WEEK PLANNER ------------------------//
 export async function saveWeekPlanToDatabase(
-  weekPlanData: WeekPlan[]
+  weekPlanData: WeekPlan[],
 ): Promise<void> {
   const response = await fetch("/api/weekPlan", {
     method: "POST",

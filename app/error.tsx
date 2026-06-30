@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Button from "./components/smallComponent/Button";
+import Button from "./components/Button";
 
 export default function ErrorPage({
   error,

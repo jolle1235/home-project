@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Drink } from "../../model/Drink";
-import { createDrink, getDrinks } from "../../lib/drinkUtils";
+import { Drink } from "../../features/drinks/utils/Drink";
+import { createDrink, getDrinks } from "../../features/drinks/utils/drinkUtils";
 
 export async function GET(request: NextRequest) {
   try {
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     console.error("Error fetching drinks:", error);
     return NextResponse.json(
       { error: "Failed to fetch drinks" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
     console.error("Error creating drink:", error);
     return NextResponse.json(
       { error: "Failed to create drink" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

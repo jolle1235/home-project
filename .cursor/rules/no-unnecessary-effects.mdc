@@ -1,0 +1,50 @@
+---
+description: Avoid unnecessary useEffect — sync only with external systems
+globs: **/*.{tsx,jsx}
+alwaysApply: false
+---
+
+# Before Writing useEffect
+
+Source: [You really, really don't need an effect](https://neciudan.dev/you-really-really-dont-need-an-effect) · [React docs](https://react.dev/learn/you-might-not-need-an-effect)
+
+**Ask one question: Is this syncing with an external system?**
+
+External (effect OK): WebSocket, browser APIs (`IntersectionObserver`, `navigator.onLine`), third-party widgets, DOM measurements, timers with cleanup.
+
+NOT external: props, state, derived values, user events (click, submit, change).
+
+## Decision tree — check before writing an effect
+
+| Case | Don't | Do |
+|------|-------|-----|
+| Transforming data | `useEffect` + `setState` | Compute inline, or `useMemo` if expensive |
+| User event | Effect watching a flag | Logic in the event handler |
+| Reset state on prop change | `useEffect(() => setState(prop), [prop])` | `<Component key={prop} />` |
+| Fetching data | Raw `useEffect` + `fetch` alone | TanStack Query; if effect, add stale-response cleanup |
+| Notify parent | Effect on state change | Call callback in the event handler |
+| Chained effects | Multiple effects cascading `setState` | Reset/derive in one event handler or `useReducer` |
+| External store | `useEffect` + subscribe + `setState` | `useSyncExternalStore` |
+
+## Rules
+
+- NEVER `useEffect(() => setSomething(derived), [dep])`
+- NEVER use effects for click/submit/change handlers
+- NEVER reset local state on prop change without trying `key` first
+- For debounced inputs: local state updates immediately; debounce only persistence/API calls
+- ALWAYS add cleanup when subscribing to external systems
+- Name effect functions for readability; use `useLayoutEffect` for DOM measurements before paint
+
+## Valid effect example
+
+```tsx
+useEffect(function connectToChatRoom() {
+  const connection = createConnection(roomId);
+  connection.connect();
+  return () => connection.disconnect();
+}, [roomId]);
+```
+
+## ESLint enforcement
+
+`eslint-plugin-react-you-might-not-need-an-effect` is enabled (warn) via `eslint.config.mjs`. Run `npm run lint`. React Hooks `set-state-in-effect` is also enabled via `eslint-config-next`.

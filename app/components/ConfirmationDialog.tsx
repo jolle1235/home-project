@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import Button from "./smallComponent/Button";
+import Button from "./Button";
 
 interface ConfirmationDialogProps {
   open: boolean;

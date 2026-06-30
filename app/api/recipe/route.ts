@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { Recipe } from "../../model/Recipe";
+import { Recipe } from "../../features/recipes/types/Recipe";
 import {
   getRecipes,
   createRecipe,
   updateRecipe,
   deleteRecipe,
-} from "../../lib/recipeUtils";
+} from "../../features/recipes/server/recipe.server";
 
 export async function GET() {
   try {
@@ -15,7 +15,7 @@ export async function GET() {
     console.error("Error fetching recipes:", error);
     return NextResponse.json(
       { error: "Failed to fetch recipes" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -23,12 +23,12 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const data = await request.json();
-    
+
     // Validate required fields
     if (!Array.isArray(data.ingredients)) {
       return NextResponse.json(
         { error: "Missing required fields: ingredients must be an array" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -43,18 +43,19 @@ export async function POST(request: Request) {
       recommendedPersonAmount: data.recommendedPersonAmount || 0,
       author: data.author || "",
     };
-    
-    console.log("Creating recipe:", { recipeName: recipe.recipeName, ingredientsCount: recipe.ingredients.length });
+
+    console.log("Creating recipe:", {
+      recipeName: recipe.recipeName,
+      ingredientsCount: recipe.ingredients.length,
+    });
     const newRecipe = await createRecipe(recipe as Recipe);
     console.log("Recipe created successfully:", newRecipe._id);
     return NextResponse.json(newRecipe);
   } catch (error) {
     console.error("Error creating recipe:", error);
-    const errorMessage = error instanceof Error ? error.message : "Failed to create recipe";
-    return NextResponse.json(
-      { error: errorMessage },
-      { status: 500 }
-    );
+    const errorMessage =
+      error instanceof Error ? error.message : "Failed to create recipe";
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
 
@@ -79,7 +80,7 @@ export async function PUT(request: Request) {
     console.error("Error updating recipe:", error);
     return NextResponse.json(
       { error: "Failed to update recipe" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -93,7 +94,7 @@ export async function DELETE(request: Request) {
     console.error("Error deleting recipe:", error);
     return NextResponse.json(
       { error: "Failed to delete recipe" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

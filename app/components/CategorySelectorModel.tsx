@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { IconButton } from "../components/IconButton";
 import { X } from "lucide-react";
-import { shoppinglistCategories } from "../constant/shoppinglistCategories";
+import { shoppinglistCategories } from "../features/shoppingList/types/shoppinglistCategories";
 
 type Props = {
   value?: string;

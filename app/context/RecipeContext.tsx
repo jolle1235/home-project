@@ -6,8 +6,8 @@ import React, {
   ReactNode,
   useEffect,
 } from "react";
-import { Recipe } from "../model/Recipe";
-import { WeekPlan } from "../model/weekPlan";
+import { Recipe } from "../features/recipes/types/Recipe";
+import { WeekPlan } from "../features/weekplanner/types/weekPlan";
 import { toast } from "react-toastify";
 import { saveWeekPlanToDatabase } from "../utils/apiHelperFunctions";
 
@@ -69,7 +69,7 @@ export function RecipeProvider({ children }: { children: ReactNode }) {
 
       newEntries.forEach((entry) => {
         const exists = combined.some(
-          (e) => e.date === entry.date && e.recipeId === entry.recipeId
+          (e) => e.date === entry.date && e.recipeId === entry.recipeId,
         );
 
         if (!exists) {
@@ -85,13 +85,13 @@ export function RecipeProvider({ children }: { children: ReactNode }) {
     toast.success(
       `Opskrift tilføjet til ${dates.length} ${
         dates.length === 1 ? "dato" : "datoer"
-      }`
+      }`,
     );
   };
 
   const removeRecipeFromWeekPlan = (date: string, recipeId: string) => {
     const newWeekPlan = weekPlan.filter(
-      (entry) => !(entry.date === date && entry.recipeId === recipeId)
+      (entry) => !(entry.date === date && entry.recipeId === recipeId),
     );
 
     save(newWeekPlan);

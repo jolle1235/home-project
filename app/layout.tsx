@@ -1,13 +1,12 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import NavBar from "./components/smallComponent/Navbar";
+import NavBar from "./components/Navbar";
 import { RecipeProvider } from "./context/RecipeContext";
-import { Providers } from "./providers"; // your TanStack provider
-import ToastProvider from "./components/ToastComponent";
 import Script from "next/script";
 import type { Metadata, Viewport } from "next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ConstantsProvider } from "./context/ConstantsContext";
+import ReactQueryProvider from "./providers/ReactQueryProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -76,7 +75,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col bg-`}
       >
-        <Providers>
+        <ReactQueryProvider>
           <RecipeProvider>
             <ConstantsProvider>
               <NavBar />
@@ -84,7 +83,7 @@ export default function RootLayout({
               <SpeedInsights />
             </ConstantsProvider>
           </RecipeProvider>
-        </Providers>
+        </ReactQueryProvider>
         <Script src="/sw-register.js" strategy="afterInteractive" />
       </body>
     </html>

@@ -1,5 +1,5 @@
 import { useState, ChangeEvent, ClipboardEvent, useEffect } from "react";
-import Button from "./smallComponent/Button";
+import Button from "./Button";
 
 interface ImageUploaderProps {
   onFileSelected: (file: File | null) => void;

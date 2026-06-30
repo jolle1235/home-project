@@ -61,6 +61,34 @@ const withPWA = require("next-pwa")({
 // ---- Final merged config ----
 
 const nextConfig: NextConfig = {
+  async rewrites() {
+    return [
+      { source: "/recipes", destination: "/features/recipes" },
+      { source: "/recipes/:path*", destination: "/features/recipes/:path*" },
+      { source: "/add-recipe", destination: "/features/recipes/add-recipe" },
+      {
+        source: "/add-recipe/:path*",
+        destination: "/features/recipes/add-recipe/:path*",
+      },
+      { source: "/drinks", destination: "/features/drinks" },
+      { source: "/drinks/:path*", destination: "/features/drinks/:path*" },
+      {
+        source: "/shoppinglist",
+        destination: "/features/shoppingList",
+      },
+      {
+        source: "/shoppinglist/:path*",
+        destination: "/features/shoppingList/:path*",
+      },
+      { source: "/weekPlanner", destination: "/features/weekplanner" },
+      {
+        source: "/weekPlanner/:path*",
+        destination: "/features/weekplanner/:path*",
+      },
+      { source: "/admin", destination: "/features/admin" },
+      { source: "/admin/:path*", destination: "/features/admin/:path*" },
+    ];
+  },
   headers: async () => [
     {
       source: "/sw.js",

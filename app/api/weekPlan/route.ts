@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import clientPromise from "../../lib/mongodb";
-import { WeekPlan } from "@/app/model/weekPlan";
+import { WeekPlan } from "@/app/features/weekplanner/types/weekPlan";
 
 const databaseName = process.env.MONGO_DATABASE_NAME;
 
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
           updatedAt: new Date(),
         },
       },
-      { upsert: true }
+      { upsert: true },
     );
 
     return NextResponse.json({ success: true });
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
     console.error("Failed to save week plan:", error);
     return NextResponse.json(
       { error: "Failed to save week plan" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
