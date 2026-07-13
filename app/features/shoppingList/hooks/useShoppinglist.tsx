@@ -79,7 +79,10 @@ export function useShoppingList(options: UseShoppingListOptions = {}) {
   });
 
   const updateList = (updater: (list: Ingredient[]) => Ingredient[]) => {
-    saveMutation.mutate(updater(shoppingList));
+    const current =
+      queryClient.getQueryData<Ingredient[]>(SHOPPING_LIST_QUERY_KEY) ??
+      shoppingList;
+    saveMutation.mutate(updater(current));
   };
 
   const setList = (newList: Ingredient[]) => {
@@ -154,11 +157,17 @@ export function useShoppingList(options: UseShoppingListOptions = {}) {
   };
 
   const sortByStore = () => {
-    setList(sortByCenter(shoppingList));
+    const current =
+      queryClient.getQueryData<Ingredient[]>(SHOPPING_LIST_QUERY_KEY) ??
+      shoppingList;
+    setList(sortByCenter(current));
   };
 
   const clearMarked = () => {
-    setList(shoppingList.filter((item) => !item.marked));
+    const current =
+      queryClient.getQueryData<Ingredient[]>(SHOPPING_LIST_QUERY_KEY) ??
+      shoppingList;
+    setList(current.filter((item) => !item.marked));
   };
 
   const clearList = () => {

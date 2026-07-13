@@ -195,8 +195,17 @@ export function AddIngredientModal({
                   {searchTerm.trim() && (
                     <AddIngredientComponent
                       onAdd={async (item) => {
-                        await createItem(item);
-                        handleIngredientAddedFromPicker(item);
+                        const created = (await createItem(item)) as Item & {
+                          id?: string;
+                        };
+                        const createdId = created.id ?? created._id;
+                        handleIngredientAddedFromPicker({
+                          ...item,
+                          item: {
+                            ...item.item,
+                            _id: createdId ? String(createdId) : item.item._id,
+                          },
+                        });
                       }}
                       itemName={searchTerm}
                     />
@@ -207,6 +216,7 @@ export function AddIngredientModal({
                       key={`${item._id || item.name}-${index}`}
                       onAdd={handleIngredientAddedFromPicker}
                       itemName={item.name}
+                      itemId={item._id}
                       InputCategory={item.category}
                       defaultUnit={item.defaultUnit}
                     />

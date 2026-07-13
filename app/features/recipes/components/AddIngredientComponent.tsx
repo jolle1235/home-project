@@ -10,6 +10,7 @@ import { normalizeIngredient } from "../../shoppingList/utils/shoppinglistHelper
 interface Props {
   onAdd: (Ingredient: Ingredient) => void;
   itemName: string;
+  itemId?: string;
   InputCategory?: string;
   defaultUnit?: string;
   onItemDeleted?: () => void;
@@ -18,6 +19,7 @@ interface Props {
 export function AddIngredientComponent({
   onAdd,
   itemName,
+  itemId,
   InputCategory,
   defaultUnit,
   onItemDeleted,
@@ -117,6 +119,7 @@ export function AddIngredientComponent({
 
     const newIngredient = normalizeIngredient({
       itemName,
+      itemId,
       quantity,
       unit,
       defaultUnit,

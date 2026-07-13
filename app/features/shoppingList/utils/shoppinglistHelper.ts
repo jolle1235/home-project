@@ -3,12 +3,14 @@ import { Ingredient } from "../../../model/Ingredient";
 
 export function normalizeIngredient({
   itemName,
+  itemId,
   quantity,
   unit,
   defaultUnit,
   category,
 }: {
   itemName: string;
+  itemId?: string;
   quantity?: number | "";
   unit?: string;
   defaultUnit?: string;
@@ -24,7 +26,7 @@ export function normalizeIngredient({
   return {
     _id: "unknown",
     item: {
-      _id: "unknown",
+      _id: itemId || "unknown",
       name: itemName,
       category: category || "unknown",
       defaultUnit: defaultUnit || finalUnit,

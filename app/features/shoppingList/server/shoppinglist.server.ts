@@ -3,6 +3,7 @@
 import clientPromise from "../../../lib/mongodb";
 
 import { Ingredient } from "../../../model/Ingredient";
+import { ObjectId } from "mongodb";
 
 const databaseName = process.env.MONGO_DATABASE_NAME;
 
@@ -34,7 +35,48 @@ export async function getShoppingList(): Promise<Ingredient[]> {
       listId: LIST_ID,
     });
 
-    return doc?.items ?? [];
+    const items = doc?.items ?? [];
+    if (items.length === 0) return [];
+
+    const itemsCollection = db.collection("items");
+    const enriched = await Promise.all(
+      items.map(async (ingredient) => {
+        const storedCategory = ingredient.item?.category;
+        if (storedCategory && storedCategory !== "unknown") {
+          return ingredient;
+        }
+
+        let dbItem = null;
+        if (
+          ingredient.item?._id &&
+          ingredient.item._id !== "unknown" &&
+          ObjectId.isValid(ingredient.item._id)
+        ) {
+          dbItem = await itemsCollection.findOne({
+            _id: new ObjectId(ingredient.item._id),
+          });
+        } else if (ingredient.item?.name) {
+          dbItem = await itemsCollection.findOne({
+            name: ingredient.item.name,
+          });
+        }
+
+        if (dbItem?.category) {
+          return {
+            ...ingredient,
+            item: {
+              ...ingredient.item,
+              category: dbItem.category,
+              _id: ingredient.item._id || String(dbItem._id),
+            },
+          };
+        }
+
+        return ingredient;
+      }),
+    );
+
+    return enriched;
   } catch (error) {
     console.error(error);
 
@@ -61,6 +103,25 @@ export async function saveShoppingList(items: Ingredient[]): Promise<void> {
         upsert: true,
       },
     );
+
+    const itemsCollection = db.collection("items");
+    for (const ingredient of items) {
+      const { item } = ingredient;
+      if (!item?.category || item.category === "unknown") continue;
+
+      const filter =
+        item._id && item._id !== "unknown" && ObjectId.isValid(item._id)
+          ? { _id: new ObjectId(item._id) }
+          : item.name
+            ? { name: item.name }
+            : null;
+
+      if (!filter) continue;
+
+      await itemsCollection.updateOne(filter, {
+        $set: { category: item.category },
+      });
+    }
   } catch (error) {
     console.error(error);
 
