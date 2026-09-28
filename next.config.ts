@@ -61,6 +61,13 @@ const withPWA = require("next-pwa")({
 // ---- Final merged config ----
 
 const nextConfig: NextConfig = {
+  // Drinks are recipes with type "drink"; old drinks links go to that view.
+  async redirects() {
+    return [
+      { source: "/drinks", destination: "/recipes?type=drink", permanent: false },
+      { source: "/drinks/:path*", destination: "/recipes?type=drink", permanent: false },
+    ];
+  },
   async rewrites() {
     return [
       { source: "/recipes", destination: "/features/recipes" },
@@ -70,8 +77,6 @@ const nextConfig: NextConfig = {
         source: "/add-recipe/:path*",
         destination: "/features/recipes/add-recipe/:path*",
       },
-      { source: "/drinks", destination: "/features/drinks" },
-      { source: "/drinks/:path*", destination: "/features/drinks/:path*" },
       {
         source: "/shoppinglist",
         destination: "/features/shoppingList",
@@ -100,11 +105,6 @@ const nextConfig: NextConfig = {
       ],
     },
   ],
-  images: {
-    // Imported images are copied into /api/images on save; mummum.dk is
-    // only here for recipes imported before that.
-    remotePatterns: [{ protocol: "https", hostname: "mummum.dk" }],
-  },
   webpack: (config) => {
     // your custom webpack changes here
     return config;

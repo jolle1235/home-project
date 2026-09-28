@@ -5,6 +5,7 @@ import { Ingredient } from "../../../model/Ingredient";
 import { maxRecipePersons } from "../../../utils/validationVariables";
 import { useParams } from "next/navigation";
 import Image from "next/image";
+import { isRemoteUrl } from "@/app/utils/stringUtils";
 import Link from "next/link";
 import { useShoppingList } from "../../shoppingList/hooks/useShoppinglist";
 import { toast } from "react-toastify";
@@ -150,6 +151,7 @@ export default function RecipeDetailsPage() {
                   className="object-cover"
                   src={recipe?.image || "/fallback.jpg"}
                   alt={recipe?.recipeName || "Recipe image"}
+                  unoptimized={isRemoteUrl(recipe?.image)}
                   fill
                   sizes="(min-width: 1024px) 50vw, 100vw"
                 />

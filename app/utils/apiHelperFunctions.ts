@@ -1,6 +1,5 @@
 "use cliet";
 import { Item } from "../model/Item";
-import { Ingredient } from "../model/Ingredient";
 import { Recipe } from "../features/recipes/types/Recipe";
 import { WeekPlan } from "../features/weekplanner/types/weekPlan";
 
@@ -18,44 +17,6 @@ export async function searchItem(searchTerm: string): Promise<Item[]> {
   } catch (error) {
     console.error("Error fetching Items:", error);
     return [];
-  }
-}
-
-export async function createItem(Ingredient: Ingredient): Promise<Item> {
-  const newItem = {
-    name: Ingredient.item.name,
-    category: Ingredient.item.category,
-    defaultUnit: Ingredient.unit,
-  };
-
-  try {
-    const response = await fetch("/api/item", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newItem),
-    });
-    if (!response.ok) throw new Error("Failed to create Item");
-    return await response.json();
-  } catch (error) {
-    console.error("Error creating Item:", error);
-    throw error;
-  }
-}
-
-export async function removeItem(itemName: string): Promise<void> {
-  try {
-    const response = await fetch("/api/item", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: itemName }), // Send name instead of ID
-    });
-
-    if (!response.ok) throw new Error("Failed to remove item");
-
-    console.log(`Item '${itemName}' removed successfully`);
-  } catch (error) {
-    console.error("Error removing item:", error);
-    throw error;
   }
 }
 

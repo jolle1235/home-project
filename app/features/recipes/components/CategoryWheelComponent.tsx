@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Constant } from "../../../model/Constant";
+import { ToggleChip } from "../../../components/ToggleChip";
 
 interface CategoryWheelProps {
   categories: Constant[];
@@ -18,19 +19,12 @@ export function CategoryWheelComponent({
     <div className="w-full">
       <div className="flex gap-2 py-1 px-1 overflow-x-auto scrollbar-hide">
         {categories.map((category) => (
-          <button
+          <ToggleChip
             key={category._id}
-            type="button"
+            label={category.name}
+            pressed={selectedCategories.includes(category.name)}
             onClick={() => onCategoryToggle(category.name)}
-            aria-pressed={selectedCategories.includes(category.name)}
-            className={`px-3 sm:px-4 py-1.5 rounded-full whitespace-nowrap text-xs sm:text-sm font-medium transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
-              selectedCategories.includes(category.name)
-                ? "bg-secondary text-foreground hover:bg-secondary-hover"
-                : "bg-soft text-foreground hover:bg-secondary/60"
-            }`}
-          >
-            {category.name}
-          </button>
+          />
         ))}
       </div>
     </div>

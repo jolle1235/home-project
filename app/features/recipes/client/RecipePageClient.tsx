@@ -9,18 +9,28 @@ import { RecipeCardComponent } from "../components/RecipeCardComponent";
 import { CategoryWheelComponent } from "../components/CategoryWheelComponent";
 import { TimeRangeSelectorComponent } from "../components/TimeRangeSelectorComponent";
 
-import { Recipe } from "../types/Recipe";
+import { isDrink, Recipe, RecipeType } from "../types/Recipe";
 
 import { useConstants } from "../../../context/ConstantsContext";
 
 import { IconButton } from "../../../components/IconButton";
 import Button from "../../../components/Button";
+import { ToggleChip } from "../../../components/ToggleChip";
 
 import { useScrollRefresh } from "../../../hooks/useScrollRefresh";
 import { PullToRefreshIndicator } from "../../../components/PullToRefreshIndicator";
 
+type Kind = RecipeType | "all";
+
+const KIND_OPTIONS: { value: Kind; label: string }[] = [
+  { value: "recipe", label: "Mad" },
+  { value: "drink", label: "Drinks" },
+  { value: "all", label: "Alle" },
+];
+
 type Props = {
   initialRecipes: Recipe[];
+  initialKind: Kind;
 };
 
 const fetchRecipes = async (): Promise<Recipe[]> => {
@@ -33,8 +43,10 @@ const fetchRecipes = async (): Promise<Recipe[]> => {
   return response.json();
 };
 
-export default function RecipePageClient({ initialRecipes }: Props) {
+export default function RecipePageClient({ initialRecipes, initialKind }: Props) {
   const { categories } = useConstants();
+
+  const [kind, setKind] = useState<Kind>(initialKind);
 
   const [isFilterSettingsOpen, setIsFilterSettingsOpen] = useState(false);
 
@@ -59,15 +71,19 @@ export default function RecipePageClient({ initialRecipes }: Props) {
 
   const { isRefreshing } = useScrollRefresh(refetch);
 
-  const handleOpen = () => router.push("/add-recipe");
+  const handleOpen = () =>
+    router.push(kind === "drink" ? "/add-recipe?type=drink" : "/add-recipe");
 
   const filteredRecipes = useMemo(() => {
     const lowerCaseSearchTerm = searchTerm.toLowerCase();
 
     return recipes.filter((recipe) => {
-      if (!recipe?.recipeName || !recipe.time) {
+      if (!recipe?.recipeName) {
         return false;
       }
+
+      const matchesKind =
+        kind === "all" || (kind === "drink") === isDrink(recipe);
 
       const matchesCategory =
         selectedCategories.length === 0 ||
@@ -75,17 +91,19 @@ export default function RecipePageClient({ initialRecipes }: Props) {
           recipe.categories?.includes(category),
         );
 
+      // Recipes without a time (common for imports) only drop out when a
+      // minimum time is set.
+      const time = recipe.time || 0;
       const matchesTime =
-        recipe.time >= timeRange[0] &&
-        (timeRange[1] === 60 || recipe.time <= timeRange[1]);
+        time >= timeRange[0] && (timeRange[1] === 60 || time <= timeRange[1]);
 
       const matchesSearch = recipe.recipeName
         .toLowerCase()
         .includes(lowerCaseSearchTerm);
 
-      return matchesCategory && matchesTime && matchesSearch;
+      return matchesKind && matchesCategory && matchesTime && matchesSearch;
     });
-  }, [recipes, selectedCategories, timeRange, searchTerm]);
+  }, [recipes, kind, selectedCategories, timeRange, searchTerm]);
 
   const handleCategoryToggle = (category: string) => {
     setSelectedCategories((prev) =>
@@ -108,7 +126,7 @@ export default function RecipePageClient({ initialRecipes }: Props) {
             <div className="flex flex-col gap-1">
               <div className="flex items-baseline gap-3">
                 <h1 className="text-xl sm:text-2xl font-semibold text-foreground">
-                  Opskrifter
+                  {kind === "drink" ? "Drinks" : "Opskrifter"}
                 </h1>
 
                 {!isLoading && !error && (
@@ -154,12 +172,23 @@ export default function RecipePageClient({ initialRecipes }: Props) {
                   icon={Plus}
                   variant="primary"
                   size="md"
-                  aria-label="Tilføj opskrift"
+                  aria-label={kind === "drink" ? "Tilføj drink" : "Tilføj opskrift"}
                   onClick={handleOpen}
                 />
               </div>
             </div>
           </div>
+        </div>
+
+        <div role="group" aria-label="Vis" className="mt-4 flex gap-2">
+          {KIND_OPTIONS.map((option) => (
+            <ToggleChip
+              key={option.value}
+              label={option.label}
+              pressed={kind === option.value}
+              onClick={() => setKind(option.value)}
+            />
+          ))}
         </div>
 
         {/* Filters */}

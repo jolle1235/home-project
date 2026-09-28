@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Personal recipe / meal-plan / shopping-list / drinks PWA. Next.js 16 (App Router, Turbopack in dev), React 19, MongoDB (official driver, no ORM), TanStack Query, Tailwind 3, react-hook-form + Yup. Deployed on Vercel (home-project-weld.vercel.app). User-facing text and toasts are in **Danish**.
+Personal recipe / meal-plan / shopping-list PWA (drinks are recipes too). Next.js 16 (App Router, Turbopack in dev), React 19, MongoDB (official driver, no ORM), TanStack Query, Tailwind 3, react-hook-form + Yup. Deployed on Vercel (home-project-weld.vercel.app). User-facing text and toasts are in **Danish**.
 
 ## Commands
 
@@ -26,7 +26,6 @@ Pages live under `app/features/<feature>/` and get their public URLs from **rewr
 | `/add-recipe` | `features/recipes/add-recipe` |
 | `/shoppinglist` | `features/shoppingList` |
 | `/weekPlanner` | `features/weekplanner` |
-| `/drinks`, `/drinks/:id` | `features/drinks` |
 | `/admin` | `features/admin` |
 
 `/` redirects to `/recipes`. A new feature page needs a matching rewrite pair (`/x` and `/x/:path*`), and usually a `Navbar` entry too.
@@ -41,13 +40,13 @@ Recent refactors moved code toward this layout. `recipes` and `shoppingList` fol
 - `hooks/`: TanStack Query hooks with optimistic `onMutate` + rollback + `invalidateQueries` (reference: `features/shoppingList/hooks/useShoppinglist.tsx`)
 - `components/`, `types/`, `utils/`, `constants.ts` (query keys, API paths)
 
-Older areas (`drinks`, `weekplanner`, `admin`) are still `"use client"` pages that fetch manually or use React context.
+Older areas (`weekplanner`, `admin`) are still `"use client"` pages that fetch manually or use React context.
 
 ## API routes (`app/api/*/route.ts`)
 
 Thin handlers. They delegate to a feature's `server/` module where one exists and return `NextResponse.json(...)`, or `{ error }` with a status code on failure.
 
-- `recipe`, `recipe/[id]`, `drink`, `drink/[id]`: CRUD (DELETE takes `_id` in the JSON body)
+- `recipe`, `recipe/[id]`: CRUD (DELETE takes `_id` in the JSON body)
 - `item`: ingredient item catalogue, search via `?term=`
 - `shopping-list`: one document, `listId: "default"`; PUT replaces the whole array. Saving also writes item categories back to `items`.
 - `weekPlan`: one document, `type: "weekPlan"`
@@ -58,7 +57,7 @@ Thin handlers. They delegate to a feature's `server/` module where one exists an
 ## Data layer
 
 - `app/lib/mongodb.ts` exports a shared `clientPromise`, cached on `global` in dev. Always reuse it. (`images/[id]` still opens its own `MongoClient`, which is legacy.)
-- Collections: `recipes`, `items`, `shoppingList`, `weekPlan`, `drinks`, `images`, `recipeCategories`, `unitTypes`.
+- Collections: `recipes`, `items`, `shoppingList`, `weekPlan`, `images`, `recipeCategories`, `unitTypes`. Drinks are recipes with `type: "drink"` (missing `type` = food); `/drinks` and `/drinks/*` redirect to the drinks view of `/recipes` (see `redirects` in `next.config.ts`).
 - Shared models: `app/model/` (`Item`, `Ingredient`, `Constant`). Feature types: `features/*/types/`. `_id` is always a string on the client.
 
 ## Global state
@@ -77,6 +76,7 @@ Prefer TanStack Query hooks over adding new contexts.
 - **Styling:** Tailwind with the semantic color tokens from `tailwind.config.js` (`background`, `foreground`, `primary`, `secondary`, `surface`, `soft`, `danger`, `muted`, each with a `-hover` variant where defined). They are backed by CSS variables in `app/globals.css`. Don't hard-code hex values. Icons come from `lucide-react`.
 - **UI is mobile-first** (PWA, pull-to-refresh via `hooks/useScrollRefresh` + `components/PullToRefreshIndicator`). For design work, see `.agents/skills/ui-design-expert/SKILL.md`.
 - **Validation:** limits live in `app/utils/validationVariables.ts` and Yup schemas in `app/utils/validationSchema.ts`.
+- **Ingredient input:** recipes (incl. drinks) and the shopping list both use `features/recipes/components/IngredientEditor.tsx`, which works on editor rows (`utils/ingredientRows.ts`: `rowsToIngredients` / `ingredientsToRows`). Pass `allowSections={false}` where sections and reordering make no sense.
 - **Imports:** a mix of relative paths and the `@/*` alias. The alias maps to the repo root, so write `@/app/...`.
 
 ## Gotchas

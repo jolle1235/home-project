@@ -64,6 +64,11 @@ export function sectionRow(name = ""): SectionRow {
   return { key: newRowKey(), kind: "section", name };
 }
 
+// A blank editor: just the empty "add" row.
+export function emptyEditorRows(): EditorRow[] {
+  return [emptyIngredientRow()];
+}
+
 export function isEmptyRow(row: EditorRow): boolean {
   return row.kind === "ingredient" && !row.name.trim() && !row.quantity.trim();
 }

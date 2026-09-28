@@ -1,42 +1,6 @@
 import { shoppinglistCategories } from "../types/shoppinglistCategories";
 import { Ingredient } from "../../../model/Ingredient";
 
-export function normalizeIngredient({
-  itemName,
-  itemId,
-  quantity,
-  unit,
-  defaultUnit,
-  category,
-}: {
-  itemName: string;
-  itemId?: string;
-  quantity?: number | "";
-  unit?: string;
-  defaultUnit?: string;
-  category?: string;
-}) {
-  const finalQuantity =
-    quantity === "" || quantity === undefined || quantity === null
-      ? 1
-      : Number(quantity);
-
-  const finalUnit = unit || "stk";
-
-  return {
-    _id: "unknown",
-    item: {
-      _id: itemId || "unknown",
-      name: itemName,
-      category: category || "unknown",
-      defaultUnit: defaultUnit || finalUnit,
-    },
-    quantity: finalQuantity,
-    unit: finalUnit,
-    marked: false,
-  };
-}
-
 export function getCategoryIcon(category?: string) {
   if (!category) return null;
 

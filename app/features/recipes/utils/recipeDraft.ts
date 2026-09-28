@@ -1,4 +1,4 @@
-import { Recipe } from "../types/Recipe";
+import { Recipe, RecipeType, toRecipeType } from "../types/Recipe";
 import { ScrapedRecipe } from "../types/ScrapedRecipe";
 import {
   maxRecipeAuthorLength,
@@ -9,6 +9,7 @@ import {
 } from "../../../utils/validationVariables";
 import {
   EditorRow,
+  emptyEditorRows,
   ingredientsToRows,
   linesToRows,
   withTrailingEmptyRow,
@@ -28,9 +29,10 @@ export interface RecipeDraft {
   rows: EditorRow[];
   // Not editable in the form, but kept so an edit doesn't erase it.
   author: string;
+  type: RecipeType;
 }
 
-export function emptyDraft(): RecipeDraft {
+export function emptyDraft(type: RecipeType = "recipe"): RecipeDraft {
   return {
     recipeName: "",
     description: "",
@@ -39,8 +41,9 @@ export function emptyDraft(): RecipeDraft {
     image: "",
     sourceUrl: "",
     categories: [],
-    rows: withTrailingEmptyRow([]),
+    rows: emptyEditorRows(),
     author: "",
+    type,
   };
 }
 
@@ -55,6 +58,7 @@ export function recipeToDraft(recipe: Recipe): RecipeDraft {
     categories: recipe.categories || [],
     rows: ingredientsToRows(recipe.ingredients || []),
     author: recipe.author || "",
+    type: toRecipeType(recipe.type),
   };
 }
 
@@ -63,6 +67,7 @@ export function scrapedToDraft(
   { units, categories }: { units: string[]; categories: string[] },
 ): RecipeDraft {
   const keywords = scraped.keywords.map((k) => k.toLowerCase());
+  const looksLikeDrink = keywords.some((k) => /\b(drinks?|cocktails?)\b/.test(k));
 
   return {
     recipeName: scraped.title.slice(0, maxRecipeNameLength),
@@ -77,6 +82,7 @@ export function scrapedToDraft(
     categories: categories.filter((c) => keywords.includes(c.toLowerCase())),
     rows: withTrailingEmptyRow(linesToRows(scraped.ingredients, units)),
     author: scraped.author.slice(0, maxRecipeAuthorLength),
+    type: looksLikeDrink ? "drink" : "recipe",
   };
 }
 

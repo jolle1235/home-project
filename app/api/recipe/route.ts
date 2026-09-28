@@ -1,11 +1,27 @@
 import { NextResponse } from "next/server";
-import { Recipe } from "../../features/recipes/types/Recipe";
+import { Recipe, toRecipeType } from "../../features/recipes/types/Recipe";
 import {
   getRecipes,
   createRecipe,
   updateRecipe,
   deleteRecipe,
 } from "../../features/recipes/server/recipe.server";
+
+// The stored fields, with defaults, from a POST/PUT body.
+function toRecipeFields(data: any): Omit<Recipe, "_id"> {
+  return {
+    recipeName: data.recipeName || "",
+    description: data.description || "",
+    image: data.image || "",
+    sourceUrl: data.sourceUrl || "",
+    ingredients: Array.isArray(data.ingredients) ? data.ingredients : [],
+    time: data.time || 0,
+    categories: data.categories || [],
+    recommendedPersonAmount: data.recommendedPersonAmount || 0,
+    author: data.author || "",
+    type: toRecipeType(data.type),
+  };
+}
 
 export async function GET() {
   try {
@@ -32,17 +48,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const recipe: Omit<Recipe, "_id"> = {
-      recipeName: data.recipeName || "",
-      description: data.description || "",
-      image: data.image || "",
-      sourceUrl: data.sourceUrl || "",
-      ingredients: data.ingredients,
-      time: data.time || 0,
-      categories: data.categories || [],
-      recommendedPersonAmount: data.recommendedPersonAmount || 0,
-      author: data.author || "",
-    };
+    const recipe = toRecipeFields(data);
 
     console.log("Creating recipe:", {
       recipeName: recipe.recipeName,
@@ -62,18 +68,7 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
   try {
     const data = await request.json();
-    const recipe: Recipe = {
-      _id: data._id,
-      recipeName: data.recipeName || "",
-      description: data.description || "",
-      image: data.image || "",
-      sourceUrl: data.sourceUrl || "",
-      ingredients: Array.isArray(data.ingredients) ? data.ingredients : [],
-      time: data.time || 0,
-      categories: data.categories || [],
-      recommendedPersonAmount: data.recommendedPersonAmount || 0,
-      author: data.author || "",
-    };
+    const recipe: Recipe = { _id: data._id, ...toRecipeFields(data) };
     const updatedRecipe = await updateRecipe(recipe);
     return NextResponse.json(updatedRecipe);
   } catch (error) {

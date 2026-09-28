@@ -2,9 +2,6 @@
 export const minPasswordLength = 8;
 export const passwordSpecialChars = /[@$!%*?&]/;
 
-// Item search validation
-export const maxItemSearchLength = 50;
-
 // Weight validation
 export const maxWeight = 10000;
 export const minWeight = 0;
