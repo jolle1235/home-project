@@ -1,132 +1,55 @@
 import { NextResponse } from "next/server";
-import * as cheerio from "cheerio";
+import { SafeFetchError, SafeFetchErrorCode } from "@/app/lib/safeFetch";
+import { withScheme } from "@/app/utils/stringUtils";
+import { scrapeRecipe } from "@/app/features/recipes/server/scrape";
 
-function getFirstImage(image: any): string | null {
-  if (!image) return null;
-
-  if (typeof image === "string") return image;
-
-  if (Array.isArray(image)) {
-    const first = image[0];
-    if (typeof first === "string") return first;
-    if (typeof first === "object") return first?.url || null;
-  }
-
-  if (typeof image === "object") {
-    return image.url || null;
-  }
-
-  return null;
-}
-
-function extractRecipe($: cheerio.CheerioAPI) {
-  let recipe: any = null;
-
-  $('script[type="application/ld+json"]').each((_, el) => {
-    try {
-      const json = JSON.parse($(el).html() || "{}");
-      const arr = Array.isArray(json) ? json : [json];
-
-      for (const obj of arr) {
-        if (obj["@type"] === "Recipe") {
-          recipe = obj;
-          return false;
-        }
-
-        if (obj["@graph"]) {
-          const found = obj["@graph"].find((g: any) => g["@type"] === "Recipe");
-          if (found) {
-            recipe = found;
-            return false;
-          }
-        }
-      }
-    } catch {}
-  });
-
-  return recipe;
-}
-
-function normalizeInstructions(recipe: any): string[] {
-  const instructions = recipe?.recipeInstructions;
-  if (!instructions) return [];
-
-  if (typeof instructions === "string") {
-    return [instructions];
-  }
-
-  if (Array.isArray(instructions)) {
-    return instructions
-      .map((i: any) => (typeof i === "string" ? i : i?.text))
-      .filter(Boolean);
-  }
-
-  if (typeof instructions === "object") {
-    if (typeof instructions.text === "string") {
-      return [instructions.text];
-    }
-    if (Array.isArray(instructions.itemListElement)) {
-      return instructions.itemListElement
-        .map((i: any) => (typeof i === "string" ? i : i?.text))
-        .filter(Boolean);
-    }
-  }
-
-  return [];
-}
+const ERRORS: Record<SafeFetchErrorCode, { status: number; error: string }> = {
+  invalid_url: { status: 400, error: "Linket er ikke gyldigt." },
+  blocked: { status: 400, error: "Linket peger på en intern adresse." },
+  http: { status: 502, error: "Siden svarede med en fejl." },
+  not_found: { status: 422, error: "Siden findes ikke – tjek linket." },
+  forbidden: { status: 422, error: "Siden tillader ikke automatisk hentning." },
+  too_large: { status: 413, error: "Siden er for stor til at blive hentet." },
+  timeout: { status: 504, error: "Siden svarede ikke i tide." },
+  network: { status: 502, error: "Kunne ikke hente siden." },
+};
 
 export async function POST(req: Request) {
+  let url: unknown;
   try {
-    const { url } = await req.json();
+    ({ url } = await req.json());
+  } catch {
+    return NextResponse.json(
+      { success: false, error: "Ugyldig forespørgsel." },
+      { status: 400 },
+    );
+  }
 
-    if (!url) {
-      return NextResponse.json({ success: false, error: "Missing URL" });
+  if (typeof url !== "string" || !url.trim()) {
+    return NextResponse.json(
+      { success: false, error: "Indsæt et link først." },
+      { status: 400 },
+    );
+  }
+
+  try {
+    const recipe = await scrapeRecipe(withScheme(url));
+    if (!recipe) {
+      return NextResponse.json(
+        { success: false, error: "Fandt ingen opskrift på siden." },
+        { status: 422 },
+      );
     }
-
-    // Validate URL
-    try {
-      new URL(url);
-    } catch {
-      return NextResponse.json({ success: false, error: "Invalid URL" });
+    return NextResponse.json({ success: true, partial: recipe.partial, recipe });
+  } catch (err) {
+    if (err instanceof SafeFetchError) {
+      const { status, error } = ERRORS[err.code];
+      return NextResponse.json({ success: false, error }, { status });
     }
-
-    let html = "";
-
-    try {
-      const res = await fetch(url, {
-        headers: { "User-Agent": "Mozilla/5.0" },
-      });
-      html = await res.text();
-    } catch {
-      return NextResponse.json({
-        success: false,
-        error: "Could not fetch URL",
-      });
-    }
-
-    const $ = cheerio.load(html);
-    const recipe = extractRecipe($);
-
-    return NextResponse.json({
-      success: true,
-
-      title: recipe?.name || $("h1").first().text() || $("title").text() || "",
-
-      description:
-        recipe?.description ||
-        $("meta[name='description']").attr("content") ||
-        "",
-
-      image: getFirstImage(recipe?.image),
-
-      ingredients: recipe?.recipeIngredient || [],
-
-      instructions: normalizeInstructions(recipe),
-    });
-  } catch (err: any) {
-    return NextResponse.json({
-      success: false,
-      error: err.message,
-    });
+    console.error("Recipe scrape failed:", err);
+    return NextResponse.json(
+      { success: false, error: "Noget gik galt under importen." },
+      { status: 500 },
+    );
   }
 }

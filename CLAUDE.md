@@ -9,9 +9,10 @@ npm run dev                 # next dev --turbopack (PWA/service worker disabled 
 npm run build && npm start  # needed to test PWA / service worker
 npm run lint                # ESLint 9 flat config (eslint.config.mjs)
 npm run generate-pwa-icons  # regenerates public/icon/* via sharp
+npm test                    # vitest: unit tests for pure utils (app/**/*.test.ts)
 ```
 
-There is no test suite. CI (`.github/workflows/lint.yml`) runs `npm ci && npm run lint` on Node 20 only.
+Tests cover only pure logic (ingredient parsing, recipe scraping, text tidying, safeFetch). CI (`.github/workflows/lint.yml`) runs `npm ci && npm run lint` on Node 20 only; it does not run the tests.
 
 Env (`.env.local`, git-ignored): `MONGODB_URI`, `MONGO_DATABASE_NAME`.
 
@@ -51,12 +52,12 @@ Thin handlers. They delegate to a feature's `server/` module where one exists an
 - `shopping-list`: one document, `listId: "default"`; PUT replaces the whole array. Saving also writes item categories back to `items`.
 - `weekPlan`: one document, `type: "weekPlan"`
 - `admin/recipeCategories`, `admin/unitTypes`: name-only constants
-- `upload` → stores the image buffer in the `images` collection; served by `images/[id]`
-- `scrape`: fetches a URL and extracts the JSON-LD `Recipe` with cheerio; `features/recipes/utils/mummumRecipeConvertion.ts` maps it to a `Recipe`
+- `upload` → stores the image buffer in the `images` collection; served by `images/[id]`. Also accepts JSON `{ url }` to copy a remote image (used for imported recipe images)
+- `scrape`: imports a recipe from any URL via `features/recipes/server/scrape/`: extractor chain (site adapters → JSON-LD → microdata → OpenGraph) using cheerio, fetched through `app/lib/safeFetch.ts` (blocks internal addresses). `features/recipes/utils/recipeDraft.ts` turns the result into form state. To support a site without schema.org data, add an entry to `siteAdapters.ts`
 
 ## Data layer
 
-- `app/lib/mongodb.ts` exports a shared `clientPromise`, cached on `global` in dev. Always reuse it. (`upload` and `images/[id]` still open their own `MongoClient`, which is legacy.)
+- `app/lib/mongodb.ts` exports a shared `clientPromise`, cached on `global` in dev. Always reuse it. (`images/[id]` still opens its own `MongoClient`, which is legacy.)
 - Collections: `recipes`, `items`, `shoppingList`, `weekPlan`, `drinks`, `images`, `recipeCategories`, `unitTypes`.
 - Shared models: `app/model/` (`Item`, `Ingredient`, `Constant`). Feature types: `features/*/types/`. `_id` is always a string on the client.
 
@@ -87,3 +88,13 @@ Prefer TanStack Query hooks over adding new contexts.
 - `app/utils/apiHelperFunctions.ts` starts with a `"use cliet"` typo, so the directive does nothing.
 - `getRecipes()` caps results at 50.
 - Unused dependencies: MUI/emotion, react-dnd, amqplib, next-connect, multer. Don't build on them without asking.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

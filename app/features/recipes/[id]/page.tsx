@@ -311,6 +311,11 @@ export default function RecipeDetailsPage() {
                                       />
                                       <span className="text-sm sm:text-base font-medium text-foreground">
                                         {ingredient.item.name}
+                                        {ingredient.notes && (
+                                          <span className="ml-1 font-normal text-muted-foreground">
+                                            ({ingredient.notes})
+                                          </span>
+                                        )}
                                       </span>
                                     </label>
                                     <span className="inline-flex items-center justify-center rounded-full bg-soft px-3 py-1 text-xs sm:text-sm font-medium text-foreground whitespace-nowrap">
@@ -351,7 +356,7 @@ export default function RecipeDetailsPage() {
               <h3 className="text-lg font-semibold text-foreground mb-3">
                 Beskrivelse
               </h3>
-              <p className="whitespace-pre-line text-sm sm:text-base leading-relaxed text-foreground">
+              <p className="whitespace-pre-wrap break-words text-sm sm:text-base leading-relaxed text-foreground">
                 {recipe?.description}
               </p>
             </div>

@@ -12,6 +12,7 @@ import { IngredientsList } from "../../recipes/components/ShowIngrediens";
 import Button from "../../../components/Button";
 import { IconButton } from "../../../components/IconButton";
 import { X } from "lucide-react";
+import { uploadImageFile } from "../../../utils/apiHelperFunctions";
 
 interface Props {
   handleClose: () => void;
@@ -52,16 +53,8 @@ export function AddDrinkModalComponent({ handleClose }: Props) {
 
     // Upload image if file selected
     if (imageFile) {
-      const formData = new FormData();
-      formData.append("image", imageFile);
       try {
-        const response = await fetch("/api/upload", {
-          method: "POST",
-          body: formData,
-        });
-        if (!response.ok) throw new Error("Image upload failed.");
-        const uploadData = await response.json();
-        uploadedImageUrl = uploadData.imageUrl;
+        uploadedImageUrl = await uploadImageFile(imageFile);
         setImageUrl(uploadedImageUrl);
       } catch (error) {
         console.error("Error uploading file:", error);

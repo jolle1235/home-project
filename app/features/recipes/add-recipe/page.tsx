@@ -1,356 +1,386 @@
 "use client";
-import React, { useEffect, useRef, useState, Suspense } from "react";
+import React, { ClipboardEvent, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Item } from "../../../model/Item";
-import { Ingredient } from "../../../model/Ingredient";
-import { Recipe } from "../types/Recipe";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useForm } from "react-hook-form";
+import {
+  Control,
+  useForm,
+  UseFormRegister,
+  UseFormSetValue,
+  useWatch,
+} from "react-hook-form";
+import * as Yup from "yup";
+import { toast } from "react-toastify";
+import { Recipe } from "../types/Recipe";
+import { ScrapedRecipe } from "../types/ScrapedRecipe";
 import { recipeSchema } from "../../../utils/validationSchema";
+import { copyImageFromUrl, uploadImageFile } from "../../../utils/apiHelperFunctions";
+import { Ingredient } from "../../../model/Ingredient";
 import ImageUploader from "../../../components/ImageUploader";
-import { searchItem } from "../../../utils/apiHelperFunctions";
-import { AddIngredientModal } from "../components/AddIngredientModal";
-import { IngredientsList } from "../components/ShowIngrediens";
 import Button from "../../../components/Button";
 import ConfirmationDialog from "../../../components/ConfirmationDialog";
 import { useConstants } from "@/app/context/ConstantsContext";
-import { toast } from "react-toastify";
-import * as Yup from "yup";
-import { unifyUnit } from "../../../utils/unitHelper";
+import { IngredientEditor } from "../components/IngredientEditor";
+import { RecipeImportBar } from "../components/RecipeImportBar";
+import { useRecipeDraft } from "../hooks/useRecipeDraft";
+import { EditorRow, rowsToIngredients } from "../utils/ingredientRows";
+import {
+  RecipeDraft,
+  draftHasContent,
+  emptyDraft,
+  recipeToDraft,
+  scrapedToDraft,
+} from "../utils/recipeDraft";
+import { tidyRecipeText } from "../utils/tidyRecipeText";
 
-function AddRecipePageContent() {
+type RecipeFormType = Yup.InferType<typeof recipeSchema>;
+
+const labelClass = "block text-gray-700 text-sm font-bold mb-2";
+
+// Number inputs hold "" when empty; the schema turns "" into "missing".
+function numberField(value: number): number {
+  return value || ("" as unknown as number);
+}
+
+async function fetchRecipe(id: string): Promise<Recipe> {
+  const response = await fetch(`/api/recipe/${id}`);
+  if (!response.ok) throw new Error("Failed to fetch recipe");
+  return response.json();
+}
+
+async function readError(res: Response, fallback: string): Promise<string> {
+  const text = await res.text();
+  try {
+    return JSON.parse(text).error || fallback;
+  } catch {
+    return text || fallback;
+  }
+}
+
+// Own component so typing in the description only re-renders this field,
+// not the whole form and ingredient list.
+function DescriptionField({
+  control,
+  register,
+  setValue,
+  error,
+}: {
+  control: Control<RecipeFormType>;
+  register: UseFormRegister<RecipeFormType>;
+  setValue: UseFormSetValue<RecipeFormType>;
+  error?: string;
+}) {
+  const description = useWatch({ control, name: "description" }) ?? "";
+  const rows = Math.min(30, Math.max(8, description.split("\n").length + 1));
+
+  function handlePaste(e: ClipboardEvent<HTMLTextAreaElement>) {
+    const pasted = e.clipboardData.getData("text");
+    const tidy = tidyRecipeText(pasted);
+    if (!pasted || tidy === pasted) return; // native paste already keeps line breaks
+    e.preventDefault();
+    const el = e.currentTarget;
+    const { selectionStart, selectionEnd, value } = el;
+    const next = value.slice(0, selectionStart) + tidy + value.slice(selectionEnd);
+    setValue("description", next, { shouldValidate: true });
+    requestAnimationFrame(() => {
+      el.selectionStart = el.selectionEnd = selectionStart + tidy.length;
+    });
+  }
+
+  return (
+    <div>
+      <label className={labelClass} htmlFor="beskrivelse">
+        Beskrivelse
+      </label>
+      <textarea
+        id="beskrivelse"
+        placeholder={
+          "Skriv fremgangsmåden – gerne ét trin pr. afsnit.\n\n1. Forvarm ovnen til 200 grader.\n\n2. …"
+        }
+        {...register("description")}
+        onPaste={handlePaste}
+        rows={rows}
+        className="w-full p-3 border rounded-lg leading-relaxed [field-sizing:content] min-h-48 max-h-[70vh]"
+      />
+      {error && <p className="text-red-500 text-xs">{error}</p>}
+    </div>
+  );
+}
+
+interface RecipeFormProps {
+  recipeId: string | null;
+  recipe: Recipe | undefined;
+}
+
+function RecipeForm({ recipeId, recipe }: RecipeFormProps) {
+  const [initialDraft] = useState(() =>
+    recipe ? recipeToDraft(recipe) : emptyDraft(),
+  );
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const [searchTerm, setSearchTerm] = useState<string>("");
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const searchBarRef = useRef<HTMLDivElement>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [recipeId, setRecipeId] = useState<string | null>(null);
-  const [isLoadingRecipe, setIsLoadingRecipe] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const queryClient = useQueryClient();
+  const { categories, units, checkAndAddUnitType } = useConstants();
+  const unitNames = useMemo(() => units.map((u) => u.name), [units]);
 
-  // States for recipe fields
-  const { categories, checkAndAddUnitType } = useConstants();
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [items, setItems] = useState<Item[]>([]);
-  const [ingredients, setIngredients] = useState<Ingredient[]>([]);
-  const [imageUrl, setImageUrl] = useState<string>("");
+  const [rows, setRows] = useState<EditorRow[]>(initialDraft.rows);
+  const rowsRef = useRef(initialDraft.rows);
+  const authorRef = useRef(initialDraft.author);
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [sourceUrl, setSourceUrl] = useState<string>("");
+  // Bumped to remount the image picker when the image is replaced.
+  const [imageKey, setImageKey] = useState(0);
+  const [isSaving, setIsSaving] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [pendingImport, setPendingImport] = useState<ScrapedRecipe | null>(null);
 
-  type RecipeFormType = Yup.InferType<typeof recipeSchema>;
+  const { savedDraft, dismissSavedDraft, scheduleSave, clearDraft, isDirty } =
+    useRecipeDraft(recipeId);
 
   const {
     register,
+    control,
     formState: { errors },
-    trigger,
     getValues,
     setValue,
     handleSubmit,
+    subscribe,
+    clearErrors,
   } = useForm<RecipeFormType>({
     resolver: yupResolver(recipeSchema),
     mode: "onBlur",
+    defaultValues: {
+      recipeName: initialDraft.recipeName,
+      description: initialDraft.description,
+      time: numberField(initialDraft.time),
+      recommendedPersonAmount: numberField(initialDraft.recommendedPersonAmount),
+      image: initialDraft.image,
+      sourceUrl: initialDraft.sourceUrl,
+      categories: initialDraft.categories,
+      ingredients: [],
+      author: initialDraft.author,
+    },
   });
 
-  // Check for edit mode via query parameter and load recipe data
-  useEffect(() => {
-    const id = searchParams.get("id");
-    if (id) {
-      setRecipeId(id);
-      setIsLoadingRecipe(true);
-      // Fetch recipe data for editing
-      const fetchRecipe = async () => {
-        try {
-          const response = await fetch(`/api/recipe/${id}`);
-          if (!response.ok) {
-            throw new Error("Failed to fetch recipe");
-          }
-          const data = await response.json();
-          setRecipeData(data);
-        } catch (error) {
-          console.error("Failed to fetch recipe for editing:", error);
-          toast.error("Kunne ikke indlæse opskriften til redigering.");
-        } finally {
-          setIsLoadingRecipe(false);
-        }
-      };
-      fetchRecipe();
-    } else {
-      // Load recipe data from sessionStorage if coming from automatic mode
-      const storedRecipeData = sessionStorage.getItem("addRecipe_data");
-      if (storedRecipeData) {
-        try {
-          const data = JSON.parse(storedRecipeData);
-          setRecipeData(data);
-          sessionStorage.removeItem("addRecipe_data");
-        } catch (e) {
-          console.error("Failed to parse stored recipe data", e);
-        }
-      }
-    }
-  }, [searchParams]);
+  const selectedCategories = useWatch({ control, name: "categories" }) ?? [];
+  const image = useWatch({ control, name: "image" }) ?? "";
 
-  // Load ingredients from sessionStorage when returning from add-ingredients
-  useEffect(() => {
-    const checkForReturnedIngredients = () => {
-      const storedIngredients = sessionStorage.getItem(
-        "addIngredients_ingredients",
-      );
-      if (storedIngredients) {
-        try {
-          const parsed = JSON.parse(storedIngredients);
-          if (parsed && parsed.length > 0) {
-            setIngredients(parsed);
-            sessionStorage.removeItem("addIngredients_ingredients");
-          }
-        } catch (e) {
-          console.error("Failed to parse stored ingredients", e);
-        }
-      }
+  const buildDraft = useCallback((): RecipeDraft => {
+    const values = getValues();
+    return {
+      recipeName: values.recipeName ?? "",
+      description: values.description ?? "",
+      time: Number(values.time) || 0,
+      recommendedPersonAmount: Number(values.recommendedPersonAmount) || 0,
+      image: values.image ?? "",
+      sourceUrl: values.sourceUrl ?? "",
+      categories: values.categories ?? [],
+      rows: rowsRef.current,
+      author: authorRef.current,
     };
+  }, [getValues]);
 
-    checkForReturnedIngredients();
-    const interval = setInterval(checkForReturnedIngredients, 500);
-    return () => clearInterval(interval);
-  }, []);
+  // Autosave to localStorage whenever a form field changes.
+  useEffect(
+    () =>
+      subscribe({
+        formState: { values: true },
+        callback: () => scheduleSave(buildDraft),
+      }),
+    [subscribe, scheduleSave, buildDraft],
+  );
 
-  useEffect(() => {
-    // Map ingredients and ensure all required fields are present
-    const mappedIngredients = ingredients.map((ingredient: Ingredient) => {
-      return {
-        _id: ingredient._id || "unknown",
-        item: {
-          _id: ingredient.item._id || "unknown",
-          name: ingredient.item.name || "Unknown",
-          category: ingredient.item.category || "unknown",
-          defaultUnit: ingredient.item.defaultUnit || ingredient.unit || "stk",
-        },
-        unit: ingredient.unit || "stk",
-        marked: ingredient.marked || false,
-        quantity: ingredient.quantity || 0,
-        section: ingredient.section,
-      };
+  // The only writer of rows: keeps the ref (read by the debounced draft
+  // save) in step with state.
+  const updateRows = (next: EditorRow[]) => {
+    rowsRef.current = next;
+    setRows(next);
+    scheduleSave(buildDraft);
+  };
+
+  function fillForm(draft: RecipeDraft) {
+    setValue("recipeName", draft.recipeName);
+    setValue("description", draft.description);
+    setValue("time", numberField(draft.time));
+    setValue("recommendedPersonAmount", numberField(draft.recommendedPersonAmount));
+    setValue("image", draft.image);
+    setValue("sourceUrl", draft.sourceUrl);
+    setValue("categories", draft.categories);
+    authorRef.current = draft.author;
+    updateRows(draft.rows);
+    setImageFile(null);
+    setImageKey((key) => key + 1);
+    clearErrors();
+  }
+
+  function applyImport(scraped: ScrapedRecipe) {
+    const draft = scrapedToDraft(scraped, {
+      units: unitNames,
+      categories: categories.map((c) => c.name),
     });
+    fillForm(draft);
+  }
 
-    setValue("ingredients", mappedIngredients, { shouldValidate: true });
-  }, [ingredients, setValue]);
+  function handleImported(scraped: ScrapedRecipe) {
+    if (draftHasContent(buildDraft())) setPendingImport(scraped);
+    else applyImport(scraped);
+  }
 
-  // Sync imageUrl with form state
-  useEffect(() => {
-    setValue("image", imageUrl || "");
-  }, [imageUrl, setValue]);
-
-  async function uploadImage(): Promise<string | null> {
-    if (!imageFile) return null;
-
-    const formData = new FormData();
-    formData.append("image", imageFile);
-
-    try {
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) throw new Error("Image upload failed.");
-
-      const uploadData = await response.json();
-      if (uploadData) {
-        const uploadedImageUrl = uploadData.imageUrl;
-        setImageUrl(uploadedImageUrl);
-        return uploadedImageUrl;
-      } else {
-        toast.error("Kunne ikke uploade billede");
-        console.error("uploadData is null");
-        return null;
-      }
-    } catch (error) {
-      console.error("Error uploading file:", error);
-      return null;
+  function handleImportFailed(url: string) {
+    if (!getValues("sourceUrl")) {
+      setValue("sourceUrl", url, { shouldValidate: true });
     }
   }
 
-  const onSubmit = async (data: RecipeFormType) => {
+  function restoreDraft() {
+    if (!savedDraft) return;
+    fillForm(savedDraft);
+    dismissSavedDraft();
+  }
+
+  function discardDraft() {
+    // If the user already typed, storage holds the new work; keep it.
+    if (isDirty()) dismissSavedDraft();
+    else clearDraft();
+  }
+
+  function handleImageSelected(file: File | null) {
+    setImageFile(file);
+    if (!file) setValue("image", "");
+    scheduleSave(buildDraft);
+  }
+
+  const handleChangeCategories = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value, checked } = e.target;
+    const current = getValues("categories") ?? [];
+    setValue(
+      "categories",
+      checked ? [...current, value] : current.filter((c) => c !== value),
+      { shouldValidate: true },
+    );
+  };
+
+  // Uploads a picked file, or copies a remote (imported) image into our
+  // own image store so it doesn't depend on the source site. The result is
+  // kept in the form, so a retry after a failed save doesn't upload again.
+  async function resolveImage(current: string): Promise<string | null> {
+    if (imageFile) {
+      try {
+        const url = await uploadImageFile(imageFile);
+        setValue("image", url);
+        setImageFile(null);
+        return url;
+      } catch (error) {
+        console.error("Error uploading file:", error);
+        toast.error("Billedet kunne ikke uploades.");
+        return null;
+      }
+    }
+    if (/^https?:\/\//i.test(current)) {
+      try {
+        const url = await copyImageFromUrl(current);
+        setValue("image", url);
+        return url;
+      } catch (error) {
+        console.error("Error copying image:", error);
+        toast.warning("Billedet kunne ikke hentes – opskriften gemmes uden billede.");
+        return "";
+      }
+    }
+    return current;
+  }
+
+  const onSubmit = async (data: RecipeFormType, ingredients: Ingredient[]) => {
     setIsSaving(true);
     try {
-      const currentFormData = getValues();
-
-      let finalIngredients =
-        data.ingredients || currentFormData.ingredients || ingredients;
-      const hasIngredients = Boolean(
-        finalIngredients && finalIngredients.length > 0,
-      );
-      if (!hasIngredients) {
-        finalIngredients = [];
+      const [, finalImage] = await Promise.all([
+        ingredients.length > 0 &&
+          checkAndAddUnitType(ingredients).catch((unitError) =>
+            console.warn(
+              "Unit type sync failed, continuing with recipe submission:",
+              unitError,
+            ),
+          ),
+        resolveImage(data.image || ""),
+      ]);
+      if (finalImage === null) {
+        setIsSaving(false);
+        return;
       }
 
-      const validIngredients = (finalIngredients || []).map((ing: any) => ({
-        _id: ing._id || "unknown",
-        item: {
-          _id: ing.item?._id || "unknown",
-          name: ing.item?.name || "Unknown",
-          category: ing.item?.category || "unknown",
-          defaultUnit: unifyUnit(ing.unit || "stk"),
-        },
-        unit: unifyUnit(ing.unit || "stk"),
-        marked: ing.marked || false,
-        quantity: ing.quantity || 0,
-        section: ing.section,
-      }));
-
-      if (validIngredients.length > 0) {
-        try {
-          await checkAndAddUnitType(validIngredients as Ingredient[]);
-        } catch (unitError) {
-          console.warn(
-            "Unit type sync failed, continuing with recipe submission:",
-            unitError,
-          );
-        }
-      }
-
-      let finalImage = imageUrl || "";
-      if (imageFile) {
-        const uploadedUrl = await uploadImage();
-        if (!uploadedUrl) {
-          toast.error("Billedet kunne ikke uploades.");
-          setIsSaving(false);
-          return;
-        }
-        finalImage = uploadedUrl;
-        setValue("image", finalImage);
-      }
-
-      const updatedFormData = {
+      const payload = {
         ...data,
-        ingredients: validIngredients,
-        image: finalImage || "",
-        sourceUrl: (sourceUrl || "").trim(),
-        categories: selectedCategories,
-        author: "",
+        ingredients,
+        image: finalImage,
+        sourceUrl: (data.sourceUrl || "").trim(),
+        categories: data.categories ?? [],
+        author: authorRef.current,
+        ...(recipeId ? { _id: recipeId } : {}),
       };
 
-      // If editing, include the _id and use PUT, otherwise use POST
-      const method = recipeId ? "PUT" : "POST";
-      const requestData = recipeId
-        ? { ...updatedFormData, _id: recipeId }
-        : updatedFormData;
-
       const res = await fetch("/api/recipe", {
-        method: method,
+        method: recipeId ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(requestData),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
-        const errorText = await res.text();
-        let errorMessage = recipeId
-          ? "Opskriften kunne ikke opdateres."
-          : "Opskriften kunne ikke gemmes.";
-        try {
-          const errorData = JSON.parse(errorText);
-          errorMessage = errorData.error || errorMessage;
-        } catch {
-          errorMessage = errorText || errorMessage;
-        }
-        throw new Error(errorMessage);
+        throw new Error(
+          await readError(
+            res,
+            recipeId
+              ? "Opskriften kunne ikke opdateres."
+              : "Opskriften kunne ikke gemmes.",
+          ),
+        );
       }
 
-      const result = await res.json();
+      clearDraft();
+      await queryClient.invalidateQueries({ queryKey: ["recipes"] });
+      if (recipeId) {
+        queryClient.removeQueries({ queryKey: ["recipe", recipeId] });
+      }
       toast.success(
         recipeId ? "Opskriften blev opdateret 🎉" : "Opskriften blev gemt 🎉",
       );
       router.push("/recipes");
     } catch (error) {
       console.error("Fejl i form submission:", error);
-      const errorMessage =
+      toast.error(
         error instanceof Error
           ? error.message
-          : "Noget gik galt. Opskriften blev ikke gemt.";
-      toast.error(errorMessage);
+          : "Noget gik galt. Opskriften blev ikke gemt.",
+      );
       setIsSaving(false);
     }
   };
 
-  const onError = (errors: any) => {
-    console.error("Form validation errors:", errors);
-    trigger();
-
-    if (errors.ingredients) {
-      const ingredientsError = errors.ingredients;
-      if (ingredientsError.message) {
-        toast.error(`Ingredienser: ${ingredientsError.message}`);
-      } else if (
-        Array.isArray(ingredientsError) &&
-        ingredientsError.length > 0
-      ) {
-        const firstError = ingredientsError[0];
-        toast.error(
-          `Ingrediens fejl: ${firstError.message || "Ingredienser er ugyldige"}`,
-        );
-      } else {
-        toast.error("Der skal være mindst én ingrediens i opskriften.");
-      }
+  const onError = (formErrors: typeof errors) => {
+    console.error("Form validation errors:", formErrors);
+    if (formErrors.ingredients) {
+      toast.error(
+        formErrors.ingredients.message
+          ? `Ingredienser: ${formErrors.ingredients.message}`
+          : "Tjek ingredienserne – en af dem er ugyldig.",
+      );
       return;
     }
-
-    const errorMessages = Object.values(errors)
-      .map((error: any) => error?.message)
+    const messages = Object.values(formErrors)
+      .map((error) => (error as { message?: string })?.message)
       .filter(Boolean)
       .join(", ");
-    if (errorMessages) {
-      toast.error(`Valideringsfejl: ${errorMessages}`);
-    } else {
-      toast.error("Venligst udfyld alle påkrævede felter korrekt.");
-    }
-  };
-
-  const handleChangeCategories = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value, checked } = e.target;
-    trigger("categories");
-    setSelectedCategories((prev) =>
-      checked
-        ? [...prev, value]
-        : prev.filter((category) => category !== value),
+    toast.error(
+      messages
+        ? `Valideringsfejl: ${messages}`
+        : "Venligst udfyld alle påkrævede felter korrekt.",
     );
   };
 
-  useEffect(() => {
-    const fetchItems = async () => {
-      if (!searchTerm) {
-        setIsDropdownOpen(false);
-        return;
-      }
-      try {
-        const data = await searchItem(searchTerm);
-        setItems(data);
-        setIsDropdownOpen(true);
-      } catch (error) {
-        console.error("Failed to fetch Items");
-        setIsDropdownOpen(false);
-      }
-    };
-    const debounceTimeout = setTimeout(fetchItems, 500);
-    return () => clearTimeout(debounceTimeout);
-  }, [searchTerm]);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        searchBarRef.current &&
-        !searchBarRef.current.contains(event.target as Node)
-      ) {
-        setIsDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  function handleOnIngredientRemove(index: number) {
-    setIngredients(ingredients.filter((_, i) => i !== index));
-  }
+  const submit = (e: React.BaseSyntheticEvent) => {
+    // Ingredients live in the editor; hand them to the form for validation.
+    const ingredients = rowsToIngredients(rowsRef.current);
+    setValue("ingredients", ingredients as RecipeFormType["ingredients"]);
+    return handleSubmit((data) => onSubmit(data, ingredients), onError)(e);
+  };
 
   const handleDeleteRecipe = async () => {
     if (!recipeId) return;
@@ -364,95 +394,35 @@ function AddRecipePageContent() {
       });
 
       if (!res.ok) {
-        const errorText = await res.text();
-        let errorMessage = "Opskriften kunne ikke slettes.";
-        try {
-          const errorData = JSON.parse(errorText);
-          errorMessage = errorData.error || errorMessage;
-        } catch {
-          errorMessage = errorText || errorMessage;
-        }
-        throw new Error(errorMessage);
+        throw new Error(await readError(res, "Opskriften kunne ikke slettes."));
       }
 
+      clearDraft();
+      await queryClient.invalidateQueries({ queryKey: ["recipes"] });
       toast.success("Opskriften blev slettet");
       router.push("/recipes");
     } catch (error) {
       console.error("Fejl ved sletning af opskrift:", error);
-      const errorMessage =
+      toast.error(
         error instanceof Error
           ? error.message
-          : "Noget gik galt. Opskriften blev ikke slettet.";
-      toast.error(errorMessage);
+          : "Noget gik galt. Opskriften blev ikke slettet.",
+      );
       setIsSaving(false);
     }
   };
 
-  async function setRecipeData(data: Recipe) {
-    setValue("recipeName", data.recipeName || "");
-    setValue("description", data.description || "");
-    setValue("time", data.time || 0);
-    setValue("recommendedPersonAmount", data.recommendedPersonAmount || 0);
+  const handleCancel = () => {
+    if (isDirty()) setShowCancelDialog(true);
+    else router.back();
+  };
 
-    if (data.image) {
-      setImageUrl(data.image);
-      setValue("image", data.image);
-    } else {
-      setImageUrl("");
-      setValue("image", "");
-    }
-
-    setSourceUrl(data.sourceUrl || "");
-    setValue("sourceUrl", data.sourceUrl || "");
-
-    if (data.categories) {
-      setSelectedCategories(data.categories);
-      setValue("categories", data.categories);
-    } else {
-      setSelectedCategories([]);
-      setValue("categories", []);
-    }
-
-    if (data.ingredients && data.ingredients.length > 0) {
-      const formattedIngredients = data.ingredients.map((ing: Ingredient) => ({
-        _id: ing._id || null,
-        item: {
-          _id: ing.item?._id || null,
-          name: ing.item?.name || "Unknown",
-          category: ing.item?.category || "unknown",
-          defaultUnit: ing.item?.defaultUnit || ing.unit || "stk",
-        },
-        unit: ing.unit || "stk",
-        marked: ing.marked || false,
-        quantity: ing.quantity || 0,
-        section: ing.section,
-      }));
-
-      setIngredients(formattedIngredients as Ingredient[]);
-      setValue("ingredients", formattedIngredients as Ingredient[], {
-        shouldValidate: true,
-      });
-    } else {
-      setIngredients([]);
-      setValue("ingredients", [], { shouldValidate: true });
-    }
-  }
-
-  if (isLoadingRecipe) {
-    return (
-      <div className="w-full min-h-screen bg-background p-4 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-action mx-auto"></div>
-          <p className="mt-4 text-gray-600">Indlæser opskrift...</p>
-        </div>
-      </div>
-    );
-  }
+  const ingredientError = errors.ingredients?.message;
 
   return (
-    <div className="w-full min-h-screen bg-background p-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between items-center mb-4">
+    <div className="w-full min-h-screen bg-background px-4 pt-4">
+      <div className="max-w-4xl mx-auto space-y-4">
+        <div className="flex justify-between items-center">
           <h2 className="text-2xl font-bold">
             {recipeId ? "Rediger opskrift" : "Tilføj ny opskrift"}
           </h2>
@@ -460,76 +430,67 @@ function AddRecipePageContent() {
             variant="ghost"
             size="sm"
             type="button"
-            onClick={() => router.back()}
+            onClick={handleCancel}
+            aria-label="Luk"
             className="w-10 h-10 p-0"
           >
             ✕
           </Button>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-4">
+        {savedDraft && (
+          <div
+            role="status"
+            className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl bg-soft p-3"
+          >
+            <p className="text-sm text-foreground">
+              Du har en ikke-gemt kladde
+              {savedDraft.recipeName ? ` af "${savedDraft.recipeName}"` : ""}.
+            </p>
+            <div className="flex gap-2">
+              <Button variant="secondary" size="sm" onClick={discardDraft}>
+                Kassér
+              </Button>
+              <Button size="sm" onClick={restoreDraft}>
+                Gendan kladde
+              </Button>
+            </div>
+          </div>
+        )}
+
+        <RecipeImportBar
+          collapsed={Boolean(recipeId)}
+          onImported={handleImported}
+          onFailed={handleImportFailed}
+        />
+
+        <form onSubmit={submit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="w-full">
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="navn"
-              >
+            <div className="w-full md:col-span-2">
+              <label className={labelClass} htmlFor="navn">
                 Navn
               </label>
               <input
                 id="navn"
                 type="text"
                 {...register("recipeName")}
-                onKeyUp={() => trigger("recipeName")}
                 className="w-full p-3 border rounded-lg"
                 placeholder="Indtast navn..."
               />
               {errors.recipeName && (
-                <p className="text-red-500 text-xs">
-                  {errors.recipeName.message}
-                </p>
+                <p className="text-red-500 text-xs">{errors.recipeName.message}</p>
               )}
-            </div>
-
-            <div className="w-full md:col-span-2">
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="kilde-link"
-              >
-                Kilde-link
-              </label>
-              <input
-                id="kilde-link"
-                type="url"
-                value={sourceUrl}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setSourceUrl(value);
-                  setValue("sourceUrl", value, { shouldValidate: true });
-                }}
-                className="w-full p-3 border rounded-lg"
-                placeholder="https://..."
-              />
-              {errors.sourceUrl && (
-                <p className="text-red-500 text-xs">
-                  {errors.sourceUrl.message}
-                </p>
-              )}
-              <input type="hidden" {...register("sourceUrl")} />
             </div>
 
             <div className="w-full">
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="tid"
-              >
+              <label className={labelClass} htmlFor="tid">
                 Tid (minutter)
               </label>
               <input
                 id="tid"
                 type="number"
+                inputMode="numeric"
                 {...register("time")}
-                onKeyUp={() => trigger("time")}
                 className="w-full p-3 border rounded-lg"
                 placeholder="Indtast tid..."
               />
@@ -539,17 +500,14 @@ function AddRecipePageContent() {
             </div>
 
             <div className="w-full">
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="personer"
-              >
+              <label className={labelClass} htmlFor="personer">
                 Antal personer
               </label>
               <input
                 id="personer"
                 type="number"
+                inputMode="numeric"
                 {...register("recommendedPersonAmount")}
-                onKeyUp={() => trigger("recommendedPersonAmount")}
                 className="w-full p-3 border rounded-lg"
                 placeholder="Indtast antal personer..."
               />
@@ -560,49 +518,39 @@ function AddRecipePageContent() {
               )}
             </div>
 
+            <div className="w-full md:col-span-2">
+              <label className={labelClass} htmlFor="kilde-link">
+                Kilde-link
+              </label>
+              <input
+                id="kilde-link"
+                type="url"
+                inputMode="url"
+                {...register("sourceUrl")}
+                className="w-full p-3 border rounded-lg"
+                placeholder="https://..."
+              />
+              {errors.sourceUrl && (
+                <p className="text-red-500 text-xs">{errors.sourceUrl.message}</p>
+              )}
+            </div>
+
             <div className="w-full">
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="billede"
-              >
+              <label className={labelClass} htmlFor="billede">
                 Billede
               </label>
               <ImageUploader
-                onFileSelected={setImageFile}
-                initialPreview={imageUrl}
+                key={imageKey}
+                onFileSelected={handleImageSelected}
+                initialPreview={image}
               />
               {errors.image && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.image.message}
-                </p>
-              )}
-              <input type="hidden" {...register("image")} />
-            </div>
-            <div>
-              <label
-                className="block text-gray-700 text-sm font-bold mb-2"
-                htmlFor="beskrivelse"
-              >
-                Beskrivelse
-              </label>
-              <textarea
-                id="beskrivelse"
-                placeholder="Skriv en beskrivelse..."
-                {...register("description")}
-                onKeyUp={() => trigger("description")}
-                className="w-full p-3 border rounded-lg h-32"
-              ></textarea>
-              {errors.description && (
-                <p className="text-red-500 text-xs">
-                  {errors.description.message}
-                </p>
+                <p className="text-red-500 text-xs mt-1">{errors.image.message}</p>
               )}
             </div>
 
             <div>
-              <label className="block text-gray-700 text-sm font-bold mb-2">
-                Kategorier
-              </label>
+              <span className={labelClass}>Kategorier</span>
               <div className="grid grid-cols-2 gap-2">
                 {categories.map((category) => (
                   <label
@@ -622,68 +570,47 @@ function AddRecipePageContent() {
               </div>
             </div>
           </div>
-          <div className="w-full">
-            <Button
-              onClick={() => setIsModalOpen(true)}
-              variant="primary"
-              size="lg"
-              fullWidth
-            >
-              Tilføj ingredienser
-            </Button>
 
-            {isModalOpen && (
-              <AddIngredientModal
-                onClose={() => setIsModalOpen(false)}
-                ingredients={ingredients}
-                setIngredients={setIngredients}
-              />
-            )}
-          </div>
-          <div>
-            <IngredientsList
-              ingredients={ingredients}
-              onRemove={(index: number) => handleOnIngredientRemove(index)}
-            />
-            {errors.ingredients && (
-              <p className="text-red-500 text-xs mt-1">
-                {String(
-                  (errors as any).ingredients?.message ||
-                    "Der mangler ingredienser",
-                )}
-              </p>
-            )}
-          </div>
+          <IngredientEditor
+            rows={rows}
+            onChange={updateRows}
+            units={unitNames}
+            error={ingredientError}
+          />
 
-          <div className="flex justify-between items-center space-x-4">
+          <DescriptionField
+            control={control}
+            register={register}
+            setValue={setValue}
+            error={errors.description?.message}
+          />
+
+          <div className="sticky bottom-0 z-10 -mx-4 flex items-center gap-2 border-t border-secondary/30 bg-background/95 px-4 py-3 backdrop-blur">
             {recipeId && (
               <Button
                 onClick={() => setShowDeleteDialog(true)}
                 variant="secondary"
                 size="lg"
-                fullWidth
                 disabled={isSaving}
               >
-                Slet opskrift
+                Slet
               </Button>
             )}
-            <div className="flex justify-end space-x-4 ml-auto">
+            <div className="flex flex-1 justify-end gap-2">
               <Button
-                onClick={() => router.back()}
+                onClick={handleCancel}
                 variant="secondary"
                 size="lg"
-                fullWidth
                 disabled={isSaving}
               >
                 Annuller
               </Button>
-
               <Button
                 type="submit"
                 variant="primary"
                 size="lg"
-                fullWidth
-                disabled={isSaving}
+                isLoading={isSaving}
+                loadingText="Gemmer…"
               >
                 {recipeId ? "Opdater opskrift" : "Gem opskrift"}
               </Button>
@@ -698,23 +625,82 @@ function AddRecipePageContent() {
           title="Slet opskrift"
           message="Er du sikker på, at du vil slette denne opskrift? Denne handling kan ikke fortrydes."
         />
+        <ConfirmationDialog
+          open={showCancelDialog}
+          onClose={() => setShowCancelDialog(false)}
+          onConfirm={() => {
+            clearDraft();
+            router.back();
+          }}
+          title="Kassér ændringer?"
+          message="Du har ændringer der ikke er gemt. Vil du kassere dem?"
+        />
+        <ConfirmationDialog
+          open={pendingImport !== null}
+          onClose={() => setPendingImport(null)}
+          onConfirm={() => {
+            if (pendingImport) applyImport(pendingImport);
+          }}
+          title="Erstat indhold?"
+          message="Importen erstatter det, du allerede har skrevet i formularen."
+        />
       </div>
     </div>
   );
 }
 
+function Spinner({ text }: { text: string }) {
+  return (
+    <div className="w-full min-h-screen bg-background p-4 flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-action mx-auto"></div>
+        <p className="mt-4 text-gray-600">{text}</p>
+      </div>
+    </div>
+  );
+}
+
+function AddRecipePageContent() {
+  const router = useRouter();
+  const recipeId = useSearchParams().get("id");
+
+  const { data: recipe, isError, isFetchedAfterMount } = useQuery({
+    queryKey: ["recipe", recipeId],
+    queryFn: () => fetchRecipe(recipeId!),
+    enabled: Boolean(recipeId),
+    staleTime: 0,
+  });
+
+  // The form reads the recipe only when it mounts, so wait for fresh data
+  // rather than showing a cached copy that is then refetched.
+  if (recipeId && !isFetchedAfterMount) {
+    return <Spinner text="Indlæser opskrift..." />;
+  }
+
+  if (recipeId && (isError || !recipe)) {
+    return (
+      <div className="w-full min-h-screen bg-background p-4 flex flex-col items-center justify-center gap-4">
+        <p className="text-foreground">Kunne ikke indlæse opskriften til redigering.</p>
+        <Button variant="secondary" onClick={() => router.back()}>
+          Tilbage
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <RecipeForm
+      // Remount (and re-initialise) when switching between recipes.
+      key={recipeId ?? "new"}
+      recipeId={recipeId}
+      recipe={recipe}
+    />
+  );
+}
+
 export default function AddRecipePage() {
   return (
-    <Suspense
-      fallback={
-        <div className="w-full min-h-screen bg-background p-4 flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-action mx-auto"></div>
-            <p className="mt-4 text-gray-600">Indlæser...</p>
-          </div>
-        </div>
-      }
-    >
+    <Suspense fallback={<Spinner text="Indlæser..." />}>
       <AddRecipePageContent />
     </Suspense>
   );

@@ -101,7 +101,9 @@ const nextConfig: NextConfig = {
     },
   ],
   images: {
-    domains: ["mummum.dk"],
+    // Imported images are copied into /api/images on save; mummum.dk is
+    // only here for recipes imported before that.
+    remotePatterns: [{ protocol: "https", hostname: "mummum.dk" }],
   },
   webpack: (config) => {
     // your custom webpack changes here

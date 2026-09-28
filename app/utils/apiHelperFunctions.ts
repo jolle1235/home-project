@@ -79,6 +79,28 @@ export async function updateItemCategory(
   }
 }
 
+//------------------ IMAGES ------------------------//
+// Both store the image in the images collection and return its /api/images URL.
+async function postUpload(init: RequestInit): Promise<string> {
+  const response = await fetch("/api/upload", { method: "POST", ...init });
+  if (!response.ok) throw new Error("Image upload failed.");
+  return (await response.json()).imageUrl;
+}
+
+export function uploadImageFile(file: File): Promise<string> {
+  const formData = new FormData();
+  formData.append("image", file);
+  return postUpload({ body: formData });
+}
+
+// Copies a remote image (e.g. from an imported recipe) into our own store.
+export function copyImageFromUrl(url: string): Promise<string> {
+  return postUpload({
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ url }),
+  });
+}
+
 //------------------ WEEK PLANNER ------------------------//
 export async function saveWeekPlanToDatabase(
   weekPlanData: WeekPlan[],

@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Filter, Plus } from "lucide-react";
 
-import { AddRecipeModalComponent } from "../components/AddRecipeModalComponent";
 import { RecipeCardComponent } from "../components/RecipeCardComponent";
 import { CategoryWheelComponent } from "../components/CategoryWheelComponent";
 import { TimeRangeSelectorComponent } from "../components/TimeRangeSelectorComponent";
@@ -44,7 +44,7 @@ export default function RecipePageClient({ initialRecipes }: Props) {
 
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const router = useRouter();
 
   const {
     data: recipes = [],
@@ -59,21 +59,7 @@ export default function RecipePageClient({ initialRecipes }: Props) {
 
   const { isRefreshing } = useScrollRefresh(refetch);
 
-  const handleRecipeSaved = async () => {
-    await refetch();
-  };
-
-  const handleOpen = () => setIsModalOpen(true);
-
-  const handleClose = () => setIsModalOpen(false);
-
-  useEffect(() => {
-    document.body.style.overflow = isModalOpen ? "hidden" : "auto";
-
-    return () => {
-      document.body.style.overflow = "auto";
-    };
-  }, [isModalOpen]);
+  const handleOpen = () => router.push("/add-recipe");
 
   const filteredRecipes = useMemo(() => {
     const lowerCaseSearchTerm = searchTerm.toLowerCase();
@@ -249,12 +235,6 @@ export default function RecipePageClient({ initialRecipes }: Props) {
         </div>
       </div>
 
-      {isModalOpen && (
-        <AddRecipeModalComponent
-          handleClose={handleClose}
-          onRecipeSaved={handleRecipeSaved}
-        />
-      )}
     </div>
   );
 }

@@ -73,7 +73,9 @@ export const recipeImgSchema = Yup.string()
   .test(
     "is-url-or-empty",
     "Ugyldig billed-URL",
-    (value) => !value || Yup.string().url().isValidSync(value)
+    // Uploaded images are stored as relative paths (/api/images/<id>).
+    (value) =>
+      !value || /^\/(?!\/)/.test(value) || Yup.string().url().isValidSync(value)
   );
 
 export const recipePersonAmountSchema = Yup.number()
