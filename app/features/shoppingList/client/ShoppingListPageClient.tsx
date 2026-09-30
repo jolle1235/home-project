@@ -1,14 +1,14 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { ArrowUpDown, Plus, Trash2 } from "lucide-react";
+import { useMemo } from "react";
+import { ArrowUpDown, Trash2 } from "lucide-react";
 
-import { AddIngredientModal } from "../../recipes/components/AddIngredientModal";
 import { IconButton } from "../../../components/IconButton";
 import { PullToRefreshIndicator } from "../../../components/PullToRefreshIndicator";
 import { useScrollRefresh } from "../../../hooks/useScrollRefresh";
 import { Ingredient } from "../../../model/Ingredient";
 
+import { AddItemsPanel } from "../components/AddItemsPanel";
 import { ShoppingListItemComponent } from "../components/ShoppingListItemComponent";
 import { useShoppingList } from "../hooks/useShoppinglist";
 
@@ -19,8 +19,6 @@ type Props = {
 export default function ShoppingListPageClient({
   initialShoppingList,
 }: Props) {
-  const [addModalOpen, setAddModalOpen] = useState(false);
-
   const {
     shoppingList,
     isLoading,
@@ -30,6 +28,7 @@ export default function ShoppingListPageClient({
     clearMarked,
     clearList,
   } = useShoppingList({ initialData: initialShoppingList });
+
 
   const { isRefreshing } = useScrollRefresh(refresh);
 
@@ -69,15 +68,9 @@ export default function ShoppingListPageClient({
         </h1>
       </div>
 
+      <AddItemsPanel />
+
       <div className="flex flex-wrap gap-2 mb-1 items-center">
-        <div className="flex items-center gap-1 group">
-          <IconButton
-            icon={Plus}
-            variant="primary"
-            ariaLabel="Tilføj ingrediens"
-            onClick={() => setAddModalOpen(true)}
-          />
-        </div>
 
         {isSomethingMarked && (
           <div className="flex items-center gap-1 group">
@@ -127,8 +120,8 @@ export default function ShoppingListPageClient({
 
       {shoppingList.length === 0 ? (
         <p className="text-muted-foreground text-lg py-8">
-          Ingen varer på listen endnu. Tilføj ingredienser via knappen ovenfor
-          eller fra en opskrift.
+          Ingen varer på listen endnu. Tilføj varer i feltet ovenfor eller fra
+          en opskrift.
         </p>
       ) : (
         <div className="rounded-lg overflow-hidden">
@@ -138,16 +131,6 @@ export default function ShoppingListPageClient({
             </div>
           ))}
         </div>
-      )}
-
-      {addModalOpen && (
-        <AddIngredientModal
-          onClose={() => setAddModalOpen(false)}
-          ingredients={[]}
-          setIngredients={() => {}}
-          mode="shoppingList"
-          description="Tilføjede varer kommer på indkøbslisten."
-        />
       )}
     </div>
   );

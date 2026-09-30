@@ -5,7 +5,6 @@ import {
   BookOpen,
   CalendarDays,
   ShoppingCart,
-  Martini,
   Shield,
 } from "lucide-react";
 
@@ -59,16 +58,6 @@ export default function NavBar() {
           <CalendarDays className="w-6 h-6 sm:w-5 sm:h-5" />
           <span className="hidden md:inline-flex text-[10px] opacity-0 group-hover:opacity-100 transition-opacity duration-150">
             Madplan
-          </span>
-        </Link>
-        <Link
-          href="/drinks"
-          aria-label="Drinks"
-          className={`${makeLinkClasses("/drinks")} group`}
-        >
-          <Martini className="w-6 h-6 sm:w-5 sm:h-5" />
-          <span className="hidden md:inline-flex text-[10px] opacity-0 group-hover:opacity-100 transition-opacity duration-150">
-            Drinks
           </span>
         </Link>
         <Link

@@ -1,6 +1,6 @@
 import * as Yup from "yup";
+import { RECIPE_TYPES } from "../features/recipes/types/Recipe";
 import {
-  maxItemSearchLength,
   maxRecipeAuthorLength,
   maxRecipeDescriptionLength,
   maxRecipeNameLength,
@@ -8,7 +8,6 @@ import {
   maxRecipeTime,
   maxWeight,
   minPasswordLength,
-  minRecipeAuthorLength,
   minRecipeDescriptionLength,
   minRecipeItems,
   minRecipeNameLength,
@@ -35,11 +34,6 @@ export const passwordSchema = Yup.string()
     passwordSpecialChars,
     "Adgangskoden skal indeholde mindst ét specialtegn"
   );
-
-export const itemSearchSchema = Yup.string().max(
-  maxItemSearchLength,
-  `Vare kan maks være ${maxItemSearchLength} tegn`
-);
 
 export const quantitySchema = Yup.number()
   .transform((value, originalValue) =>
@@ -114,6 +108,7 @@ export const loginSchema = Yup.object({
 
 export const recipeSchema = Yup.object({
   _id: Yup.string().optional().nullable(),
+  type: Yup.string().oneOf(RECIPE_TYPES).default("recipe"),
   sourceUrl: Yup.string()
     .default("")
     .test(
@@ -195,42 +190,3 @@ export const recipeSchema = Yup.object({
   author: recipeAuthorSchema,
 });
 
-// DRINK SCHEMA
-export const drinkSchema = Yup.object({
-  _id: Yup.string().default(""),
-  title: recipeNameSchema, // reuse name rules
-  image: recipeImgSchema,
-  time: recipeTimeSchema,
-  numberOfPeople: recipePersonAmountSchema,
-  description: recipeDescriptionSchema,
-  alternatives: Yup.string()
-    .default("")
-    .max(maxRecipeDescriptionLength, `Max ${maxRecipeDescriptionLength} tegn`),
-  ingredients: Yup.array()
-    .of(
-      Yup.object({
-        _id: Yup.string().default(""),
-        item: Yup.object({
-          _id: Yup.string().default(""),
-          name: Yup.string().required(),
-          category: Yup.string().required(),
-          defaultUnit: Yup.string().required(),
-        }).required(),
-        quantity: quantitySchema,
-        unit: Yup.string().required("Enhed er påkrævet"),
-        marked: Yup.boolean().default(false),
-        section: Yup.string().optional(),
-      })
-    )
-    .required("Ingredienser er påkrævet")
-    .min(
-      minRecipeItems,
-      `Drinken skal indeholde mindst ${minRecipeItems} ingrediens`
-    ),
-  author: recipeAuthorSchema,
-});
-
-export const addToShoppingListSchema = Yup.object({
-  itemSearch: itemSearchSchema,
-  quantity: quantitySchema,
-});

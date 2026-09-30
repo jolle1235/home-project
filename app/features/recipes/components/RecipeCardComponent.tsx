@@ -3,6 +3,7 @@ import { Recipe } from "../types/Recipe";
 import { useRecipeContext } from "../../../context/RecipeContext";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { isRemoteUrl } from "@/app/utils/stringUtils";
 import { useState } from "react";
 import Button from "../../../components/Button";
 import { ArrowRight, Clock, Plus, Users } from "lucide-react";
@@ -82,6 +83,7 @@ export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
                         : "/icon/swiftcart_logo.png"
                     }
                     alt={recipe.recipeName || "Opskrift"}
+                    unoptimized={isRemoteUrl(recipe.image)}
                     fill
                     sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                     className="object-cover"

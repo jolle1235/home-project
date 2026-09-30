@@ -3,6 +3,7 @@ import {
   createContext,
   useContext,
   useEffect,
+  useMemo,
   useState,
   ReactNode,
 } from "react";
@@ -18,6 +19,8 @@ import { Constant } from "../model/Constant";
 interface ConstantsContextType {
   categories: Constant[];
   units: Constant[];
+  // Unit names, for pickers and the ingredient parser.
+  unitNames: string[];
   addCategory: (name: string) => Promise<void>;
   removeCategory: (name: string) => Promise<void>;
   addUnit: (name: string) => Promise<void>;
@@ -33,6 +36,7 @@ const ConstantsContext = createContext<ConstantsContextType | undefined>(
 export function ConstantsProvider({ children }: { children: ReactNode }) {
   const [categories, setCategories] = useState<Constant[]>([]);
   const [units, setUnits] = useState<Constant[]>([]);
+  const unitNames = useMemo(() => units.map((u) => u.name), [units]);
 
   async function fetchData() {
     const catRes = await fetch("/api/admin/recipeCategories");
@@ -126,6 +130,7 @@ export function ConstantsProvider({ children }: { children: ReactNode }) {
       value={{
         categories,
         units,
+        unitNames,
         addCategory,
         removeCategory,
         addUnit,

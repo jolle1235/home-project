@@ -13,6 +13,7 @@ import Button from "../../../components/Button";
 import { IconButton } from "../../../components/IconButton";
 import { Item } from "../../../model/Item";
 import { searchItem } from "../../../utils/apiHelperFunctions";
+import { useConstants } from "../../../context/ConstantsContext";
 import { KNOWN_UNITS, unifyUnit } from "../../../utils/unitHelper";
 import {
   EditorRow,
@@ -27,9 +28,10 @@ import {
 interface IngredientEditorProps {
   rows: EditorRow[];
   onChange: (rows: EditorRow[]) => void;
-  // Unit names from the admin unit list, offered next to the built-in ones.
-  units: string[];
   error?: string;
+  title?: string;
+  // Section headings and reordering; off for the shopping list.
+  allowSections?: boolean;
 }
 
 const fieldClass = "min-h-[44px] px-2 py-2";
@@ -41,9 +43,12 @@ function splitLines(text: string): string[] {
 export function IngredientEditor({
   rows,
   onChange,
-  units,
   error,
+  title = "Ingredienser",
+  allowSections = true,
 }: IngredientEditorProps) {
+  // Unit names from the admin unit list, offered next to the built-in ones.
+  const { unitNames: units } = useConstants();
   const listRef = useRef<HTMLDivElement>(null);
   const [expandedKey, setExpandedKey] = useState<string | null>(null);
   const [focusKey, setFocusKey] = useState<string | null>(null);
@@ -71,6 +76,11 @@ export function IngredientEditor({
 
   const commit = (next: EditorRow[]) => onChange(withTrailingEmptyRow(next));
 
+  const parseLines = (lines: string[]) => {
+    const parsed = linesToRows(lines, units);
+    return allowSections ? parsed : parsed.filter((row) => row.kind !== "section");
+  };
+
   const updateRow = (key: string, patch: Partial<EditorRow>) =>
     commit(
       rows.map((row) =>
@@ -94,7 +104,7 @@ export function IngredientEditor({
   // Pasting several lines into a row replaces that row (if empty) or
   // inserts after it.
   const insertLinesAt = (key: string, lines: string[]) => {
-    const parsed = linesToRows(lines, units);
+    const parsed = parseLines(lines);
     if (!parsed.length) return;
     const index = rows.findIndex((row) => row.key === key);
     const replace = index !== -1 && isEmptyRow(rows[index]);
@@ -104,7 +114,7 @@ export function IngredientEditor({
   };
 
   const appendPasted = () => {
-    const parsed = linesToRows(splitLines(pasteText), units);
+    const parsed = parseLines(splitLines(pasteText));
     if (parsed.length) commit([...filledRows, ...parsed]);
     setPasteText("");
     setIsPasteOpen(false);
@@ -128,7 +138,6 @@ export function IngredientEditor({
     });
   };
 
-
   return (
     <section className="space-y-3" aria-labelledby="ingredienser-heading">
       <div className="flex items-center justify-between gap-2">
@@ -136,7 +145,8 @@ export function IngredientEditor({
           id="ingredienser-heading"
           className="text-gray-700 text-sm font-bold"
         >
-          Ingredienser{ingredientCount ? ` (${ingredientCount})` : ""}
+          {title}
+          {ingredientCount ? ` (${ingredientCount})` : ""}
         </h3>
         <Button
           variant="ghost"
@@ -152,8 +162,9 @@ export function IngredientEditor({
       {isPasteOpen && (
         <div className="rounded-xl bg-surface p-3 space-y-2">
           <label htmlFor="ingredient-paste" className="block text-sm">
-            Én ingrediens pr. linje. En linje der slutter med kolon (fx
-            &quot;Til saucen:&quot;) bliver en sektion.
+            Én ingrediens pr. linje.
+            {allowSections &&
+              ' En linje der slutter med kolon (fx "Til saucen:") bliver en sektion.'}
           </label>
           <textarea
             id="ingredient-paste"
@@ -185,6 +196,7 @@ export function IngredientEditor({
         {rows.map((row, index) => {
           const isAddRow = index === rows.length - 1;
           const moveProps = {
+            canMove: allowSections,
             canMoveUp: !isAddRow && index > 0,
             canMoveDown: index < filledRows.length - 1,
             onMoveUp: () => moveRow(index, -1),
@@ -221,10 +233,12 @@ export function IngredientEditor({
         })}
       </div>
 
-      <Button variant="secondary" size="sm" onClick={addSection}>
-        <Heading className="h-4 w-4" aria-hidden="true" />
-        Tilføj sektion
-      </Button>
+      {allowSections && (
+        <Button variant="secondary" size="sm" onClick={addSection}>
+          <Heading className="h-4 w-4" aria-hidden="true" />
+          Tilføj sektion
+        </Button>
+      )}
 
       {error && <p className="text-red-500 text-xs">{error}</p>}
     </section>
@@ -232,6 +246,7 @@ export function IngredientEditor({
 }
 
 interface MoveProps {
+  canMove: boolean;
   canMoveUp: boolean;
   canMoveDown: boolean;
   onMoveUp: () => void;
@@ -240,6 +255,7 @@ interface MoveProps {
 }
 
 function RowActions({
+  canMove,
   canMoveUp,
   canMoveDown,
   onMoveUp,
@@ -248,24 +264,28 @@ function RowActions({
 }: MoveProps) {
   return (
     <>
-      <IconButton
-        icon={ArrowUp}
-        variant="ghost"
-        size="sm"
-        ariaLabel="Flyt op"
-        onClick={onMoveUp}
-        disabled={!canMoveUp}
-        className="min-h-[44px] min-w-[44px]"
-      />
-      <IconButton
-        icon={ArrowDown}
-        variant="ghost"
-        size="sm"
-        ariaLabel="Flyt ned"
-        onClick={onMoveDown}
-        disabled={!canMoveDown}
-        className="min-h-[44px] min-w-[44px]"
-      />
+      {canMove && (
+        <>
+          <IconButton
+            icon={ArrowUp}
+            variant="ghost"
+            size="sm"
+            ariaLabel="Flyt op"
+            onClick={onMoveUp}
+            disabled={!canMoveUp}
+            className="min-h-[44px] min-w-[44px]"
+          />
+          <IconButton
+            icon={ArrowDown}
+            variant="ghost"
+            size="sm"
+            ariaLabel="Flyt ned"
+            onClick={onMoveDown}
+            disabled={!canMoveDown}
+            className="min-h-[44px] min-w-[44px]"
+          />
+        </>
+      )}
       <IconButton
         icon={Trash2}
         variant="ghost"

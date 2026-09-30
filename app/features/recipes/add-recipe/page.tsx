@@ -1,5 +1,5 @@
 "use client";
-import React, { ClipboardEvent, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { ClipboardEvent, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -12,10 +12,11 @@ import {
 } from "react-hook-form";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
-import { Recipe } from "../types/Recipe";
+import { isDrink, Recipe, RecipeType, toRecipeType } from "../types/Recipe";
 import { ScrapedRecipe } from "../types/ScrapedRecipe";
 import { recipeSchema } from "../../../utils/validationSchema";
 import { copyImageFromUrl, uploadImageFile } from "../../../utils/apiHelperFunctions";
+import { isRemoteUrl } from "../../../utils/stringUtils";
 import { Ingredient } from "../../../model/Ingredient";
 import ImageUploader from "../../../components/ImageUploader";
 import Button from "../../../components/Button";
@@ -111,16 +112,17 @@ function DescriptionField({
 interface RecipeFormProps {
   recipeId: string | null;
   recipe: Recipe | undefined;
+  // For a new recipe: "drink" when started from the drinks filter.
+  newType: RecipeType;
 }
 
-function RecipeForm({ recipeId, recipe }: RecipeFormProps) {
+function RecipeForm({ recipeId, recipe, newType }: RecipeFormProps) {
   const [initialDraft] = useState(() =>
-    recipe ? recipeToDraft(recipe) : emptyDraft(),
+    recipe ? recipeToDraft(recipe) : emptyDraft(newType),
   );
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { categories, units, checkAndAddUnitType } = useConstants();
-  const unitNames = useMemo(() => units.map((u) => u.name), [units]);
+  const { categories, unitNames, checkAndAddUnitType } = useConstants();
 
   const [rows, setRows] = useState<EditorRow[]>(initialDraft.rows);
   const rowsRef = useRef(initialDraft.rows);
@@ -158,11 +160,13 @@ function RecipeForm({ recipeId, recipe }: RecipeFormProps) {
       categories: initialDraft.categories,
       ingredients: [],
       author: initialDraft.author,
+      type: initialDraft.type,
     },
   });
 
   const selectedCategories = useWatch({ control, name: "categories" }) ?? [];
   const image = useWatch({ control, name: "image" }) ?? "";
+  const isDrinkForm = isDrink({ type: useWatch({ control, name: "type" }) });
 
   const buildDraft = useCallback((): RecipeDraft => {
     const values = getValues();
@@ -176,6 +180,7 @@ function RecipeForm({ recipeId, recipe }: RecipeFormProps) {
       categories: values.categories ?? [],
       rows: rowsRef.current,
       author: authorRef.current,
+      type: toRecipeType(values.type),
     };
   }, [getValues]);
 
@@ -205,6 +210,8 @@ function RecipeForm({ recipeId, recipe }: RecipeFormProps) {
     setValue("image", draft.image);
     setValue("sourceUrl", draft.sourceUrl);
     setValue("categories", draft.categories);
+    // Drafts saved before drinks were recipes have no type.
+    setValue("type", toRecipeType(draft.type));
     authorRef.current = draft.author;
     updateRows(draft.rows);
     setImageFile(null);
@@ -275,7 +282,7 @@ function RecipeForm({ recipeId, recipe }: RecipeFormProps) {
         return null;
       }
     }
-    if (/^https?:\/\//i.test(current)) {
+    if (isRemoteUrl(current)) {
       try {
         const url = await copyImageFromUrl(current);
         setValue("image", url);
@@ -424,7 +431,7 @@ function RecipeForm({ recipeId, recipe }: RecipeFormProps) {
       <div className="max-w-4xl mx-auto space-y-4">
         <div className="flex justify-between items-center">
           <h2 className="text-2xl font-bold">
-            {recipeId ? "Rediger opskrift" : "Tilføj ny opskrift"}
+            {recipeId ? "Rediger" : "Tilføj ny"} {isDrinkForm ? "drink" : "opskrift"}
           </h2>
           <Button
             variant="ghost"
@@ -549,6 +556,24 @@ function RecipeForm({ recipeId, recipe }: RecipeFormProps) {
               )}
             </div>
 
+            <label className="md:col-span-2 flex items-center gap-3 rounded-xl bg-surface p-3">
+              <input
+                type="checkbox"
+                checked={isDrinkForm}
+                onChange={(e) =>
+                  setValue("type", e.target.checked ? "drink" : "recipe")
+                }
+              />
+              <span>
+                <span className="block font-bold text-sm text-gray-700">
+                  Det er en drink
+                </span>
+                <span className="block text-sm text-muted-foreground">
+                  Drinks vises under &quot;Drinks&quot; i opskriftslisten.
+                </span>
+              </span>
+            </label>
+
             <div>
               <span className={labelClass}>Kategorier</span>
               <div className="grid grid-cols-2 gap-2">
@@ -574,7 +599,6 @@ function RecipeForm({ recipeId, recipe }: RecipeFormProps) {
           <IngredientEditor
             rows={rows}
             onChange={updateRows}
-            units={unitNames}
             error={ingredientError}
           />
 
@@ -662,7 +686,9 @@ function Spinner({ text }: { text: string }) {
 
 function AddRecipePageContent() {
   const router = useRouter();
-  const recipeId = useSearchParams().get("id");
+  const searchParams = useSearchParams();
+  const recipeId = searchParams.get("id");
+  const newType = toRecipeType(searchParams.get("type"));
 
   const { data: recipe, isError, isFetchedAfterMount } = useQuery({
     queryKey: ["recipe", recipeId],
@@ -691,9 +717,10 @@ function AddRecipePageContent() {
   return (
     <RecipeForm
       // Remount (and re-initialise) when switching between recipes.
-      key={recipeId ?? "new"}
+      key={recipeId ?? `new-${newType}`}
       recipeId={recipeId}
       recipe={recipe}
+      newType={newType}
     />
   );
 }
