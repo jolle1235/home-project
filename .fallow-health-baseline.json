@@ -1,0 +1,157 @@
+{
+  "finding_counts": {
+    "app/api/images/[id]/route.ts": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "app/api/item/route.ts": {
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "app/api/recipe/[id]/route.ts": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "app/api/recipe/route.ts": {
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "app/api/scrape/route.ts": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "app/api/upload/route.ts": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "app/context/ConstantsContext.tsx": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "app/features/recipes/[id]/page.tsx": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      },
+      "crap_moderate": {
+        "count": 5
+      }
+    },
+    "app/features/recipes/add-recipe/page.tsx": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 2
+      },
+      "crap_high": {
+        "count": 2
+      },
+      "crap_moderate": {
+        "count": 2
+      }
+    },
+    "app/features/recipes/client/RecipePageClient.tsx": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 2
+      }
+    },
+    "app/features/recipes/components/IngredientEditor.tsx": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      },
+      "crap_high": {
+        "count": 1
+      },
+      "crap_moderate": {
+        "count": 3
+      }
+    },
+    "app/features/recipes/components/RecipeCardComponent.tsx": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "app/features/recipes/components/RecipeImportBar.tsx": {
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "app/features/recipes/hooks/useRecipeDraft.ts": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "app/features/recipes/server/scrape/extractors.ts": {
+      "crap_high": {
+        "count": 1
+      },
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "app/features/shoppingList/client/ShoppingListPageClient.tsx": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "app/features/shoppingList/components/ShoppingListItemComponent.tsx": {
+      "complexity_critical": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "app/features/shoppingList/server/shoppinglist.server.ts": {
+      "crap_critical": {
+        "count": 2
+      },
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "app/features/shoppingList/utils/shoppinglistHelper.ts": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "app/features/weekplanner/page.tsx": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "app/hooks/useScrollRefresh.ts": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "app/lib/safeFetch.ts": {
+      "crap_high": {
+        "count": 1
+      }
+    }
+  },
+  "runtime_coverage_findings": [],
+  "target_keys": [
+    "app/features/recipes/server/scrape/normalize.ts:high impact",
+    "app/features/recipes/server/scrape/extractors.ts:untested risk",
+    "app/utils/stringUtils.ts:high impact",
+    "app/features/recipes/add-recipe/page.tsx:complexity"
+  ]
+}

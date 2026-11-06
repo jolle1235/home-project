@@ -10,9 +10,10 @@ npm run build && npm start  # needed to test PWA / service worker
 npm run lint                # ESLint 9 flat config (eslint.config.mjs)
 npm run generate-pwa-icons  # regenerates public/icon/* via sharp
 npm test                    # vitest: unit tests for pure utils (app/**/*.test.ts)
+npx fallow audit --base master  # the commit gate: dead code, duplication, new complexity
 ```
 
-Tests cover only pure logic (ingredient parsing, recipe scraping, text tidying, safeFetch). CI (`.github/workflows/lint.yml`) runs `npm ci && npm run lint` on Node 20 only; it does not run the tests.
+Tests cover only pure logic (ingredient parsing, recipe scraping, text tidying, safeFetch). CI (`.github/workflows/lint.yml`) runs `npm ci`, `npm run lint` and `fallow audit` on Node 20; it does not run the tests.
 
 Env (`.env.local`, git-ignored): `MONGODB_URI`, `MONGO_DATABASE_NAME`.
 
@@ -79,15 +80,20 @@ Prefer TanStack Query hooks over adding new contexts.
 - **Ingredient input:** recipes (incl. drinks) and the shopping list both use `features/recipes/components/IngredientEditor.tsx`, which works on editor rows (`utils/ingredientRows.ts`: `rowsToIngredients` / `ingredientsToRows`). Pass `allowSections={false}` where sections and reordering make no sense.
 - **Imports:** a mix of relative paths and the `@/*` alias. The alias maps to the repo root, so write `@/app/...`.
 
+## Commits (fallow gate)
+
+Every commit runs `fallow audit` (`.githooks/pre-commit`, enabled by `npm install` via the `prepare` script; config in `.fallowrc.jsonc`). For Claude, `.claude/hooks/fallow-gate.sh` also blocks `git commit` / `git push` while the audit fails, and CI runs it again.
+
+- **When asked to commit, use the `commit` skill** (`.claude/skills/commit/`). It runs the gate first and fixes failures using the vendored `fallow` skill.
+- Dead code and duplication must be **0** in changed files (duplication threshold is 0). Pre-existing complexity is frozen in `.fallow-health-baseline.json`; only new over-threshold functions fail.
+- Never use `--no-verify`, never edit the hooks or loosen `.fallowrc.jsonc` to get through, and never regenerate the health baseline to hide new complexity. Ask the user before adding a `fallow-ignore` suppression, and always state the reason in it.
+
 ## Gotchas
 
-- `app/utils/middleware.ts` (CORS) is **not active**: Next only loads middleware/proxy from the project root.
 - The PWA uses `next-pwa` (see `runtimeCaching` in `next.config.ts`). `public/sw.js` and `public/workbox-*.js` are build output; don't hand-edit them.
 - The README and PWA_README describe IndexedDB offline sync, but no IndexedDB code exists. Offline support is only service-worker caching.
-- `api/ingredient/route.ts` uses collection `"Items"` (capital I), while everything else uses `"items"`.
 - `app/utils/apiHelperFunctions.ts` starts with a `"use cliet"` typo, so the directive does nothing.
 - `getRecipes()` caps results at 50.
-- Unused dependencies: MUI/emotion, react-dnd, amqplib, next-connect, multer. Don't build on them without asking.
 
 <!-- BEGIN:nextjs-agent-rules -->
 

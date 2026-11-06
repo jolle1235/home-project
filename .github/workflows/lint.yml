@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # fallow audit needs history to find the merge-base
 
       - uses: actions/setup-node@v4
         with:
@@ -19,3 +21,9 @@ jobs:
       - run: npm ci
 
       - run: npm run lint
+
+      # Backstop for the pre-commit hook (which can be skipped with --no-verify).
+      - name: fallow audit
+        run: npx fallow audit --quiet
+        env:
+          FALLOW_AUDIT_BASE: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || github.event.before }}

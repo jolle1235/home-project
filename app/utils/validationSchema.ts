@@ -1,41 +1,20 @@
 import * as Yup from "yup";
 import { RECIPE_TYPES } from "../features/recipes/types/Recipe";
 import {
-  maxRecipeAuthorLength,
   maxRecipeDescriptionLength,
   maxRecipeNameLength,
   maxRecipePersons,
   maxRecipeTime,
   maxWeight,
-  minPasswordLength,
   minRecipeDescriptionLength,
   minRecipeItems,
   minRecipeNameLength,
   minRecipePersons,
   minRecipeTime,
   minWeight,
-  passwordSpecialChars,
 } from "./validationVariables";
 
-export const emailSchema = Yup.string()
-  .email("Ugyldigt email-format")
-  .required("Email er påkrævet");
-
-export const passwordSchema = Yup.string()
-  .required("Adgangskode er påkrævet")
-  .min(
-    minPasswordLength,
-    `Adgangskoden skal være mindst ${minPasswordLength} tegn`
-  )
-  .matches(/[A-Z]/, "Adgangskoden skal indeholde mindst ét stort bogstav")
-  .matches(/[a-z]/, "Adgangskoden skal indeholde mindst ét lille bogstav")
-  .matches(/[0-9]/, "Adgangskoden skal indeholde mindst ét tal")
-  .matches(
-    passwordSpecialChars,
-    "Adgangskoden skal indeholde mindst ét specialtegn"
-  );
-
-export const quantitySchema = Yup.number()
+const quantitySchema = Yup.number()
   .transform((value, originalValue) =>
     typeof originalValue === "string" && originalValue.trim() === ""
       ? null
@@ -45,12 +24,12 @@ export const quantitySchema = Yup.number()
   .max(maxWeight, `Max ${maxWeight}`)
   .required("Vægt er påkrævet");
 
-export const recipeNameSchema = Yup.string()
+const recipeNameSchema = Yup.string()
   .max(maxRecipeNameLength, `Navn kan maks være ${maxRecipeNameLength} tegn`)
   .min(minRecipeNameLength, `Navn skal være mindst ${minRecipeNameLength} tegn`)
   .required("Navn er påkrævet");
 
-export const recipeTimeSchema = Yup.number()
+const recipeTimeSchema = Yup.number()
   .transform((value, originalValue) =>
     typeof originalValue === "string" && originalValue.trim() === ""
       ? null
@@ -60,9 +39,9 @@ export const recipeTimeSchema = Yup.number()
   .max(maxRecipeTime, `Kan ikke være mere end ${maxRecipeTime}`)
   .required("Tid er påkrævet");
 
-export const recipeAuthorSchema = Yup.string().default("");
+const recipeAuthorSchema = Yup.string().default("");
 
-export const recipeImgSchema = Yup.string()
+const recipeImgSchema = Yup.string()
   .default("")
   .test(
     "is-url-or-empty",
@@ -72,7 +51,7 @@ export const recipeImgSchema = Yup.string()
       !value || /^\/(?!\/)/.test(value) || Yup.string().url().isValidSync(value)
   );
 
-export const recipePersonAmountSchema = Yup.number()
+const recipePersonAmountSchema = Yup.number()
   .transform((value, originalValue) =>
     typeof originalValue === "string" && originalValue.trim() === ""
       ? null
@@ -82,7 +61,7 @@ export const recipePersonAmountSchema = Yup.number()
   .max(maxRecipePersons, `Max ${maxRecipePersons}`)
   .required("Antal personer er påkrævet");
 
-export const recipeDescriptionSchema = Yup.string()
+const recipeDescriptionSchema = Yup.string()
   .max(maxRecipeDescriptionLength, `Max ${maxRecipeDescriptionLength} tegn`)
   .min(
     minRecipeDescriptionLength,
@@ -99,11 +78,6 @@ const addIngredientSchema = Yup.object().shape({
     .required("Mængde er påkrævet"),
   unit: Yup.string().required("Enhed er påkrævet"),
   category: Yup.string().required("Kategori er påkrævet"),
-});
-
-export const loginSchema = Yup.object({
-  email: emailSchema,
-  password: passwordSchema,
 });
 
 export const recipeSchema = Yup.object({
