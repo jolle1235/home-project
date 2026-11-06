@@ -1,60 +1,74 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useMemo, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { useRecipeContext } from "../../context/RecipeContext";
 import Button from "../../components/Button";
 import { useScrollRefresh } from "../../hooks/useScrollRefresh";
 import { PullToRefreshIndicator } from "../../components/PullToRefreshIndicator";
+import { toDateKey } from "../../utils/dateUtils";
+
+function subscribeNever() {
+  return () => {};
+}
+
+function getMonday(d: Date) {
+  const date = new Date(d);
+  const day = date.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  date.setDate(date.getDate() + diff);
+  date.setHours(0, 0, 0, 0);
+  return date;
+}
+
+// The rest of this week from today, then the next two full weeks.
+function buildWeekGrid(today: Date): (Date | null)[] {
+  const monday = getMonday(today);
+  const weekDayIdx = today.getDay() === 0 ? 6 : today.getDay() - 1;
+
+  const grid: (Date | null)[] = [];
+
+  for (let i = 0; i < 7; i++) {
+    if (i < weekDayIdx) {
+      grid.push(null);
+    } else {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      grid.push(d >= today ? d : null);
+    }
+  }
+
+  const start = new Date(today);
+  start.setDate(today.getDate() + (7 - weekDayIdx));
+
+  for (let w = 0; w < 2; w++) {
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(start);
+      d.setDate(start.getDate() + w * 7 + i);
+      grid.push(d);
+    }
+  }
+
+  return grid;
+}
 
 export default function WeeklyRecipePlanner() {
   const router = useRouter();
   const { weekPlan, removeRecipeFromWeekPlan, refreshWeekPlan } =
     useRecipeContext();
 
-  const [weekDates, setWeekDates] = useState<(Date | null)[]>([]);
   const { isRefreshing } = useScrollRefresh(refreshWeekPlan);
 
-  function getMonday(d: Date) {
-    const date = new Date(d);
-    const day = date.getDay();
-    const diff = day === 0 ? -6 : 1 - day;
-    date.setDate(date.getDate() + diff);
-    date.setHours(0, 0, 0, 0);
-    return date;
-  }
-
-  useEffect(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const monday = getMonday(today);
-    const weekDayIdx = today.getDay() === 0 ? 6 : today.getDay() - 1;
-
-    const grid: (Date | null)[] = [];
-
-    for (let i = 0; i < 7; i++) {
-      if (i < weekDayIdx) {
-        grid.push(null);
-      } else {
-        const d = new Date(monday);
-        d.setDate(monday.getDate() + i);
-        grid.push(d >= today ? d : null);
-      }
-    }
-
-    let start = new Date(today);
-    start.setDate(today.getDate() + (7 - weekDayIdx));
-
-    for (let w = 0; w < 2; w++) {
-      for (let i = 0; i < 7; i++) {
-        const d = new Date(start);
-        d.setDate(start.getDate() + w * 7 + i);
-        grid.push(d);
-      }
-    }
-
-    setWeekDates(grid);
-  }, []);
+  // "Today" exists only on the client; the server renders an empty grid,
+  // as it did before, so hydration still matches.
+  const today = useSyncExternalStore(
+    subscribeNever,
+    () => new Date().toDateString(),
+    () => null,
+  );
+  const weekDates = useMemo(
+    () => (today ? buildWeekGrid(new Date(today)) : []),
+    [today],
+  );
 
   function handleRouter(id?: string) {
     if (id) router.push(`/recipes/${id}`);
@@ -70,7 +84,7 @@ export default function WeeklyRecipePlanner() {
         {weekDates
           .filter((date) => date !== null)
           .map((date) => {
-            const dateKey = date!.toISOString().split("T")[0];
+            const dateKey = toDateKey(date!);
 
             const displayText = date!.toLocaleDateString("da-DK", {
               month: "short",

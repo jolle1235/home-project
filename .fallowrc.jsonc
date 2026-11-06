@@ -1,0 +1,17 @@
+{
+  "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
+  // Build output from next-pwa; never hand-edited.
+  "ignorePatterns": ["public/sw.js", "public/sw-register.js", "public/workbox-*.js"],
+  "duplicates": {
+    // Report every duplicate pair and fail on any duplication at all.
+    "threshold": 0
+  },
+  "audit": {
+    // Fail on every finding in changed files, not just newly introduced ones.
+    "gate": "all",
+    // Existing complexity is accepted and frozen here, so only NEW over-threshold
+    // functions fail. Dead code and duplication have no baseline: they must stay at 0.
+    // Do not regenerate this file to hide new complexity.
+    "healthBaseline": ".fallow-health-baseline.json"
+  }
+}

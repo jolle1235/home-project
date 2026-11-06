@@ -7,4 +7,4 @@ export const shoppingStores = [
   "Andre",
 ] as const;
 
-export type ShoppingStore = (typeof shoppingStores)[number];
+type ShoppingStore = (typeof shoppingStores)[number];

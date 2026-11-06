@@ -25,6 +25,7 @@ import { useConstants } from "@/app/context/ConstantsContext";
 import { IngredientEditor } from "../components/IngredientEditor";
 import { RecipeImportBar } from "../components/RecipeImportBar";
 import { useRecipeDraft } from "../hooks/useRecipeDraft";
+import { fetchRecipe } from "../api/recipe.client";
 import { EditorRow, rowsToIngredients } from "../utils/ingredientRows";
 import {
   RecipeDraft,
@@ -42,12 +43,6 @@ const labelClass = "block text-gray-700 text-sm font-bold mb-2";
 // Number inputs hold "" when empty; the schema turns "" into "missing".
 function numberField(value: number): number {
   return value || ("" as unknown as number);
-}
-
-async function fetchRecipe(id: string): Promise<Recipe> {
-  const response = await fetch(`/api/recipe/${id}`);
-  if (!response.ok) throw new Error("Failed to fetch recipe");
-  return response.json();
 }
 
 async function readError(res: Response, fallback: string): Promise<string> {

@@ -1,7 +1,3 @@
-// Password validation
-export const minPasswordLength = 8;
-export const passwordSpecialChars = /[@$!%*?&]/;
-
 // Weight validation
 export const maxWeight = 10000;
 export const minWeight = 0;
@@ -14,7 +10,6 @@ export const minRecipeTime = 1;
 export const maxRecipeTime = 999;
 
 export const maxRecipeAuthorLength = 100;
-export const minRecipeAuthorLength = 1;
 
 export const minRecipePersons = 1;
 export const maxRecipePersons = 50;
