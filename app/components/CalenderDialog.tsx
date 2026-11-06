@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import Button from "./Button";
+import { toDateKey } from "../utils/dateUtils";
 
 interface CalendarDialogProps {
   open: boolean;
@@ -18,7 +19,7 @@ export default function CalendarDialog({
   const [selectedDates, setSelectedDates] = useState<Set<string>>(new Set());
 
   const toggleDate = (date: Date) => {
-    const dateKey = date.toISOString().split("T")[0];
+    const dateKey = toDateKey(date);
     const newSet = new Set(selectedDates);
 
     if (newSet.has(dateKey)) {
@@ -67,7 +68,7 @@ export default function CalendarDialog({
         {/* Date List */}
         <div className="flex flex-col gap-3 max-h-96 overflow-y-auto pr-1">
           {dateList.map((date) => {
-            const dateKey = date.toISOString().split("T")[0];
+            const dateKey = toDateKey(date);
             const isSelected = selectedDates.has(dateKey);
 
             return (

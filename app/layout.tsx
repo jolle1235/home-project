@@ -7,6 +7,7 @@ import type { Metadata, Viewport } from "next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ConstantsProvider } from "./context/ConstantsContext";
 import ReactQueryProvider from "./providers/ReactQueryProvider";
+import { ToastContainer } from "react-toastify";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -80,6 +81,7 @@ export default function RootLayout({
             </ConstantsProvider>
           </RecipeProvider>
         </ReactQueryProvider>
+        <ToastContainer position="bottom-center" autoClose={2500} />
         <Script src="/sw-register.js" strategy="afterInteractive" />
       </body>
     </html>

@@ -1,11 +1,6 @@
 "use client";
-import React, {
-  createContext,
-  useContext,
-  useState,
-  ReactNode,
-  useEffect,
-} from "react";
+import React, { createContext, useContext, ReactNode } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Recipe } from "../features/recipes/types/Recipe";
 import { WeekPlan } from "../features/weekplanner/types/weekPlan";
 import { toast } from "react-toastify";
@@ -20,34 +15,29 @@ interface RecipeContextProps {
   refreshWeekPlan: () => Promise<void>;
 }
 
+const WEEK_PLAN_QUERY_KEY = ["weekPlan"];
+
+async function fetchWeekPlan(): Promise<WeekPlan[]> {
+  const response = await fetch("/api/weekPlan");
+  if (!response.ok) throw new Error("Failed to fetch week plan");
+  return response.json();
+}
+
 const RecipeContext = createContext<RecipeContextProps | undefined>(undefined);
 
 export function RecipeProvider({ children }: { children: ReactNode }) {
-  const [weekPlan, setWeekPlan] = useState<WeekPlan[]>([]);
-
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
-    try {
-      const response = await fetch("/api/weekPlan");
-
-      if (response.ok) {
-        const data = await response.json();
-        setWeekPlan(data);
-      }
-    } catch (error) {
-      console.error("Error loading week plan:", error);
-    }
-  };
+  const queryClient = useQueryClient();
+  const { data: weekPlan = [], refetch } = useQuery({
+    queryKey: WEEK_PLAN_QUERY_KEY,
+    queryFn: fetchWeekPlan,
+  });
 
   const refreshWeekPlan = async () => {
-    await loadData();
+    await refetch();
   };
 
   const save = async (newPlan: WeekPlan[]) => {
-    setWeekPlan(newPlan);
+    queryClient.setQueryData(WEEK_PLAN_QUERY_KEY, newPlan);
 
     try {
       await saveWeekPlanToDatabase(newPlan);
@@ -58,29 +48,20 @@ export function RecipeProvider({ children }: { children: ReactNode }) {
   };
 
   const addRecipesToWeekPlan = (dates: string[], recipe: Recipe) => {
-    setWeekPlan((prev) => {
-      const newEntries: WeekPlan[] = dates.map((date) => ({
-        date,
-        recipeId: recipe._id,
-        recipeName: recipe.recipeName,
-      }));
-
-      const combined = [...prev];
-
-      newEntries.forEach((entry) => {
-        const exists = combined.some(
-          (e) => e.date === entry.date && e.recipeId === entry.recipeId,
-        );
-
-        if (!exists) {
-          combined.push(entry);
-        }
-      });
-
-      saveWeekPlanToDatabase(combined);
-
-      return combined;
-    });
+    const combined = [...weekPlan];
+    for (const date of dates) {
+      const exists = combined.some(
+        (e) => e.date === date && e.recipeId === recipe._id,
+      );
+      if (!exists) {
+        combined.push({
+          date,
+          recipeId: recipe._id,
+          recipeName: recipe.recipeName,
+        });
+      }
+    }
+    save(combined);
 
     toast.success(
       `Opskrift tilføjet til ${dates.length} ${

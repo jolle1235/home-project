@@ -1,12 +1,6 @@
 "use client";
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  ReactNode,
-} from "react";
+import { createContext, useContext, useMemo, ReactNode } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   addCategoryApi,
   removeCategoryApi,
@@ -33,21 +27,29 @@ const ConstantsContext = createContext<ConstantsContextType | undefined>(
   undefined
 );
 
+async function fetchConstants(): Promise<{
+  categories: Constant[];
+  units: Constant[];
+}> {
+  const [catRes, unitRes] = await Promise.all([
+    fetch("/api/admin/recipeCategories"),
+    fetch("/api/admin/unitTypes"),
+  ]);
+  return { categories: await catRes.json(), units: await unitRes.json() };
+}
+
 export function ConstantsProvider({ children }: { children: ReactNode }) {
-  const [categories, setCategories] = useState<Constant[]>([]);
-  const [units, setUnits] = useState<Constant[]>([]);
+  const { data, refetch } = useQuery({
+    queryKey: ["constants"],
+    queryFn: fetchConstants,
+  });
+  const categories = useMemo(() => data?.categories ?? [], [data]);
+  const units = useMemo(() => data?.units ?? [], [data]);
   const unitNames = useMemo(() => units.map((u) => u.name), [units]);
 
   async function fetchData() {
-    const catRes = await fetch("/api/admin/recipeCategories");
-    const unitRes = await fetch("/api/admin/unitTypes");
-    setCategories(await catRes.json());
-    setUnits(await unitRes.json());
+    await refetch();
   }
-
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   async function addCategory(name: string) {
     if (!name) return;
