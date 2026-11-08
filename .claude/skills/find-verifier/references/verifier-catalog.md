@@ -19,6 +19,15 @@ Shared tools: `npm run verify:up -- --id <id> [--ref <sha>] [--data fixtures|sna
   matching feature file. BEFORE on `--ref <base>`, AFTER on the working tree.
 - **Cost:** about 1 minute per instance.
 - **Blind spots:** paths the script does not take; layout (see 7).
+- **Hydration and first-load checks** (learned 2026-11-08):
+  - Load each page in a **fresh browser** (`openDriver` per route): Next's dev tooling reports a
+    given mismatch only once per session.
+  - Wait for React with `app.hydrated(locator)` before reading the console or typing; a fixed sleep
+    misses warnings at random.
+  - Check the editor is in the server HTML (`(await app.goto(route)).text()`) and print `ssr=yes|no`:
+    a page served from Next's static shell renders client-only and proves nothing.
+  - The console warning is unreliable on its own; also assert a symptom (a stale attribute, focus
+    that doesn't move) on a page that is always server-rendered.
 
 ## 2. Golden replay of recorded inputs
 
