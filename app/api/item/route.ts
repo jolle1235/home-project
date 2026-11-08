@@ -13,7 +13,9 @@ export async function GET(request: NextRequest) {
 
     const items = await db
       .collection("items")
-      .find({ name: { $regex: searchTerm, $options: "i" } })
+      .find({
+        $where: `this.name.toLowerCase().includes('${searchTerm.toLowerCase()}')`,
+      })
       .toArray();
 
     return NextResponse.json(

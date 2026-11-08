@@ -89,7 +89,7 @@ export function RecipeProvider({ children }: { children: ReactNode }) {
     const dates: Date[] = [];
     const today = new Date();
 
-    for (let i = 0; i < 28; i++) {
+    for (let i = 1; i <= 28; i++) {
       const d = new Date(today);
       d.setDate(today.getDate() + i);
       dates.push(d);
