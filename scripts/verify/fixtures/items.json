@@ -1,0 +1,98 @@
+[
+  {
+    "_id": {
+      "$oid": "6650000000000000000000b1"
+    },
+    "name": "hakket oksekød",
+    "category": "Kød",
+    "defaultUnit": "g"
+  },
+  {
+    "_id": {
+      "$oid": "6650000000000000000000b2"
+    },
+    "name": "løg",
+    "category": "Grønt",
+    "defaultUnit": "stk"
+  },
+  {
+    "_id": {
+      "$oid": "6650000000000000000000b3"
+    },
+    "name": "mælk",
+    "category": "Mejeri",
+    "defaultUnit": "ml"
+  },
+  {
+    "_id": {
+      "$oid": "6650000000000000000000b4"
+    },
+    "name": "smør",
+    "category": "Mejeri",
+    "defaultUnit": "g"
+  },
+  {
+    "_id": {
+      "$oid": "6650000000000000000000b5"
+    },
+    "name": "hvedemel",
+    "category": "Kolonial",
+    "defaultUnit": "g"
+  },
+  {
+    "_id": {
+      "$oid": "6650000000000000000000b6"
+    },
+    "name": "lasagneplader",
+    "category": "Kolonial",
+    "defaultUnit": "g"
+  },
+  {
+    "_id": {
+      "$oid": "6650000000000000000000b7"
+    },
+    "name": "kyllingebryst",
+    "category": "Kød",
+    "defaultUnit": "g"
+  },
+  {
+    "_id": {
+      "$oid": "6650000000000000000000b8"
+    },
+    "name": "hjertesalat",
+    "category": "Grønt",
+    "defaultUnit": "stk"
+  },
+  {
+    "_id": {
+      "$oid": "6650000000000000000000b9"
+    },
+    "name": "lime",
+    "category": "Grønt",
+    "defaultUnit": "stk"
+  },
+  {
+    "_id": {
+      "$oid": "6650000000000000000000ba"
+    },
+    "name": "mynte",
+    "category": "Grønt",
+    "defaultUnit": "bundt"
+  },
+  {
+    "_id": {
+      "$oid": "6650000000000000000000bb"
+    },
+    "name": "hvid rom",
+    "category": "Drikkevarer",
+    "defaultUnit": "cl"
+  },
+  {
+    "_id": {
+      "$oid": "6650000000000000000000bc"
+    },
+    "name": "rørsukker",
+    "category": "Kolonial",
+    "defaultUnit": "tsk"
+  }
+]

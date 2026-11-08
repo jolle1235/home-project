@@ -1,0 +1,37 @@
+[
+  {
+    "_id": {
+      "$oid": "6650000000000000000000e2"
+    },
+    "listId": "default",
+    "updatedAt": {
+      "$date": "2026-01-01T00:00:00Z"
+    },
+    "items": [
+      {
+        "_id": "fixture-shop-1",
+        "item": {
+          "_id": "6650000000000000000000b3",
+          "name": "mælk",
+          "category": "Mejeri",
+          "defaultUnit": "ml"
+        },
+        "unit": "l",
+        "marked": false,
+        "quantity": 1
+      },
+      {
+        "_id": "fixture-shop-2",
+        "item": {
+          "_id": "6650000000000000000000b9",
+          "name": "lime",
+          "category": "Grønt",
+          "defaultUnit": "stk"
+        },
+        "unit": "stk",
+        "marked": true,
+        "quantity": 3
+      }
+    ]
+  }
+]

@@ -22,6 +22,8 @@ jobs:
 
       - run: npm run lint
 
+      - run: npm test
+
       # Backstop for the pre-commit hook (which can be skipped with --no-verify).
       - name: fallow audit
         run: npx fallow audit --quiet
