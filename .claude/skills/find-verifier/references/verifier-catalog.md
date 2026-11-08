@@ -26,14 +26,24 @@ Shared tools: `npm run verify:up -- --id <id> [--ref <sha>] [--data fixtures|sna
   `parseIngredientLine`, `tidyRecipeText`, `formatInstructions`, `recipeToDraft` /
   `scrapedToDraft`, `unifyUnit`, `sortByCenter`, or the scrape normalizers.
 - **Signal:** the full list of `input → output` pairs; any difference is a finding.
-- **Recipe:** collect inputs from data (every ingredient line, description and recipe in
-  `.verify/snapshot/recipes.bson` gives hundreds of real cases; read it with `BSON.deserialize` as in
-  `scripts/verify/seed.mjs`). Run the function at the base commit, either in a
-  `verify:up --ref <base>` worktree or with `git stash` around a small runner script, and write
-  `evidence/golden-before.jsonl`. Run again after the change and `diff`. Commit only a small
-  synthetic golden set as a vitest test; the snapshot replay stays local.
-- **Cost:** minutes. Needs a snapshot (`npm run verify:snapshot`) for the real inputs.
-- **Blind spots:** inputs nobody has typed yet. Add edge cases by hand.
+- **Recipe:**
+  - **Inputs.** Mostly *generated*: the cross product of the dimensions the function cares about
+    (for the ingredient parser: quantity forms × every unit spelling and its case/dot variants ×
+    name endings × prefixes, plus odd single lines). The snapshot holds *stored results*, not the
+    raw text users typed (19 recipes, 253 parsed ingredients, 214 description lines in Nov 2026), so
+    use it to rebuild realistic inputs (`<quantity> <unit> <name>`, descriptions, item names), not
+    as the main source. Build inputs independently of the code under test (copy spelling tables
+    from the base commit once), or a dropped case silently drops out of the inputs too.
+  - **Run the base.** `git archive <base> app | tar -x -C <scratch>/base` gives the base source
+    without `node_modules`; pure utils need none. Load the TypeScript with jiti from any root:
+    `require("<repo>/node_modules/jiti")(__filename, { cache: false, requireCache: false })(<root>/app/...ts)`.
+    Print one JSON line per input with sorted keys and volatile fields (row `key`s) removed.
+  - **Compare.** Run the runner on the base copy and on the working tree, `cmp` the base twice
+    (determinism), then `diff`. Snapshot-derived results: report counts only.
+  - Commit only a small synthetic table as a vitest test; the replay stays local.
+- **Cost:** 15–20 minutes to write the runner the first time, seconds per run.
+- **Blind spots:** spellings nobody generated; wiring (who passes which arguments); see 6 for that.
+- **Proven:** see `verifier-log.md`, 2026-11-08 (17,290 lines; dropping the `ltr` alias changed 696).
 
 ## 3. Differential run (old vs new side by side)
 
@@ -149,3 +159,17 @@ Shared tools: `npm run verify:up -- --id <id> [--ref <sha>] [--data fixtures|sna
   by writing the bad version and watching `tsc` / `npm run lint` / `npx fallow` fail.
 - **Cost:** varies.
 - **Blind spots:** runtime data that bypasses the types (parse it at the boundary).
+
+---
+
+## Candidates (proposed by a scout, not yet run)
+
+Promote a candidate into the catalog, with its real recipe, after the first task that uses it.
+
+- **Layout geometry diff** (for spacing and layout tasks; fixes the blind spot of 1 and the
+  "everything below moved" problem of 7). Measure bounding boxes, gaps and a few computed styles
+  of elements found by role and text, after `document.fonts.ready` and all images complete; print
+  one rounded line per measurement; pass when only the intended heights and gaps change and
+  everything above and beside them is identical. Break it on purpose by shrinking a different
+  element instead (the image), removing the 44 px touch-target minimum, or adding a negative
+  margin that makes elements overlap.

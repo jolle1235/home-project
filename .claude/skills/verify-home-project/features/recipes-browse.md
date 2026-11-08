@@ -1,7 +1,7 @@
 # Browse recipes
 
 The start page lists recipe cards. A user switches between food, drinks and all, searches and
-filters, opens a recipe, or adds it to the meal plan for one or more of the next 28 days.
+filters, opens a recipe, or adds it to the meal plan for one or more of the next 21 days.
 
 ## Sub-features
 
@@ -39,5 +39,7 @@ Preconditions:
 ## Gotchas
 
 - `Færdig` stays disabled until a date is selected.
-- The dialog lists 28 days starting today; "today" is the browser's local date.
+- The dialog lists 21 days starting today; "today" is the browser's local date. It builds that
+  list itself and ignores its `availableDates` prop (28 days from `RecipeContext`): a known
+  follow-up, found by `merge-verdict` on 2026-11-08.
 - Cards are server-rendered; the first visit after start-up is warm already (verify:up warms routes).
