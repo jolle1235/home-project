@@ -1,3 +1,4 @@
+import { withSession } from "@/app/lib/auth";
 import { NextResponse } from "next/server";
 import { Recipe, toRecipeType } from "../../features/recipes/types/Recipe";
 import {
@@ -23,7 +24,7 @@ function toRecipeFields(data: any): Omit<Recipe, "_id"> {
   };
 }
 
-export async function GET() {
+async function handleGet() {
   try {
     const recipes = await getRecipes();
     return NextResponse.json(recipes);
@@ -36,7 +37,7 @@ export async function GET() {
   }
 }
 
-export async function POST(request: Request) {
+async function handlePost(request: Request) {
   try {
     const data = await request.json();
 
@@ -65,7 +66,7 @@ export async function POST(request: Request) {
   }
 }
 
-export async function PUT(request: Request) {
+async function handlePut(request: Request) {
   try {
     const data = await request.json();
     const recipe: Recipe = { _id: data._id, ...toRecipeFields(data) };
@@ -80,7 +81,7 @@ export async function PUT(request: Request) {
   }
 }
 
-export async function DELETE(request: Request) {
+async function handleDelete(request: Request) {
   try {
     const data = await request.json();
     await deleteRecipe(data._id);
@@ -93,3 +94,8 @@ export async function DELETE(request: Request) {
     );
   }
 }
+
+export const GET = withSession(handleGet);
+export const POST = withSession(handlePost);
+export const PUT = withSession(handlePut);
+export const DELETE = withSession(handleDelete);

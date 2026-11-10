@@ -1,44 +1,37 @@
+import { withSession } from "@/app/lib/auth";
+import clientPromise from "@/app/lib/mongodb";
 import { NextRequest, NextResponse } from "next/server";
-import { MongoClient, ObjectId } from "mongodb";
+import { ObjectId } from "mongodb";
 
-const MongoUri = process.env.MONGODB_URI ?? "";
-const databaseName = process.env.MONGO_DATABASE_NAME;
-const collectionName = "images";
-
-if (!MongoUri.startsWith("mongodb://") && !MongoUri.startsWith("mongodb+srv://")) {
-  throw new Error('Invalid MongoDB URI. It must start with "mongodb://" or "mongodb+srv://".');
-}
-
-export async function GET(
-  request: NextRequest,
-  context: { params: Promise<{ id: string }> } // Adjusted to handle Promise
+async function handleGet(
+  _request: NextRequest,
+  context: { params: Promise<{ id: string }> },
 ) {
-  const { id } = await context.params; // Await the params to resolve the Promise
-
+  const { id } = await context.params;
   if (!id) {
     return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
   }
 
-  const client = new MongoClient(MongoUri);
   try {
-    await client.connect();
-    const db = client.db(databaseName);
-    const collection = db.collection(collectionName);
-
-    const image = await collection.findOne({ _id: new ObjectId(id) });
+    const images = (await clientPromise).db(process.env.MONGO_DATABASE_NAME).collection("images");
+    const image = await images.findOne({ _id: new ObjectId(id) });
     if (!image) {
       return NextResponse.json({ error: "Image not found" }, { status: 404 });
     }
 
     const buffer = Buffer.isBuffer(image.data) ? image.data : image.data.buffer;
-
     return new Response(buffer, {
       status: 200,
-      headers: { "Content-Type": image.contentType },
+      headers: {
+        "Content-Type": image.contentType,
+        // An image id never changes content; private because it is behind the login.
+        "Cache-Control": "private, max-age=31536000, immutable",
+      },
     });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  } finally {
-    await client.close();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+
+export const GET = withSession(handleGet);

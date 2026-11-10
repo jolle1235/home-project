@@ -61,6 +61,10 @@ const withPWA = require("next-pwa")({
 // ---- Final merged config ----
 
 const nextConfig: NextConfig = {
+  // Images are behind the login. The optimizer fetches its source without the
+  // user's cookie (on Vercel from Vercel's own servers), so the browser loads
+  // /api/images/<id> itself; that route sends a year-long private cache header.
+  images: { unoptimized: true },
   // Drinks are recipes with type "drink"; old drinks links go to that view.
   async redirects() {
     return [

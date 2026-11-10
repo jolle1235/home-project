@@ -1,5 +1,3 @@
-"use server";
-
 import clientPromise from "../../../lib/mongodb";
 
 import { Ingredient } from "../../../model/Ingredient";
