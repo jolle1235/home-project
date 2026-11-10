@@ -6,7 +6,7 @@
 // result looks wrong.
 import fs from "node:fs";
 import { MongoClient } from "mongodb";
-import { cliArgs, isAlive, readInstance, resolveId } from "./lib.mjs";
+import { appFetch, cliArgs, isAlive, readInstance, resolveId } from "./lib.mjs";
 
 const id = resolveId(cliArgs().id);
 const instance = readInstance(id);
@@ -31,7 +31,7 @@ try {
   client = await MongoClient.connect(instance.mongoUri, { serverSelectionTimeoutMS: 3000 });
   const admin = client.db("admin");
   const before = (await admin.command({ serverStatus: 1 })).opcounters.query;
-  const response = await fetch(`${instance.url}/api/recipe`);
+  const response = await appFetch(instance, "/api/recipe");
   check("app answers", response.ok, `GET /api/recipe → ${response.status}`);
   const after = (await admin.command({ serverStatus: 1 })).opcounters.query;
   check("app reads the in-memory database", after > before, `queries ${before} → ${after}`);
