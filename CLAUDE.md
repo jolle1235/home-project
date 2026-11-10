@@ -12,6 +12,7 @@ npm run generate-pwa-icons  # regenerates public/icon/* via sharp
 npm test                    # vitest: unit tests for pure utils (app/**/*.test.ts)
 npx fallow audit --base master  # the commit gate: dead code, duplication, new complexity
 npm run verify:up -- --id <id>  # isolated app instance (worktree + in-memory Mongo); then verify:doctor / verify:smoke / verify:down
+                                #   --mode prod: next build + start; --env KEY=VALUE: override env (KEY= sets it empty)
 npm run verify:snapshot         # read-only copy of production into .verify/snapshot (gitignored, never commit)
 ```
 
@@ -19,7 +20,7 @@ To prove a change on the real app, use the `verify-home-project` skill (`.claude
 
 Tests cover only pure logic (ingredient parsing, recipe scraping, text tidying, safeFetch). CI (`.github/workflows/lint.yml`) runs `npm ci`, `npm run lint`, `npm test` and `fallow audit` on Node 20.
 
-Env (`.env.local`, git-ignored): `MONGODB_URI`, `MONGO_DATABASE_NAME`.
+Env (`.env.local`, git-ignored): `MONGODB_URI`, `MONGO_DATABASE_NAME`, `HOUSEHOLD_CODE` (≥12 characters), `AUTH_SECRET` (≥32). Without the last two the app stays locked; see **Login**.
 
 ## Routing
 
@@ -32,6 +33,7 @@ Pages live under `app/features/<feature>/` and get their public URLs from **rewr
 | `/shoppinglist` | `features/shoppingList` |
 | `/weekPlanner` | `features/weekplanner` |
 | `/admin` | `features/admin` |
+| `/login` | `app/login` (outside `features`, so it renders without the app shell) |
 
 `/` redirects to `/recipes`. A new feature page needs a matching rewrite pair (`/x` and `/x/:path*`), and usually a `Navbar` entry too.
 
@@ -40,7 +42,7 @@ Pages live under `app/features/<feature>/` and get their public URLs from **rewr
 Recent refactors moved code toward this layout. `recipes` and `shoppingList` follow it; use it for new work:
 
 - `page.tsx`: an async server component that calls `server/*.server.ts` directly and passes `initialData` to `client/*PageClient.tsx`
-- `server/*.server.ts`: `"use server"` Mongo access via a local `getDb()`; maps `ObjectId` ⇄ string `_id`
+- `server/*.server.ts`: Mongo access via a local `getDb()`; maps `ObjectId` ⇄ string `_id`. No `"use server"`: only server code imports these, and a `"use server"` module would be callable from the browser past the route checks
 - `api/*.client.ts`: `fetch` wrappers for the API routes
 - `hooks/`: TanStack Query hooks with optimistic `onMutate` + rollback + `invalidateQueries` (reference: `features/shoppingList/hooks/useShoppinglist.tsx`)
 - `components/`, `types/`, `utils/`, `constants.ts` (query keys, API paths)
@@ -49,7 +51,7 @@ Older areas (`weekplanner`, `admin`) are still `"use client"` pages that fetch m
 
 ## API routes (`app/api/*/route.ts`)
 
-Thin handlers. They delegate to a feature's `server/` module where one exists and return `NextResponse.json(...)`, or `{ error }` with a status code on failure.
+Thin handlers. They delegate to a feature's `server/` module where one exists and return `NextResponse.json(...)`, or `{ error }` with a status code on failure. Every handler is exported wrapped in `withSession(...)` (`app/lib/auth.ts`), except `api/login`.
 
 - `recipe`, `recipe/[id]`: CRUD (DELETE takes `_id` in the JSON body)
 - `item`: ingredient item catalogue, search via `?term=`
@@ -61,13 +63,13 @@ Thin handlers. They delegate to a feature's `server/` module where one exists an
 
 ## Data layer
 
-- `app/lib/mongodb.ts` exports a shared `clientPromise`, cached on `global` in dev. Always reuse it. (`images/[id]` still opens its own `MongoClient`, which is legacy.)
+- `app/lib/mongodb.ts` exports a shared `clientPromise`, cached on `global` in dev. Always reuse it.
 - Collections: `recipes`, `items`, `shoppingList`, `weekPlan`, `images`, `recipeCategories`, `unitTypes`. Drinks are recipes with `type: "drink"` (missing `type` = food); `/drinks` and `/drinks/*` redirect to the drinks view of `/recipes` (see `redirects` in `next.config.ts`).
 - Shared models: `app/model/` (`Item`, `Ingredient`, `Constant`). Feature types: `features/*/types/`. `_id` is always a string on the client.
 
 ## Global state
 
-`app/layout.tsx` nests `ReactQueryProvider` → `RecipeProvider` → `ConstantsProvider` → `NavBar` + page.
+`app/features/layout.tsx` nests `ReactQueryProvider` → `RecipeProvider` → `ConstantsProvider` → `NavBar` + page for every feature page. `app/layout.tsx` only holds the document, toasts and the service-worker script, so `/login` (in `app/login`) gets no shell and makes no API calls.
 
 - `ReactQueryProvider`: staleTime 5 min, gcTime 30 min, no refetch on focus, retry 1
 - `RecipeProvider` (`context/RecipeContext.tsx`): despite its name, it holds the **week plan**
@@ -83,6 +85,20 @@ Prefer TanStack Query hooks over adding new contexts.
 - **Validation:** limits live in `app/utils/validationVariables.ts` and Yup schemas in `app/utils/validationSchema.ts`.
 - **Ingredient input:** recipes (incl. drinks) and the shopping list both use `features/recipes/components/IngredientEditor.tsx`, which works on editor rows (`utils/ingredientRows.ts`: `rowsToIngredients` / `ingredientsToRows`). Pass `allowSections={false}` where sections and reordering make no sense.
 - **Imports:** a mix of relative paths and the `@/*` alias. The alias maps to the repo root, so write `@/app/...`.
+
+## Login (household code)
+
+The whole app is behind one shared code; there are no user accounts. Two layers refuse anything without a valid session:
+
+1. `proxy.ts` (Next 16's middleware) runs on every request except static files (its `matcher`). Only `/login` and `/api/login` are public; other pages redirect to `/login?next=…`, `/api/*` and `/_next/*` answer 401.
+2. Next to the data: every API handler is wrapped in `withSession`, and server pages that read Mongo call `requireSession()` (both in `app/lib/auth.ts`).
+
+The session is a stateless signed cookie (`hp_session`, `app/lib/session.ts`): HMAC with `AUTH_SECRET` over its expiry and a hash of the code, valid 365 days. Changing `HOUSEHOLD_CODE` logs every device out. If either env var is missing or too short, nothing is accepted (fail closed).
+
+- **Deploying:** set `HOUSEHOLD_CODE` and `AUTH_SECRET` on Vercel for Production *and* Preview; a new value takes effect after a redeploy. Pick a long code: the 1-second delay on wrong codes doesn't stop parallel guessing.
+- **New API route:** export its handlers through `withSession`. **New server page that reads Mongo:** call `requireSession()` first. Client pages are covered by their API routes.
+- **Images** are served unoptimized (`images.unoptimized` in `next.config.ts`): Next's optimizer fetches its source without the user's cookie, so the browser loads `/api/images/<id>` itself (cached a year, privately).
+- On iOS an installed PWA keeps its own cookies: the code is entered once in Safari and once in the app.
 
 ## Task flow
 
@@ -111,6 +127,7 @@ Every commit runs `fallow audit` (`.githooks/pre-commit`, enabled by `npm instal
 - The README and PWA_README describe IndexedDB offline sync, but no IndexedDB code exists. Offline support is only service-worker caching.
 - `app/utils/apiHelperFunctions.ts` starts with a `"use cliet"` typo, so the directive does nothing.
 - `getRecipes()` caps results at 50.
+- A production build (`npm run build && npm start`, or `verify:up --mode prod`) logs 404s for `/_vercel/speed-insights/script.js` locally; only Vercel serves it.
 
 <!-- BEGIN:nextjs-agent-rules -->
 

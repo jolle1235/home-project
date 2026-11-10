@@ -156,9 +156,31 @@ Shared tools: `npm run verify:up -- --id <id> [--ref <sha>] [--data fixtures|sna
 - **Use when:** the PWA and service worker, caching, anything that differs between dev and prod.
 - **Signal:** behaviour of `npm run build && npm start`, offline (`context.setOffline(true)`), cache
   hits.
-- **Recipe:** build inside a verify worktree; Next's dev lock does not apply to `start`.
-- **Cost:** about 3 minutes.
-- **Blind spots:** Vercel-specific behaviour.
+- **Recipe:** `npm run verify:up -- --id <id> --mode prod` runs `next build` and `next start` in
+  the instance's worktree, with the instance's env (database, household code). Run the task's
+  `check.mjs` and `verify:smoke` against it like any instance. Confirm the build really ran:
+  `.verify/runs/<id>/logs/next.log` shows "Compiled successfully" and the route list.
+- **Expected noise:** every page 404s on `/_vercel/speed-insights/script.js` (only Vercel serves it).
+- **Cost:** about 15 seconds to build here, plus the checks.
+- **Blind spots:** Vercel-specific behaviour (its image optimizer, edge, env per environment); the
+  service worker (the committed `public/sw.js` is stale since the Next 16 upgrade).
+- **Proven:** 2026-11-09, require-login: the Secure cookie flag only appears in this mode.
+
+## 13b. Anonymous request matrix (access control)
+
+- **Use when:** anything about who may reach what: login, permissions, a gate in front of routes.
+- **Signal:** for every page and every API route × method, the status and body an anonymous client
+  gets, plus bypass shapes (encoded segments, trailing slashes, case, `//`, `\`, `/_next/image`,
+  `x-middleware-subrequest`), and the data read back logged in afterwards.
+- **Recipe:** `fetch` with `redirect: "manual"` for exact statuses, `redirect: "follow"` for bypass
+  shapes (pass = not 2xx, or ends on the login page, and no fixture names in any body). Expect 401
+  only for a route's exported methods; others answer 405/204. Next answers `//`, `\` and trailing
+  slashes with 308 before the proxy runs. Prove each layer separately with deliberate breaks
+  (allowlist a path in the gate: the next layer must still refuse).
+- **Cost:** about 2 minutes per instance.
+- **Blind spots:** routes added later (the list is explicit); client-side state after a session ends.
+- **Proven:** 2026-11-09, require-login: BEFORE 72/110 red, AFTER 130/130; a removed route check
+  turned 5 lines red.
 
 ## 14. Static guarantee
 
