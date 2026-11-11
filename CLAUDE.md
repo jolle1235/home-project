@@ -102,10 +102,10 @@ The session is a stateless signed cookie (`hp_session`, `app/lib/session.ts`): H
 
 ## Task flow
 
-For any task to be done end to end (bug, refactor, feature, chore), use the `deliver` skill: `deliver "<task>"`, `deliver resume <slug>`. It runs these stages, each its own skill in `.claude/skills/`:
+For any task to be done end to end (bug, refactor, feature, chore), use the `deliver` skill: `deliver "<task>"`, `deliver resume <slug>`. It runs these stages, each its own skill. The flow skills are shared with other projects: they come from the private repo `jolle1235/agent-skills` (its README covers install and update), installed into `.claude/skills/` and pinned in `skills-lock.json`. Change them there, not here, then `npx skills update -p -y`. What is specific to this repo (commands, gates, conventions, canonical homes, review focus) lives in `.claude/flow/profile.md`, which every stage reads:
 
 1. `scope-task`: a brief with observable expected behaviour; asks only behaviour questions, showing what the app does today.
-2. A plan, with `find-verifier` when the proof isn't obvious (its catalog and log live in `find-verifier/references/`).
+2. A plan, with `find-verifier` when the proof isn't obvious (this repo's catalog and log: `.claude/flow/verifier-catalog.md`, `verifier-log.md`).
 3. `plan-critique`: a fresh agent critiques the plan. 4. The user approves.
 5. `before-after`: the same check on the base commit (red) and the change (green), on `verify-home-project` instances.
 6. Clean: tsc, ESLint, tests and fallow, then `/simplify`, then `thermonuclear-review` and `solid-check` in parallel.
@@ -117,7 +117,7 @@ The flow stops at READY; only the user decides to merge. Run state lives in `.fl
 
 Every commit runs `fallow audit` (`.githooks/pre-commit`, enabled by `npm install` via the `prepare` script; config in `.fallowrc.jsonc`). For Claude, `.claude/hooks/fallow-gate.sh` also blocks `git commit` / `git push` while the audit fails, and CI runs it again.
 
-- **When asked to commit, use the `commit` skill** (`.claude/skills/commit/`). It runs the gate first and fixes failures using the vendored `fallow` skill. `deliver` calls it in stage 7.
+- **When asked to commit, use the `commit` skill** (shared; its gate commands are in `.claude/flow/profile.md` → Commit). It runs the gate first and fixes failures using the `fallow` skill (installed from fallow-rs/fallow-skills). `deliver` calls it in stage 7.
 - Dead code and duplication must be **0** in changed files (duplication threshold is 0). Pre-existing complexity is frozen in `.fallow-health-baseline.json`; only new over-threshold functions fail.
 - Never use `--no-verify`, never edit the hooks or loosen `.fallowrc.jsonc` to get through, and never regenerate the health baseline to hide new complexity. Ask the user before adding a `fallow-ignore` suppression, and always state the reason in it.
 

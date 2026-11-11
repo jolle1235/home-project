@@ -19,8 +19,8 @@ Spawn one `Plan` subagent (read-only). Give it file paths, not a summary of them
 exactly what would anchor it. Prompt:
 
 > You are reviewing a plan you did not write. Read, in this order: `CLAUDE.md`,
-> `.flow/<slug>/brief.md`, `.flow/<slug>/plan.md`, then whatever code the plan touches. Also read
-> `.claude/skills/principle-subtract-before-you-add/SKILL.md` and
+> `.claude/flow/profile.md`, `.flow/<slug>/brief.md`, `.flow/<slug>/plan.md`, then whatever code
+> the plan touches. Also read `.claude/skills/principle-subtract-before-you-add/SKILL.md` and
 > `.claude/skills/principle-prove-it-works/SKILL.md`. Check:
 >
 > 1. **Coverage.** Every line under `## Expected after` in the brief maps to a plan step and to a
@@ -30,13 +30,11 @@ exactly what would anchor it. Prompt:
 >    or "looks right" is not a proof. If the proof is weak, say which `find-verifier` technique
 >    would fit.
 > 3. **Size.** The smallest change that meets the brief. Flag speculative guards, options and
->    layers, and code that a canonical helper already covers (see the table in
->    `.claude/skills/thermonuclear-review/SKILL.md`).
-> 4. **Conventions and gates.** CLAUDE.md rules (no unnecessary effects, TanStack Query, the feature
->    layout, colour tokens, Danish copy), and the fallow gate: no duplication, no unused exports,
->    no new over-threshold functions.
+>    layers, and code that a canonical helper already covers (profile → Canonical homes).
+> 4. **Conventions and gates.** The rules in CLAUDE.md and profile → Stack, and what profile →
+>    Gates and → Commit will reject.
 > 5. **Hidden decisions.** Behaviour the plan changes that is not in the brief's `## Decisions`:
->    stored document shapes, removed behaviour, new user-visible copy.
+>    stored data shapes, removed behaviour, new user-visible copy.
 > 6. **Risks.** What could break for users or data, and whether the plan checks it.
 >
 > Verify claims about files and functions by reading them. Reply exactly:
