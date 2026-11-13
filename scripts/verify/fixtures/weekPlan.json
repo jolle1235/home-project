@@ -1,0 +1,23 @@
+[
+  {
+    "_id": {
+      "$oid": "6650000000000000000000e1"
+    },
+    "type": "weekPlan",
+    "updatedAt": {
+      "$date": "2026-01-01T00:00:00Z"
+    },
+    "weekPlan": [
+      {
+        "dayOffset": 0,
+        "recipeId": "6650000000000000000000a1",
+        "recipeName": "Testlasagne"
+      },
+      {
+        "dayOffset": 2,
+        "recipeId": "6650000000000000000000a2",
+        "recipeName": "Testsalat med kylling"
+      }
+    ]
+  }
+]

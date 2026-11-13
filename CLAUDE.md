@@ -11,9 +11,13 @@ npm run lint                # ESLint 9 flat config (eslint.config.mjs)
 npm run generate-pwa-icons  # regenerates public/icon/* via sharp
 npm test                    # vitest: unit tests for pure utils (app/**/*.test.ts)
 npx fallow audit --base master  # the commit gate: dead code, duplication, new complexity
+npm run verify:up -- --id <id>  # isolated app instance (worktree + in-memory Mongo); then verify:doctor / verify:smoke / verify:down
+npm run verify:snapshot         # read-only copy of production into .verify/snapshot (gitignored, never commit)
 ```
 
-Tests cover only pure logic (ingredient parsing, recipe scraping, text tidying, safeFetch). CI (`.github/workflows/lint.yml`) runs `npm ci`, `npm run lint` and `fallow audit` on Node 20; it does not run the tests.
+To prove a change on the real app, use the `verify-home-project` skill (`.claude/skills/verify-home-project/`). It never touches Atlas: instances run from a git worktree without `.env` files against an in-memory MongoDB seeded from `scripts/verify/fixtures/` (synthetic) or the local snapshot. The repo is public, so only fixture runs may be quoted on GitHub.
+
+Tests cover only pure logic (ingredient parsing, recipe scraping, text tidying, safeFetch). CI (`.github/workflows/lint.yml`) runs `npm ci`, `npm run lint`, `npm test` and `fallow audit` on Node 20.
 
 Env (`.env.local`, git-ignored): `MONGODB_URI`, `MONGO_DATABASE_NAME`.
 

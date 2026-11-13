@@ -1,0 +1,200 @@
+[
+  {
+    "_id": {
+      "$oid": "6650000000000000000000a1"
+    },
+    "recipeName": "Testlasagne",
+    "description": "1. Brun kødet med løg.\n\n2. Lav bechamel af smør, mel og mælk.\n\n3. Byg lasagnen i lag og bag den i 45 minutter.",
+    "image": "/api/images/6650000000000000000000f1",
+    "ingredients": [
+      {
+        "_id": "fixture-ing-1",
+        "item": {
+          "_id": "6650000000000000000000b1",
+          "name": "hakket oksekød",
+          "category": "Kød",
+          "defaultUnit": "g"
+        },
+        "unit": "g",
+        "marked": false,
+        "quantity": 500,
+        "section": "Kødsovs"
+      },
+      {
+        "_id": "fixture-ing-2",
+        "item": {
+          "_id": "6650000000000000000000b2",
+          "name": "løg",
+          "category": "Grønt",
+          "defaultUnit": "stk"
+        },
+        "unit": "stk",
+        "marked": false,
+        "quantity": 2,
+        "section": "Kødsovs",
+        "notes": "finthakket"
+      },
+      {
+        "_id": "fixture-ing-3",
+        "item": {
+          "_id": "6650000000000000000000b4",
+          "name": "smør",
+          "category": "Mejeri",
+          "defaultUnit": "g"
+        },
+        "unit": "g",
+        "marked": false,
+        "quantity": 50,
+        "section": "Bechamel"
+      },
+      {
+        "_id": "fixture-ing-4",
+        "item": {
+          "_id": "6650000000000000000000b5",
+          "name": "hvedemel",
+          "category": "Kolonial",
+          "defaultUnit": "g"
+        },
+        "unit": "g",
+        "marked": false,
+        "quantity": 50,
+        "section": "Bechamel"
+      },
+      {
+        "_id": "fixture-ing-5",
+        "item": {
+          "_id": "6650000000000000000000b3",
+          "name": "mælk",
+          "category": "Mejeri",
+          "defaultUnit": "ml"
+        },
+        "unit": "ml",
+        "marked": false,
+        "quantity": 500,
+        "section": "Bechamel"
+      },
+      {
+        "_id": "fixture-ing-6",
+        "item": {
+          "_id": "6650000000000000000000b6",
+          "name": "lasagneplader",
+          "category": "Kolonial",
+          "defaultUnit": "g"
+        },
+        "unit": "g",
+        "marked": false,
+        "quantity": 250
+      }
+    ],
+    "time": 75,
+    "categories": [
+      "Oksekød"
+    ],
+    "recommendedPersonAmount": 4,
+    "author": "Fixture",
+    "type": "recipe"
+  },
+  {
+    "_id": {
+      "$oid": "6650000000000000000000a2"
+    },
+    "recipeName": "Testsalat med kylling",
+    "description": "Steg kyllingen og vend den med salaten.",
+    "image": "",
+    "ingredients": [
+      {
+        "_id": "fixture-ing-7",
+        "item": {
+          "_id": "6650000000000000000000b7",
+          "name": "kyllingebryst",
+          "category": "Kød",
+          "defaultUnit": "g"
+        },
+        "unit": "g",
+        "marked": false,
+        "quantity": 300
+      },
+      {
+        "_id": "fixture-ing-8",
+        "item": {
+          "_id": "6650000000000000000000b8",
+          "name": "hjertesalat",
+          "category": "Grønt",
+          "defaultUnit": "stk"
+        },
+        "unit": "stk",
+        "marked": false,
+        "quantity": 1
+      }
+    ],
+    "time": 20,
+    "categories": [
+      "Kylling"
+    ],
+    "recommendedPersonAmount": 2,
+    "author": "Fixture"
+  },
+  {
+    "_id": {
+      "$oid": "6650000000000000000000a3"
+    },
+    "recipeName": "Testmojito",
+    "description": "Muddl lime, mynte og sukker. Tilsæt rom og is.",
+    "image": "",
+    "ingredients": [
+      {
+        "_id": "fixture-ing-9",
+        "item": {
+          "_id": "6650000000000000000000b9",
+          "name": "lime",
+          "category": "Grønt",
+          "defaultUnit": "stk"
+        },
+        "unit": "stk",
+        "marked": false,
+        "quantity": 1
+      },
+      {
+        "_id": "fixture-ing-10",
+        "item": {
+          "_id": "6650000000000000000000ba",
+          "name": "mynte",
+          "category": "Grønt",
+          "defaultUnit": "bundt"
+        },
+        "unit": "bundt",
+        "marked": false,
+        "quantity": 1
+      },
+      {
+        "_id": "fixture-ing-11",
+        "item": {
+          "_id": "6650000000000000000000bc",
+          "name": "rørsukker",
+          "category": "Kolonial",
+          "defaultUnit": "tsk"
+        },
+        "unit": "tsk",
+        "marked": false,
+        "quantity": 2
+      },
+      {
+        "_id": "fixture-ing-12",
+        "item": {
+          "_id": "6650000000000000000000bb",
+          "name": "hvid rom",
+          "category": "Drikkevarer",
+          "defaultUnit": "cl"
+        },
+        "unit": "cl",
+        "marked": false,
+        "quantity": 5
+      }
+    ],
+    "time": 5,
+    "categories": [],
+    "recommendedPersonAmount": 1,
+    "author": "Fixture",
+    "type": "drink"
+  }
+]
