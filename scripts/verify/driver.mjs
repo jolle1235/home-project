@@ -4,6 +4,7 @@
 //   import { openDriver } from "../../scripts/verify/driver.mjs";
 //   const app = await openDriver({ id: "before" });
 //   await app.goto("/recipes");
+//   await app.hydrated(page.getByRole("heading", { name: "Opskrifter" }));
 //   ...
 //   await app.shot("recipes-list");
 //   await app.close();          // returns { problems, evidence }
@@ -40,6 +41,22 @@ export async function openDriver({ id, viewport = { width: 390, height: 844 } })
     page,
     url: instance.url,
     goto: (route) => page.goto(instance.url + route),
+    // React marks hydrated DOM nodes with a __reactFiber$... property. Until it
+    // is there the page is server HTML only: inputs ignore typing and hydration
+    // warnings have not been reported. Wait for it before asserting either.
+    // Re-finds the element on every poll, in case React replaced the server DOM.
+    hydrated: async (locator, timeout = 30000) => {
+      const isHydrated = () =>
+        locator
+          .first()
+          .evaluate((el) => Object.keys(el).some((key) => key.startsWith("__reactFiber")))
+          .catch(() => false);
+      const deadline = Date.now() + timeout;
+      while (!(await isHydrated())) {
+        if (Date.now() > deadline) throw new Error(`Not hydrated after ${timeout} ms`);
+        await page.waitForTimeout(100);
+      }
+    },
     api: async (route, init) => {
       const response = await fetch(instance.url + route, init);
       return response.json();

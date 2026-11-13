@@ -21,7 +21,7 @@ Preconditions:
 - Fixture instance: the list holds `mælk` (1 l) and `lime` (3 stk, ticked).
 
 - **View.** `await app.goto("/shoppinglist")`. Heading `Indkøbsliste`; `mælk` and `lime` visible.
-- **Add.** Type into `page.getByLabel("Ingrediens")` (e.g. `2 dl fløde`) and confirm with Enter.
+- **Add.** Type into `page.getByRole("combobox", { name: "Ingrediens", exact: true })` (one per row, so use `.first()`) (e.g. `2 dl fløde`), then press the `Tilføj 1 til listen` button. Enter only moves focus.
   The row appears and `app.api("/api/shopping-list")` has one more item.
 - **Tick.** Click the checkbox of `mælk`. After a short wait the stored item has `marked: true`.
 - **Persist.** `page.reload()`; the same rows and ticks are shown.

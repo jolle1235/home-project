@@ -28,7 +28,7 @@ Preconditions:
 - **Edit loads.** `await app.goto("/add-recipe?id=6650000000000000000000a1")`. Wait until an input
   holds `Testlasagne`; the submit button reads `Opdater opskrift`.
 - **Create.** Fill `getByLabel("Navn")`, `getByLabel("Tid (minutter)")`, `getByLabel("Antal personer")`,
-  add an ingredient through `page.getByLabel("Ingrediens")`, then
+  add an ingredient through `page.getByRole("combobox", { name: "Ingrediens", exact: true })` (`getByLabel("Ingrediens")` also matches the "Ingredienser" section), then
   `page.getByRole("button", { name: "Gem opskrift" }).click()`. `app.api("/api/recipe")` contains it.
 - **Delete.** On the edit page, `Slet opskrift` and confirm. The recipe is gone from `/api/recipe`.
 - **Import.** Needs network to the source site; prefer recorded HTML (see the scrape tests) over
