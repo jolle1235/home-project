@@ -45,3 +45,6 @@ next-env.d.ts
 # task flow and verification runs (local; may hold production data)
 .flow/
 .verify/
+
+# Skills are installed from skills-lock.json (npx skills experimental_install), never committed
+/.claude/skills/
