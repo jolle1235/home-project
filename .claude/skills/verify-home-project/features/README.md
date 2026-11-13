@@ -9,6 +9,9 @@ driving, then use the matching feature file as the recipe. Launch, doctor and cl
 - An instance started by this run: `npm run verify:up -- --id <id>` (fixtures unless stated).
 - `npm run verify:doctor -- <id>` passes.
 - Drives use `openDriver({ id })` from `scripts/verify/driver.mjs`; `page` below is its Playwright page.
+  The app is behind a household code: `openDriver` logs in with the instance's test code
+  (`verify-household-code`, see `instance.json`); `openDriver({ id, login: false })` is an anonymous
+  visitor. `app.api()` sends the session cookie.
 - Fixture recipes: `Testlasagne` (food, sections, image), `Testsalat med kylling` (food),
   `Testmojito` (drink). Ids are in `scripts/verify/fixtures/README.md`.
 
@@ -33,6 +36,8 @@ sections in order: `Sub-features`, `How to get to it (user POV)`, `Driving it wi
 `Gotchas`. No implementation details: user paths, handles, required state and observable proof only.
 
 ## Features
+
+- [Login](./login.md): the household code, staying logged in, what an anonymous visitor gets.
 
 - [Browse recipes](./recipes-browse.md): list, food / drinks / all, search, filters, add to meal plan.
 - [Recipe detail](./recipe-detail.md): person stepper, ingredient ticks, add to shopping list, edit link.

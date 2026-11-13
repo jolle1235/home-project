@@ -2,7 +2,7 @@
 // Used by smoke.mjs and by the per-task checks in .flow/<slug>/check.mjs:
 //
 //   import { openDriver } from "../../scripts/verify/driver.mjs";
-//   const app = await openDriver({ id: "before" });
+//   const app = await openDriver({ id: "before" });   // logged in; login: false = anonymous
 //   await app.goto("/recipes");
 //   await app.hydrated(page.getByRole("heading", { name: "Opskrifter" }));
 //   ...
@@ -10,14 +10,20 @@
 //   await app.close();          // returns { problems, evidence }
 import path from "node:path";
 import { chromium } from "playwright";
-import { evidenceDir, readInstance } from "./lib.mjs";
+import { appFetch, evidenceDir, readInstance } from "./lib.mjs";
 
-export async function openDriver({ id, viewport = { width: 390, height: 844 } }) {
+export async function openDriver({ id, viewport = { width: 390, height: 844 }, login = true }) {
   const instance = readInstance(id);
   if (instance.status !== "ready") throw new Error(`Instance ${id} is ${instance.status}`);
   const dir = evidenceDir(id);
   const browser = await chromium.launch();
   const context = await browser.newContext({ viewport, locale: "da-DK" });
+  // The session up.mjs logged in with, unless the check wants an anonymous visitor.
+  const cookie = login ? instance.cookie : "";
+  if (cookie) {
+    const [name, value] = cookie.split("=");
+    await context.addCookies([{ name, value, url: instance.url }]);
+  }
   const page = await context.newPage();
   page.setDefaultTimeout(30000);
 
@@ -57,10 +63,7 @@ export async function openDriver({ id, viewport = { width: 390, height: 844 } })
         await page.waitForTimeout(100);
       }
     },
-    api: async (route, init) => {
-      const response = await fetch(instance.url + route, init);
-      return response.json();
-    },
+    api: async (route, init) => (await appFetch({ ...instance, cookie }, route, init)).json(),
     shot: async (name) => {
       const file = path.join(dir, `${name}.png`);
       await page.screenshot({ path: file });

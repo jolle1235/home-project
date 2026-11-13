@@ -1,10 +1,11 @@
+import { withSession } from "@/app/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import clientPromise from "../../../lib/mongodb";
 import { ObjectId } from "mongodb";
 
 const databaseName = process.env.MONGO_DATABASE_NAME;
 
-export async function GET(
+async function handleGet(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
@@ -46,3 +47,5 @@ export async function GET(
     );
   }
 }
+
+export const GET = withSession(handleGet);

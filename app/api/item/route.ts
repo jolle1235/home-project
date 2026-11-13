@@ -1,3 +1,4 @@
+import { withSession } from "@/app/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import clientPromise from "../../lib/mongodb";
 import { capitalise } from "@/app/utils/stringUtils";
@@ -5,7 +6,7 @@ import { ObjectId } from "mongodb";
 
 const databaseName = process.env.MONGO_DATABASE_NAME;
 
-export async function GET(request: NextRequest) {
+async function handleGet(request: NextRequest) {
   try {
     const searchTerm = request.nextUrl.searchParams.get("term") || "";
     const client = await clientPromise;
@@ -28,7 +29,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function POST(request: NextRequest) {
+async function handlePost(request: NextRequest) {
   try {
     const item = await request.json();
 
@@ -70,7 +71,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function DELETE(request: NextRequest) {
+async function handleDelete(request: NextRequest) {
   try {
     const { name } = await request.json();
     const capitalisedName = capitalise(name.trim());
@@ -100,7 +101,7 @@ export async function DELETE(request: NextRequest) {
   }
 }
 
-export async function PUT(request: NextRequest) {
+async function handlePut(request: NextRequest) {
   try {
     const { itemId, name, category, defaultUnit } = await request.json();
 
@@ -149,3 +150,8 @@ export async function PUT(request: NextRequest) {
     );
   }
 }
+
+export const GET = withSession(handleGet);
+export const POST = withSession(handlePost);
+export const DELETE = withSession(handleDelete);
+export const PUT = withSession(handlePut);

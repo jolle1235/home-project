@@ -1,12 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import NavBar from "./components/Navbar";
-import { RecipeProvider } from "./context/RecipeContext";
 import Script from "next/script";
 import type { Metadata, Viewport } from "next";
-import { SpeedInsights } from "@vercel/speed-insights/next";
-import { ConstantsProvider } from "./context/ConstantsContext";
-import ReactQueryProvider from "./providers/ReactQueryProvider";
 import { ToastContainer } from "react-toastify";
 
 const geistSans = Geist({
@@ -49,6 +44,8 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
+// The app shell (providers, navigation) is in app/features/layout.tsx, so /login
+// (app/login) renders without it.
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -72,15 +69,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col bg-`}
       >
-        <ReactQueryProvider>
-          <RecipeProvider>
-            <ConstantsProvider>
-              <NavBar />
-              <main className="bg-background">{children}</main>
-              <SpeedInsights />
-            </ConstantsProvider>
-          </RecipeProvider>
-        </ReactQueryProvider>
+        {children}
         <ToastContainer position="bottom-center" autoClose={2500} />
         <Script src="/sw-register.js" strategy="afterInteractive" />
       </body>
