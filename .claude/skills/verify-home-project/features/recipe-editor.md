@@ -41,3 +41,5 @@ Preconditions:
 - Import calls the outside world through `safeFetch` (internal addresses are blocked); do not use it
   in proofs that must be repeatable.
 - Saving also registers unknown units as new unit types.
+- Known bug: the ingredient editor's time-based row ids cause a hydration mismatch here too (seen
+  in a drive on 2026-11-08), the same cause as on the shopping list.
