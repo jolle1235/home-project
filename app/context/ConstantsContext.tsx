@@ -35,6 +35,7 @@ async function fetchConstants(): Promise<{
     fetch("/api/admin/recipeCategories"),
     fetch("/api/admin/unitTypes"),
   ]);
+  if (!catRes.ok || !unitRes.ok) throw new Error("Failed to fetch constants");
   return { categories: await catRes.json(), units: await unitRes.json() };
 }
 

@@ -1,3 +1,4 @@
+import { withSession } from "@/app/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 
 import {
@@ -6,7 +7,7 @@ import {
   clearShoppingList,
 } from "../../features/shoppingList/server/shoppinglist.server";
 
-export async function GET() {
+async function handleGet() {
   try {
     const shoppingList = await getShoppingList();
 
@@ -25,7 +26,7 @@ export async function GET() {
   }
 }
 
-export async function PUT(request: NextRequest) {
+async function handlePut(request: NextRequest) {
   try {
     const items = await request.json();
 
@@ -59,7 +60,7 @@ export async function PUT(request: NextRequest) {
   }
 }
 
-export async function DELETE() {
+async function handleDelete() {
   try {
     await clearShoppingList();
 
@@ -79,3 +80,7 @@ export async function DELETE() {
     );
   }
 }
+
+export const GET = withSession(handleGet);
+export const PUT = withSession(handlePut);
+export const DELETE = withSession(handleDelete);

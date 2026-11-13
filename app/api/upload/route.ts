@@ -1,4 +1,5 @@
 // app/api/upload/route.ts
+import { withSession } from "@/app/lib/auth";
 import { NextResponse } from "next/server";
 import clientPromise from "@/app/lib/mongodb";
 import { safeFetch, SafeFetchError } from "@/app/lib/safeFetch";
@@ -58,7 +59,7 @@ async function imageFromForm(req: Request) {
   };
 }
 
-export async function POST(req: Request) {
+async function handlePost(req: Request) {
   try {
     const isJson = req.headers
       .get("content-type")
@@ -104,3 +105,5 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+
+export const POST = withSession(handlePost);

@@ -1,5 +1,5 @@
-// True for http(s) URLs, i.e. images hosted on another site. next/image
-// can't optimize those without a per-host config, so they load directly.
+// True for http(s) URLs, e.g. a recipe image that still points at another site
+// rather than at a copy in /api/images.
 export const isRemoteUrl = (url?: string) => /^https?:\/\//i.test(url ?? "");
 
 // "example.dk/x" → "https://example.dk/x"; links with a scheme are unchanged.

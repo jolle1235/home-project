@@ -1,10 +1,11 @@
+import { withSession } from "@/app/lib/auth";
 import { NextResponse } from "next/server";
 import clientPromise from "../../lib/mongodb";
 import { WeekPlan } from "@/app/features/weekplanner/types/weekPlan";
 
 const databaseName = process.env.MONGO_DATABASE_NAME;
 
-export async function GET() {
+async function handleGet() {
   const client = await clientPromise;
   const db = client.db(databaseName);
 
@@ -13,7 +14,7 @@ export async function GET() {
   return NextResponse.json(data?.weekPlan || []);
 }
 
-export async function POST(request: Request) {
+async function handlePost(request: Request) {
   const { weekPlan }: { weekPlan: WeekPlan[] } = await request.json();
 
   try {
@@ -41,3 +42,6 @@ export async function POST(request: Request) {
     );
   }
 }
+
+export const GET = withSession(handleGet);
+export const POST = withSession(handlePost);

@@ -1,5 +1,5 @@
 // Shared paths and instance bookkeeping for the verification harness.
-// See .claude/skills/verify-home-project/SKILL.md for how the pieces fit.
+// See profile → Verify in .claude/flow/profile.md for how the pieces fit.
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import net from "node:net";
@@ -41,6 +41,26 @@ export const ROUTES = [
   "/weekPlanner",
   "/admin",
 ];
+
+// Logs in the way the login form does and returns the session cookie
+// ("name=value"), or "" for no session: no login route (a commit from before the
+// gate) or a refused login (a deliberately locked instance). up.mjs calls this
+// once and stores the result as instance.cookie.
+export async function loginCookie({ url, householdCode }) {
+  const response = await fetch(`${url}/api/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ code: householdCode }),
+    redirect: "manual",
+  });
+  return (response.headers.get("set-cookie") ?? "").split(";")[0];
+}
+
+// fetch() against an instance, logged in when the instance has a session cookie.
+export function appFetch(instance, route, init = {}) {
+  const session = instance.cookie ? { cookie: instance.cookie } : {};
+  return fetch(instance.url + route, { ...init, headers: { ...init.headers, ...session } });
+}
 
 export function runDir(id) {
   return path.join(VERIFY_DIR, "runs", id);

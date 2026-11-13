@@ -1,4 +1,4 @@
-// Drives every feature in the verify-home-project feature map once, read-only,
+// Drives every feature in the feature map (.claude/flow/features/) once, read-only,
 // and fails on any missing content, console error or failing API call.
 //
 //   npm run verify:smoke -- [<id>]
@@ -34,6 +34,7 @@ const categories = await app.api("/api/admin/recipeCategories");
 await step("recipes-browse", async () => {
   await app.goto("/recipes");
   await visible(page.getByRole("heading", { name: "Opskrifter" }));
+  await app.hydrated(page.getByRole("heading", { name: "Opskrifter" }));
   if (food) await visible(page.locator("article h2", { hasText: food.recipeName }));
   await app.shot("smoke-recipes");
   return `${recipes.length} recipes`;
@@ -42,6 +43,7 @@ await step("recipes-browse", async () => {
 await step("recipes-browse:drinks", async () => {
   await app.goto("/recipes?type=drink");
   await visible(page.getByRole("heading", { name: "Drinks" }));
+  await app.hydrated(page.getByRole("heading", { name: "Drinks" }));
   if (drink) await visible(page.locator("article h2", { hasText: drink.recipeName }));
 });
 
@@ -49,6 +51,7 @@ await step("recipe-detail", async () => {
   if (!food) return "skipped: no food recipe";
   await app.goto(`/recipes/${food._id}`);
   await visible(page.getByRole("heading", { name: "Ingredienser" }));
+  await app.hydrated(page.getByRole("heading", { name: "Ingredienser" }));
   await visible(page.getByRole("heading", { name: food.recipeName }));
   const boxes = await page.locator('input[type="checkbox"]').count();
   if (boxes !== food.ingredients.length) {
@@ -74,6 +77,7 @@ await step("recipe-editor", async () => {
 await step("shopping-list", async () => {
   await app.goto("/shoppinglist");
   await visible(page.getByRole("heading", { name: "Indkøbsliste" }));
+  await app.hydrated(page.getByRole("heading", { name: "Indkøbsliste" }));
   if (shoppingList[0]) await visible(page.getByText(shoppingList[0].item.name));
   await app.shot("smoke-shopping-list");
   return `${shoppingList.length} items`;
@@ -82,6 +86,7 @@ await step("shopping-list", async () => {
 await step("week-planner", async () => {
   await app.goto("/weekPlanner");
   await visible(page.getByRole("heading", { name: "Madplan" }));
+  await app.hydrated(page.getByRole("heading", { name: "Madplan" }));
   await visible(page.locator("div.border.rounded h6"));
   const days = await page.locator("div.border.rounded h6").count();
   if (days < 15) throw new Error(`${days} days in the grid`);
@@ -92,6 +97,7 @@ await step("week-planner", async () => {
 await step("admin", async () => {
   await app.goto("/admin");
   await visible(page.getByRole("heading", { name: "Admin Panel" }));
+  await app.hydrated(page.getByRole("heading", { name: "Admin Panel" }));
   if (categories[0]) await visible(page.getByText(categories[0].name, { exact: true }));
   await app.shot("smoke-admin");
   return `${categories.length} categories`;

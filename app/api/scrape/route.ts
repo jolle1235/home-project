@@ -1,3 +1,4 @@
+import { withSession } from "@/app/lib/auth";
 import { NextResponse } from "next/server";
 import { SafeFetchError, SafeFetchErrorCode } from "@/app/lib/safeFetch";
 import { withScheme } from "@/app/utils/stringUtils";
@@ -14,7 +15,7 @@ const ERRORS: Record<SafeFetchErrorCode, { status: number; error: string }> = {
   network: { status: 502, error: "Kunne ikke hente siden." },
 };
 
-export async function POST(req: Request) {
+async function handlePost(req: Request) {
   let url: unknown;
   try {
     ({ url } = await req.json());
@@ -53,3 +54,5 @@ export async function POST(req: Request) {
     );
   }
 }
+
+export const POST = withSession(handlePost);

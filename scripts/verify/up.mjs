@@ -7,6 +7,7 @@
 // starts a detached supervisor, waits until it reports ready, prints the
 // instance and exits. Stop it with `npm run verify:down -- <id>`.
 import { execFileSync, spawn } from "node:child_process";
+import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -17,13 +18,18 @@ import {
   ROUTES,
   freePort,
   cliArgs,
+  appFetch,
   isAlive,
+  loginCookie,
   readInstance,
   runDir,
   worktreePath,
   writeInstance,
 } from "./lib.mjs";
 import { seedDatabase } from "./seed.mjs";
+
+// The household code every instance gets unless --env overrides it.
+const TEST_HOUSEHOLD_CODE = "verify-household-code";
 
 // Pinned so every run (and later every cloud sandbox) uses the same server.
 const MONGO_VERSION = "8.0.4";
@@ -33,6 +39,8 @@ const READY_TIMEOUT_MS = 10 * 60 * 1000;
 const args = cliArgs({
   ref: { type: "string", default: "WORKTREE" },
   data: { type: "string", default: "fixtures" },
+  mode: { type: "string", default: "dev" },
+  env: { type: "string", multiple: true, default: [] },
   supervise: { type: "boolean" },
 });
 const id = args.id ?? newRunId();
@@ -73,7 +81,11 @@ function startSupervisor() {
   const log = fs.openSync(path.join(runDir(id), "logs", "supervisor.log"), "a");
   const child = spawn(
     process.execPath,
-    [fileURLToPath(import.meta.url), "--supervise", "--id", id, "--ref", ref, "--data", data],
+    [
+      fileURLToPath(import.meta.url),
+      ...["--supervise", "--id", id, "--ref", ref, "--data", data, "--mode", args.mode],
+      ...args.env.flatMap((pair) => ["--env", pair]),
+    ],
     { cwd: REPO, detached: true, stdio: ["ignore", log, log] },
   );
   child.unref();
@@ -141,28 +153,23 @@ async function supervise() {
 
     const port = await freePort();
     const nextLog = fs.openSync(path.join(runDir(id), "logs", "next.log"), "a");
-    next = spawn(
-      path.join(worktree, "node_modules", ".bin", "next"),
-      ["dev", "--turbopack", "--port", String(port), "--hostname", "127.0.0.1"],
-      {
-        cwd: worktree,
-        stdio: ["ignore", nextLog, nextLog],
-        env: {
-          ...process.env,
-          MONGODB_URI: mongoUri,
-          MONGO_DATABASE_NAME: DB_NAME,
-          NEXT_TELEMETRY_DISABLED: "1",
-        },
-      },
-    );
+    const env = appEnv(mongoUri);
+    Object.assign(instance, {
+      mode: args.mode,
+      householdCode: env.HOUSEHOLD_CODE,
+      port,
+      url: `http://127.0.0.1:${port}`,
+      mongoUri,
+      dbName: DB_NAME,
+    });
+    next = startNext(worktree, port, env, nextLog);
     next.on("exit", (code) => {
       if (stopping) return;
-      writeInstance(id, { ...readInstance(id), status: "failed", error: `next dev exited (${code})` });
+      writeInstance(id, { ...readInstance(id), status: "failed", error: `next exited (${code})` });
       shutdown(1);
     });
 
-    Object.assign(instance, { port, url: `http://127.0.0.1:${port}`, mongoUri, dbName: DB_NAME });
-    await warmUp(instance.url);
+    await warmUp(instance);
     writeInstance(id, { ...instance, status: "ready", readyAt: new Date().toISOString() });
   } catch (error) {
     writeInstance(id, { ...instance, status: "failed", error: error.message });
@@ -235,28 +242,60 @@ function removeWorktree(worktree) {
   git(["worktree", "prune"]);
 }
 
-// Turbopack compiles a route on its first request; do that once here so
-// drives don't time out on the first visit.
-async function warmUp(url) {
+// The env the app runs with: the in-memory database, a test household code and a
+// per-run secret, then the --env KEY=VALUE overrides (KEY= sets it empty).
+function appEnv(mongoUri) {
+  const overrides = Object.fromEntries(args.env.map((pair) => pair.split(/=(.*)/s, 2)));
+  return {
+    ...process.env,
+    MONGODB_URI: mongoUri,
+    MONGO_DATABASE_NAME: DB_NAME,
+    NEXT_TELEMETRY_DISABLED: "1",
+    HOUSEHOLD_CODE: TEST_HOUSEHOLD_CODE,
+    AUTH_SECRET: crypto.randomBytes(24).toString("hex"),
+    ...overrides,
+  };
+}
+
+// dev: next dev (Turbopack). prod: next build, then next start, for what only a
+// production build does (Secure cookies, prerendering, the proxy bundle).
+function startNext(worktree, port, env, log) {
+  const bin = path.join(worktree, "node_modules", ".bin", "next");
+  const listen = ["--port", String(port), "--hostname", "127.0.0.1"];
+  const options = { cwd: worktree, env, stdio: ["ignore", log, log] };
+  if (args.mode !== "prod") return spawn(bin, ["dev", "--turbopack", ...listen], options);
+  execFileSync(bin, ["build"], options);
+  return spawn(bin, ["start", ...listen], options);
+}
+
+// Logs in once (the cookie goes into instance.json for every later drive) and
+// requests each route once, because Turbopack compiles a route on its first
+// request. With a session every route must answer 2xx. Without one (a commit
+// from before the login, or a deliberately locked instance) only the gate
+// answers, so any answer below 500 counts and the routes stay cold.
+async function warmUp(instance) {
   const deadline = Date.now() + 5 * 60 * 1000;
+  await waitForRoute(instance, "/login", deadline, (status) => status < 500);
+  instance.cookie = await loginCookie(instance);
+  const answered = instance.cookie ? (status) => status < 300 : (status) => status < 500;
   for (const route of ["/api/recipe", ...ROUTES]) {
-    await waitForRoute(url + route, deadline);
+    await waitForRoute(instance, route, deadline, answered);
   }
 }
 
-async function waitForRoute(target, deadline) {
+async function waitForRoute(instance, route, deadline, answered) {
   for (;;) {
-    const problem = await probe(target);
+    const problem = await probe(instance, route, answered);
     if (!problem) return;
-    if (Date.now() > deadline) throw new Error(`Warm-up of ${target} failed: ${problem}`);
+    if (Date.now() > deadline) throw new Error(`Warm-up of ${route} failed: ${problem}`);
     await sleep(2000);
   }
 }
 
-async function probe(target) {
+async function probe(instance, route, answered) {
   try {
-    const response = await fetch(target);
-    return response.ok ? null : `HTTP ${response.status}`;
+    const response = await appFetch(instance, route);
+    return answered(response.status) ? null : `HTTP ${response.status}`;
   } catch (error) {
     return error.message;
   }
