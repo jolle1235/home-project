@@ -6,7 +6,7 @@
       "sourceUrl": "git@github-jolle:jolle1235/agent-skills.git",
       "sourceType": "git",
       "skillPath": "skills/before-after/SKILL.md",
-      "computedHash": "516bf030cb006d37d402fe1625d17e21b4232ff67a3ee3d33631cc95929d895c"
+      "computedHash": "1f12ace1bf017cf9bfb2ad32aec7a52fe46aa1041945fd61f365f3b1adebb4a4"
     },
     "commit": {
       "source": "git@github-jolle:jolle1235/agent-skills.git",
@@ -15,19 +15,12 @@
       "skillPath": "skills/commit/SKILL.md",
       "computedHash": "3e429b1052c5efc447562f7b5c9cb6cf6bc9e757bb5f66e8094bffcc1451c3a6"
     },
-    "create-verification-skill": {
-      "source": "git@github-jolle:jolle1235/agent-skills.git",
-      "sourceUrl": "git@github-jolle:jolle1235/agent-skills.git",
-      "sourceType": "git",
-      "skillPath": "skills/create-verification-skill/SKILL.md",
-      "computedHash": "1d95d85e29933b1d289a19a54d7c7dc1de5e5e182febeb16e281c0f5c1182afc"
-    },
     "deliver": {
       "source": "git@github-jolle:jolle1235/agent-skills.git",
       "sourceUrl": "git@github-jolle:jolle1235/agent-skills.git",
       "sourceType": "git",
       "skillPath": "skills/deliver/SKILL.md",
-      "computedHash": "e6b3eb0b5778dd5e86b26f87b5db1c3d252d2e88ed1a4fbaef5b1b552b96c605"
+      "computedHash": "3db93293e59b3b3bf862433cad8ddd037ab2edc3453c06659784e0efba6175d8"
     },
     "fallow": {
       "source": "fallow-rs/fallow-skills",
@@ -46,21 +39,14 @@
       "sourceUrl": "git@github-jolle:jolle1235/agent-skills.git",
       "sourceType": "git",
       "skillPath": "skills/find-verifier/SKILL.md",
-      "computedHash": "80722d6d56dee2ed406ac5f8bc6b1bf3239fbc1a99009dfc7bb8b187a9415f75"
-    },
-    "maintain-verification-skill": {
-      "source": "git@github-jolle:jolle1235/agent-skills.git",
-      "sourceUrl": "git@github-jolle:jolle1235/agent-skills.git",
-      "sourceType": "git",
-      "skillPath": "skills/maintain-verification-skill/SKILL.md",
-      "computedHash": "2049da7d46d9a90099c3667903a3f96bfa9ad0bdb74be7b803b752bad09b3e31"
+      "computedHash": "6d8a3810c52cd245e3e341e731c901e8e8e36d1b5ff2008ce9c40357f52d4880"
     },
     "merge-verdict": {
       "source": "git@github-jolle:jolle1235/agent-skills.git",
       "sourceUrl": "git@github-jolle:jolle1235/agent-skills.git",
       "sourceType": "git",
       "skillPath": "skills/merge-verdict/SKILL.md",
-      "computedHash": "489e605026a3f34a04fa8db4f26f2265b751d0fbbb01c1d2cd8f5196389fd1b5"
+      "computedHash": "5eb214db2046f5b0c9e528b1831978f3b6ae5b4045df1f5af516605ebccd21fd"
     },
     "plan-critique": {
       "source": "git@github-jolle:jolle1235/agent-skills.git",
@@ -116,7 +102,14 @@
       "sourceUrl": "git@github-jolle:jolle1235/agent-skills.git",
       "sourceType": "git",
       "skillPath": "skills/scope-task/SKILL.md",
-      "computedHash": "0b67111c98564aeeff09c646b6dd69d34257f2ba0497a10cffdff3679d8f12ac"
+      "computedHash": "a76ae8bb2e1ef6a5a3191a2675803019715a42fad6f2605e09bb7602d2d22561"
+    },
+    "setup-verify": {
+      "source": "git@github-jolle:jolle1235/agent-skills.git",
+      "sourceUrl": "git@github-jolle:jolle1235/agent-skills.git",
+      "sourceType": "git",
+      "skillPath": "skills/setup-verify/SKILL.md",
+      "computedHash": "98f2856c24866347f8eb2a97425b1f8b00a291611e757d3dc39e6ec919eb51b1"
     },
     "solid-check": {
       "source": "git@github-jolle:jolle1235/agent-skills.git",
@@ -131,6 +124,20 @@
       "sourceType": "git",
       "skillPath": "skills/thermonuclear-review/SKILL.md",
       "computedHash": "17466ac4cf93701808fe6ce794780f669fc2d18d42afc4767a03abca444f50ce"
+    },
+    "update-verify": {
+      "source": "git@github-jolle:jolle1235/agent-skills.git",
+      "sourceUrl": "git@github-jolle:jolle1235/agent-skills.git",
+      "sourceType": "git",
+      "skillPath": "skills/update-verify/SKILL.md",
+      "computedHash": "d921541a296898be46ae9dba9c6f6c9554ddc7ae8347f46e3b169879990ed734"
+    },
+    "verify": {
+      "source": "git@github-jolle:jolle1235/agent-skills.git",
+      "sourceUrl": "git@github-jolle:jolle1235/agent-skills.git",
+      "sourceType": "git",
+      "skillPath": "skills/verify/SKILL.md",
+      "computedHash": "531ce5fa17ebe8d5aec19685577d043c5c6bcbf8c673a6680bf6a62d6ac15dc4"
     }
   }
 }

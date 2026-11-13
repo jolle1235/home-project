@@ -14,15 +14,46 @@ Template and section meanings: `.claude/skills/deliver/references/profile-templa
 
 ## Verify
 
-- Skill: `verify-home-project` (`.claude/skills/verify-home-project/SKILL.md`)
-- Feature files: `.claude/skills/verify-home-project/features/`
-- Fixtures: `scripts/verify/fixtures/`
-- Up: `npm run verify:up -- --id <id> [--ref <sha>] [--data fixtures|snapshot] [--mode prod] [--env KEY=VALUE]`
-- Doctor: `npm run verify:doctor -- <id>`
-- Smoke: `npm run verify:smoke -- <id>`
-- Down: `npm run verify:down -- <id>`; all: `npm run verify:down -- --all`
-- Driver: `scripts/verify/driver.mjs` → `openDriver({ id })` (logs in with the instance's household code)
-- Private data: `--data snapshot` (a local copy of production made by `npm run verify:snapshot`; never quote it)
+**Surface:** a mobile-first Next.js PWA. Users touch the browser UI only; `/api/*` exists for the
+UI, so drive the UI and read the API only to check state. The shared `verify` skill has the rules;
+this section has the facts.
+
+- Harness: `scripts/verify/` (`up`, `doctor`, `smoke`, `down`, `snapshot`, `driver.mjs`, `lib.mjs` with `ROUTES`)
+- Feature map: `.claude/flow/features/` (README index + one file per feature)
+- Fixtures: `scripts/verify/fixtures/` (synthetic; fixed ids in its README)
+- Up: `npm run verify:up -- --id <id> [--ref WORKTREE|HEAD|<sha>] [--data fixtures|snapshot] [--mode prod] [--env KEY=VALUE]`
+  - `--ref WORKTREE` (default) runs HEAD plus uncommitted changes, new files included; `HEAD` or a
+    SHA runs that commit exactly (the base SHA for BEFORE).
+  - Returns when the database is seeded and every route in `ROUTES` has compiled and answered;
+    prints the instance JSON (`url`, `port`, `sha`, `seeded`). About 10 s with a warm cache; a
+    changed `package-lock.json` runs `npm ci` in the worktree first. The same `--id` twice reuses it.
+  - `--mode prod` runs `next build` + `next start`; `--env KEY=` sets a variable empty.
+- Doctor: `npm run verify:doctor -- <id>` (read-only: supervisor alive, no `.env*` in the worktree,
+  database host local, and the in-memory mongod's query counter rises when the app serves `/api/recipe`)
+- Smoke: `npm run verify:smoke -- <id>` (every feature once, read-only; fails on missing content,
+  console errors or failing API calls; run it after any change to shared UI)
+- Down: `npm run verify:down -- <id>`; all: `npm run verify:down -- --all` (kills only the recorded
+  process group, removes the worktree, keeps evidence)
+- Driver: `scripts/verify/driver.mjs` → `openDriver({ id })` (Playwright, 390×844, `da-DK`; logs in
+  with the instance's household code, `login: false` for an anonymous visitor). `app.goto`,
+  `app.shot(name)`, `app.api(path)` (sends the session cookie), `app.hydrated(locator)`,
+  `app.close()` → `{ problems, evidence }`
+- Private data: `--data snapshot` seeds the local production copy from `npm run verify:snapshot`
+  (`.verify/snapshot/`, gitignored; set `VERIFY_SNAPSHOT_URI` to a read-only Atlas user). Never quote it.
+- Isolation: each instance runs from a git worktree under `~/.cache/home-project-verify/worktrees/<id>`
+  with no `.env*` files and `MONGODB_URI` pointing at its own in-memory mongod, on a free port.
+  Several run at once (BEFORE, AFTER, reviewers), next to your normal `npm run dev`. Atlas is never touched.
+- Evidence: `.verify/runs/<id>/evidence/` (screenshots) and `.verify/runs/<id>/logs/`
+  (`supervisor.log`, `next.log`); they survive Down. Delete `.verify/runs/` by hand when it grows.
+- Gotchas:
+  - The first run on a machine downloads mongod 8.0.4 (~100 MB, `~/.cache/mongodb-binaries`) and
+    needs Chromium (`npx playwright install chromium`).
+  - Snapshot runs show the fallback image for images over 2 MB (left out of the snapshot) and log
+    `HTTP 404 /api/images/...` problems; expected on snapshot data only.
+  - Toasts (react-toastify) disappear after 2.5 s; wait for them right after the action.
+  - Saves go through optimistic TanStack Query updates and debounced PUTs; read state back after a
+    short wait instead of trusting the UI.
+  - `--mode prod` logs 404s for `/_vercel/speed-insights/script.js`; only Vercel serves it.
 
 ## Check script
 
@@ -145,7 +176,7 @@ none
 - Uploads: size and content type checks in `app/api/upload`.
 - Secrets: `HOUSEHOLD_CODE`, `AUTH_SECRET`, `MONGODB_URI` reaching client code or logs.
 
-## Verifier catalog
+## Verifier notes
 
-- Project catalog: `.claude/flow/verifier-catalog.md`
-- Log: `.claude/flow/verifier-log.md`
+`.claude/flow/verifier-notes.md`: this repo's proof recipes, the task log, and the lessons from
+earlier sessions.

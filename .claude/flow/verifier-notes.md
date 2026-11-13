@@ -1,16 +1,18 @@
-# Verifier catalog
+# Verifier notes: home-project
 
-Techniques for proving a change in this repo. Each entry: **Use when**, **Signal**, **Recipe**
-(with this repo's tools), **Cost**, **Blind spots**. Add or correct entries only from real runs
-(see `verifier-log.md`).
+The project's memory for proving changes, across sessions. Read by `find-verifier`, `scope-task`,
+`before-after`, `verify` and `update-verify` (profile → Verifier notes). Only append from runs that
+happened; never delete lines, strike them through with a pointer instead.
 
-Shared tools: `npm run verify:up -- --id <id> [--ref <sha>] [--data fixtures|snapshot]`,
-`verify:doctor`, `verify:smoke`, `verify:down`, the driver in `scripts/verify/driver.mjs`, vitest
-(`npm test`, files `app/**/*.test.ts`), and git.
+## Recipes
 
----
+This repo's recipes, numbered like the shared catalog
+(`.claude/skills/find-verifier/references/verifier-catalog.md`); where both cover a technique, the
+recipe here wins. Tools: `npm run verify:up -- --id <id> [--ref <sha>] [--data fixtures|snapshot]
+[--mode prod]`, `verify:doctor`, `verify:smoke`, `verify:down`, the driver in
+`scripts/verify/driver.mjs`, vitest (`npm test`, files `app/**/*.test.ts`), and git.
 
-## 1. UI drive with assertions
+### 1. UI drive with assertions
 
 - **Use when:** the task changes what a user sees or can do on a page.
 - **Signal:** visible text, roles, counts, and the state read back through `app.api(...)`, plus the
@@ -29,7 +31,7 @@ Shared tools: `npm run verify:up -- --id <id> [--ref <sha>] [--data fixtures|sna
   - The console warning is unreliable on its own; also assert a symptom (a stale attribute, focus
     that doesn't move) on a page that is always server-rendered.
 
-## 2. Golden replay of recorded inputs
+### 2. Golden replay of recorded inputs
 
 - **Use when:** refactoring or rewriting a function that turns input into output, such as
   `parseIngredientLine`, `tidyRecipeText`, `formatInstructions`, `recipeToDraft` /
@@ -52,9 +54,9 @@ Shared tools: `npm run verify:up -- --id <id> [--ref <sha>] [--data fixtures|sna
   - Commit only a small synthetic table as a vitest test; the replay stays local.
 - **Cost:** 15–20 minutes to write the runner the first time, seconds per run.
 - **Blind spots:** spellings nobody generated; wiring (who passes which arguments); see 6 for that.
-- **Proven:** see `verifier-log.md`, 2026-11-08 (17,290 lines; dropping the `ltr` alias changed 696).
+- **Proven:** see `## Log`, 2026-11-08 (17,290 lines; dropping the `ltr` alias changed 696).
 
-## 3. Differential run (old vs new side by side)
+### 3. Differential run (old vs new side by side)
 
 - **Use when:** replacing an implementation and both can live in one process for a moment.
 - **Signal:** `old(x) === new(x)` for every generated or recorded `x`.
@@ -63,7 +65,7 @@ Shared tools: `npm run verify:up -- --id <id> [--ref <sha>] [--data fixtures|sna
 - **Cost:** low.
 - **Blind spots:** side effects; shared state.
 
-## 4. Round-trip and property checks
+### 4. Round-trip and property checks
 
 - **Use when:** paired conversions such as `ingredientsToRows` / `rowsToIngredients`,
   `recipeToDraft` and back, parse and format.
@@ -72,7 +74,7 @@ Shared tools: `npm run verify:up -- --id <id> [--ref <sha>] [--data fixtures|sna
 - **Cost:** low.
 - **Blind spots:** both directions sharing the same bug.
 
-## 5. Unit test, red first
+### 5. Unit test, red first
 
 - **Use when:** pure logic with clear edge cases (dates, quantities, units, parsing).
 - **Signal:** a test that fails on the base code for the reason in the brief.
@@ -81,7 +83,7 @@ Shared tools: `npm run verify:up -- --id <id> [--ref <sha>] [--data fixtures|sna
 - **Cost:** lowest.
 - **Blind spots:** wiring, rendering, data flow.
 
-## 6. Characterization snapshot
+### 6. Characterization snapshot
 
 - **Use when:** a behaviour-preserving refactor of a page or API route.
 - **Signal:** the normalised output (`page.locator("main").ariaSnapshot()`, visible text, or API JSON
@@ -90,7 +92,7 @@ Shared tools: `npm run verify:up -- --id <id> [--ref <sha>] [--data fixtures|sna
 - **Cost:** about 1 minute.
 - **Blind spots:** styling; anything you normalised away.
 
-## 7. Visual diff
+### 7. Visual diff
 
 - **Use when:** layout, spacing, colour, responsive behaviour.
 - **Signal:** the pixel difference between screenshots at the same viewport, above a threshold,
@@ -102,7 +104,7 @@ Shared tools: `npm run verify:up -- --id <id> [--ref <sha>] [--data fixtures|sna
 - **Cost:** low once the helper exists.
 - **Blind spots:** other viewports; hover and focus states.
 
-## 8. Data-state diff
+### 8. Data-state diff
 
 - **Use when:** saves, merges, the category write-back, deletes: anything that writes Mongo.
 - **Signal:** the documents before and after one user action. Exactly the intended change, nothing
@@ -112,7 +114,7 @@ Shared tools: `npm run verify:up -- --id <id> [--ref <sha>] [--data fixtures|sna
 - **Cost:** low.
 - **Blind spots:** writes that happen later (debounced saves): wait before the second dump.
 
-## 9. Logs and instrumentation
+### 9. Logs and instrumentation
 
 - **Use when:** "it saves twice", refetch loops, N+1 requests, race conditions.
 - **Signal:** a count or an order of events: requests per action (`page.on("request")`), server log
@@ -122,7 +124,7 @@ Shared tools: `npm run verify:up -- --id <id> [--ref <sha>] [--data fixtures|sna
 - **Cost:** low.
 - **Blind spots:** events nobody logged.
 
-## 10. Performance numbers
+### 10. Performance numbers
 
 - **Use when:** "slow", bundle size, render cost.
 - **Signal:** one number with a unit, before → after (the median of N runs on the same machine), and
@@ -133,7 +135,7 @@ Shared tools: `npm run verify:up -- --id <id> [--ref <sha>] [--data fixtures|sna
 - **Cost:** about 10 minutes.
 - **Blind spots:** dev mode is not production; build and start for real numbers (see 13).
 
-## 11. Fake clock and time zone
+### 11. Fake clock and time zone
 
 - **Use when:** anything with dates, "today", week grids, the date keys in `app/utils/dateUtils.ts`.
 - **Signal:** the same assertion under `TZ=Europe/Copenhagen` and `TZ=UTC`, and around midnight.
@@ -142,7 +144,7 @@ Shared tools: `npm run verify:up -- --id <id> [--ref <sha>] [--data fixtures|sna
 - **Cost:** low.
 - **Blind spots:** server and client in different zones: test both sides.
 
-## 12. Recorded external input
+### 12. Recorded external input
 
 - **Use when:** scraping and importing (`app/features/recipes/server/scrape/`), remote images.
 - **Signal:** extraction results from saved HTML, never from live sites.
@@ -151,7 +153,7 @@ Shared tools: `npm run verify:up -- --id <id> [--ref <sha>] [--data fixtures|sna
 - **Cost:** low.
 - **Blind spots:** the site changing later.
 
-## 13. Production build checks
+### 13. Production build checks
 
 - **Use when:** the PWA and service worker, caching, anything that differs between dev and prod.
 - **Signal:** behaviour of `npm run build && npm start`, offline (`context.setOffline(true)`), cache
@@ -166,7 +168,7 @@ Shared tools: `npm run verify:up -- --id <id> [--ref <sha>] [--data fixtures|sna
   service worker (the committed `public/sw.js` is stale since the Next 16 upgrade).
 - **Proven:** 2026-11-09, require-login: the Secure cookie flag only appears in this mode.
 
-## 13b. Anonymous request matrix (access control)
+### 13b. Anonymous request matrix (access control)
 
 - **Use when:** anything about who may reach what: login, permissions, a gate in front of routes.
 - **Signal:** for every page and every API route × method, the status and body an anonymous client
@@ -182,7 +184,7 @@ Shared tools: `npm run verify:up -- --id <id> [--ref <sha>] [--data fixtures|sna
 - **Proven:** 2026-11-09, require-login: BEFORE 72/110 red, AFTER 130/130; a removed route check
   turned 5 lines red.
 
-## 14. Static guarantee
+### 14. Static guarantee
 
 - **Use when:** "make sure this can't happen again" and the bug was a shape or wiring mistake.
 - **Signal:** the compiler, lint or fallow rejects the bad version.
@@ -191,9 +193,8 @@ Shared tools: `npm run verify:up -- --id <id> [--ref <sha>] [--data fixtures|sna
 - **Cost:** varies.
 - **Blind spots:** runtime data that bypasses the types (parse it at the boundary).
 
----
 
-## Candidates (proposed by a scout, not yet run)
+#### Candidates (proposed by a scout, not yet run)
 
 Promote a candidate into the catalog, with its real recipe, after the first task that uses it.
 
@@ -204,3 +205,27 @@ Promote a candidate into the catalog, with its real recipe, after the first task
   everything above and beside them is identical. Break it on purpose by shrinking a different
   element instead (the image), removing the 44 px touch-target minimum, or adding a negative
   margin that makes elements overlap.
+
+## Log
+
+One line per task that chose a verifier (`find-verifier`) or ran `before-after`.
+
+```
+date       | task slug | kind | technique | caught something | note
+2026-11-08 | fv-parser (skill test) | refactor | 2 golden replay | yes | 17,290 generated lines through linesToRows, deterministic; removing the `ltr` alias in a base copy changed 696 lines. Catalog entry 2 corrected: the snapshot stores parsed results, not raw lines.
+2026-11-08 | fix-editor-hydration | bug | 1 UI drive | yes | stopped at approval; BEFORE on base red on /shoppinglist (warning, aria-controls, Enter). Drives found the hydration timing trap and two wrong feature-map selectors; lessons added to entry 1.
+2026-11-09 | require-login | feature | 13b anonymous request matrix + 13 production build + 5 unit | yes | BEFORE 72/110 red; AFTER dev 130/130, prod 112/112 (Secure only in prod). Caught: login redirect used Next's host (localhost) instead of the browser's; a `/.//host` path that normalizes to `//host`. Breaks proved each layer separately.
+```
+
+## Lessons
+
+What failed, was misunderstood or surprised a run, so the next session doesn't repeat it.
+
+```
+date       | task | what went wrong or was misunderstood → what to do instead
+2026-11-08 | fv-parser | assumed the snapshot holds the raw lines users typed; it stores parsed results → generate inputs, use the snapshot only for realistic shapes (folded into recipe 2)
+2026-11-08 | fix-editor-hydration | a fixed sleep missed the hydration warning at random, and Next dev reports a mismatch only once per browser session → a fresh browser per route and `app.hydrated(locator)` (folded into recipe 1)
+2026-11-08 | fix-editor-hydration | two selectors in the feature map matched the wrong element → fixed in `.claude/flow/features/`; drive a feature once before trusting its file
+2026-11-09 | require-login | the Secure cookie flag never shows in dev → anything about cookies or headers runs on `--mode prod` too (folded into recipe 13)
+2026-11-09 | require-login | expected 401 on `//`, `\` and trailing-slash paths; Next answers them with 308 before the proxy runs → follow redirects for bypass shapes (folded into recipe 13b)
+```

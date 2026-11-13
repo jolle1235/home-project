@@ -16,7 +16,7 @@ npm run verify:up -- --id <id>  # isolated app instance (worktree + in-memory Mo
 npm run verify:snapshot         # read-only copy of production into .verify/snapshot (gitignored, never commit)
 ```
 
-To prove a change on the real app, use the `verify-home-project` skill (`.claude/skills/verify-home-project/`). It never touches Atlas: instances run from a git worktree without `.env` files against an in-memory MongoDB seeded from `scripts/verify/fixtures/` (synthetic) or the local snapshot. The repo is public, so only fixture runs may be quoted on GitHub.
+To prove a change on the real app, use the shared `verify` skill; this repo's harness, commands and gotchas are in `.claude/flow/profile.md` → Verify, and the user paths per feature in `.claude/flow/features/`. It never touches Atlas: instances run from a git worktree without `.env` files against an in-memory MongoDB seeded from `scripts/verify/fixtures/` (synthetic) or the local snapshot. The repo is public, so only fixture runs may be quoted on GitHub.
 
 Tests cover only pure logic (ingredient parsing, recipe scraping, text tidying, safeFetch). CI (`.github/workflows/lint.yml`) runs `npm ci`, `npm run lint`, `npm test` and `fallow audit` on Node 20.
 
@@ -102,12 +102,12 @@ The session is a stateless signed cookie (`hp_session`, `app/lib/session.ts`): H
 
 ## Task flow
 
-For any task to be done end to end (bug, refactor, feature, chore), use the `deliver` skill: `deliver "<task>"`, `deliver resume <slug>`. It runs these stages, each its own skill. The flow skills are shared with other projects: they come from the private repo `jolle1235/agent-skills` (its README covers install and update), installed into `.claude/skills/` and pinned in `skills-lock.json`. Change them there, not here, then `npx skills update -p -y`. What is specific to this repo (commands, gates, conventions, canonical homes, review focus) lives in `.claude/flow/profile.md`, which every stage reads:
+For any task to be done end to end (bug, refactor, feature, chore), use the `deliver` skill: `deliver "<task>"`, `deliver resume <slug>`. It runs these stages, each its own skill. The flow skills are shared with other projects: they come from the private repo `jolle1235/agent-skills` (its README covers install and update), installed into `.claude/skills/` and pinned in `skills-lock.json`. Change them there, not here, then `npx skills update -p -y`. What is specific to this repo lives only in `.claude/flow/` (no project skills): `profile.md` (how the app works, stack, commands, gates, conventions, canonical homes, review focus), `features/` (the feature map) and `verifier-notes.md` (proof recipes, task log, lessons from earlier sessions). Every stage reads them. To refresh the feature map and harness after app changes, run `/update-verify`.
 
 1. `scope-task`: a brief with observable expected behaviour; asks only behaviour questions, showing what the app does today.
-2. A plan, with `find-verifier` when the proof isn't obvious (this repo's catalog and log: `.claude/flow/verifier-catalog.md`, `verifier-log.md`).
+2. A plan, with `find-verifier` when the proof isn't obvious (this repo's recipes and lessons: `.claude/flow/verifier-notes.md`).
 3. `plan-critique`: a fresh agent critiques the plan. 4. The user approves.
-5. `before-after`: the same check on the base commit (red) and the change (green), on `verify-home-project` instances.
+5. `before-after`: the same check on the base commit (red) and the change (green), on `verify` instances.
 6. Clean: tsc, ESLint, tests and fallow, then `/simplify`, then `thermonuclear-review` and `solid-check` in parallel.
 7. `commit`. 8. A PR (proof from fixture runs only). 9. `merge-verdict`: bugs, security and intent reviewers; READY, FIX (routed back to stage 1, 5 or 6, max 3 rounds) or HUMAN.
 
