@@ -2,7 +2,7 @@
 
 The maintained source for verifying what a user of the recipe app can do. Read this index before
 driving, then use the matching feature file as the recipe. Launch, doctor and cleanup are in
-[`../SKILL.md`](../SKILL.md).
+profile → Verify (`../profile.md`); the rules for driving are in the shared `verify` skill.
 
 ## Baseline preconditions
 

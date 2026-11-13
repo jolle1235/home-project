@@ -1,4 +1,4 @@
-// Drives every feature in the verify-home-project feature map once, read-only,
+// Drives every feature in the feature map (.claude/flow/features/) once, read-only,
 // and fails on any missing content, console error or failing API call.
 //
 //   npm run verify:smoke -- [<id>]

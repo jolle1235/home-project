@@ -1,5 +1,5 @@
 // Shared paths and instance bookkeeping for the verification harness.
-// See .claude/skills/verify-home-project/SKILL.md for how the pieces fit.
+// See profile → Verify in .claude/flow/profile.md for how the pieces fit.
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import net from "node:net";

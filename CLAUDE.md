@@ -16,7 +16,7 @@ npm run verify:up -- --id <id>  # isolated app instance (worktree + in-memory Mo
 npm run verify:snapshot         # read-only copy of production into .verify/snapshot (gitignored, never commit)
 ```
 
-To prove a change on the real app, use the `verify-home-project` skill (`.claude/skills/verify-home-project/`). It never touches Atlas: instances run from a git worktree without `.env` files against an in-memory MongoDB seeded from `scripts/verify/fixtures/` (synthetic) or the local snapshot. The repo is public, so only fixture runs may be quoted on GitHub.
+To prove a change on the real app, use the shared `verify` skill; this repo's harness, commands and gotchas are in `.claude/flow/profile.md` → Verify, and the user paths per feature in `.claude/flow/features/`. It never touches Atlas: instances run from a git worktree without `.env` files against an in-memory MongoDB seeded from `scripts/verify/fixtures/` (synthetic) or the local snapshot. The repo is public, so only fixture runs may be quoted on GitHub.
 
 Tests cover only pure logic (ingredient parsing, recipe scraping, text tidying, safeFetch). CI (`.github/workflows/lint.yml`) runs `npm ci`, `npm run lint`, `npm test` and `fallow audit` on Node 20.
 
@@ -81,7 +81,7 @@ Prefer TanStack Query hooks over adding new contexts.
 
 - **Avoid unnecessary `useEffect`** (`.cursor/rules/no-unnecessary-effects.mdc`). Use effects only to sync with external systems. Derive values inline or with `useMemo`, put logic in event handlers, reset state with `key`, and fetch with TanStack Query. Lint enforces this through `eslint-plugin-react-you-might-not-need-an-effect` and React Hooks `set-state-in-effect`.
 - **Styling:** Tailwind with the semantic color tokens from `tailwind.config.js` (`background`, `foreground`, `primary`, `secondary`, `surface`, `soft`, `danger`, `muted`, each with a `-hover` variant where defined). They are backed by CSS variables in `app/globals.css`. Don't hard-code hex values. Icons come from `lucide-react`.
-- **UI is mobile-first** (PWA, pull-to-refresh via `hooks/useScrollRefresh` + `components/PullToRefreshIndicator`). For design work, see `.agents/skills/ui-design-expert/SKILL.md`.
+- **UI is mobile-first** (PWA, pull-to-refresh via `hooks/useScrollRefresh` + `components/PullToRefreshIndicator`). For design work, use the shared `ui-design-expert` skill.
 - **Validation:** limits live in `app/utils/validationVariables.ts` and Yup schemas in `app/utils/validationSchema.ts`.
 - **Ingredient input:** recipes (incl. drinks) and the shopping list both use `features/recipes/components/IngredientEditor.tsx`, which works on editor rows (`utils/ingredientRows.ts`: `rowsToIngredients` / `ingredientsToRows`). Pass `allowSections={false}` where sections and reordering make no sense.
 - **Imports:** a mix of relative paths and the `@/*` alias. The alias maps to the repo root, so write `@/app/...`.
@@ -102,12 +102,12 @@ The session is a stateless signed cookie (`hp_session`, `app/lib/session.ts`): H
 
 ## Task flow
 
-For any task to be done end to end (bug, refactor, feature, chore), use the `deliver` skill: `deliver "<task>"`, `deliver resume <slug>`. It runs these stages, each its own skill in `.claude/skills/`:
+For any task to be done end to end (bug, refactor, feature, chore), use the `deliver` skill: `deliver "<task>"`, `deliver resume <slug>`. It runs these stages, each its own skill. The flow skills are shared with other projects: they come from the private repo `jolle1235/agent-skills` (its README covers install and update), installed into `.claude/skills/` and pinned in `skills-lock.json`. Change them there, not here, then `npx skills update -p -y`. What is specific to this repo lives only in `.claude/flow/` (no project skills): `profile.md` (how the app works, stack, commands, gates, conventions, canonical homes, review focus), `features/` (the feature map) and `verifier-notes.md` (proof recipes, task log, lessons from earlier sessions). Every stage reads them. To refresh the feature map and harness after app changes, run `/update-verify`.
 
 1. `scope-task`: a brief with observable expected behaviour; asks only behaviour questions, showing what the app does today.
-2. A plan, with `find-verifier` when the proof isn't obvious (its catalog and log live in `find-verifier/references/`).
+2. A plan, with `find-verifier` when the proof isn't obvious (this repo's recipes and lessons: `.claude/flow/verifier-notes.md`).
 3. `plan-critique`: a fresh agent critiques the plan. 4. The user approves.
-5. `before-after`: the same check on the base commit (red) and the change (green), on `verify-home-project` instances.
+5. `before-after`: the same check on the base commit (red) and the change (green), on `verify` instances.
 6. Clean: tsc, ESLint, tests and fallow, then `/simplify`, then `thermonuclear-review` and `solid-check` in parallel.
 7. `commit`. 8. A PR (proof from fixture runs only). 9. `merge-verdict`: bugs, security and intent reviewers; READY, FIX (routed back to stage 1, 5 or 6, max 3 rounds) or HUMAN.
 
@@ -117,7 +117,7 @@ The flow stops at READY; only the user decides to merge. Run state lives in `.fl
 
 Every commit runs `fallow audit` (`.githooks/pre-commit`, enabled by `npm install` via the `prepare` script; config in `.fallowrc.jsonc`). For Claude, `.claude/hooks/fallow-gate.sh` also blocks `git commit` / `git push` while the audit fails, and CI runs it again.
 
-- **When asked to commit, use the `commit` skill** (`.claude/skills/commit/`). It runs the gate first and fixes failures using the vendored `fallow` skill. `deliver` calls it in stage 7.
+- **When asked to commit, use the `commit` skill** (shared; its gate commands are in `.claude/flow/profile.md` → Commit). It runs the gate first and fixes failures using the `fallow` skill (installed from fallow-rs/fallow-skills). `deliver` calls it in stage 7.
 - Dead code and duplication must be **0** in changed files (duplication threshold is 0). Pre-existing complexity is frozen in `.fallow-health-baseline.json`; only new over-threshold functions fail.
 - Never use `--no-verify`, never edit the hooks or loosen `.fallowrc.jsonc` to get through, and never regenerate the health baseline to hide new complexity. Ask the user before adding a `fallow-ignore` suppression, and always state the reason in it.
 

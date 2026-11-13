@@ -10,11 +10,11 @@ A plan is only as good as this brief, and every later stage checks against it.
 
 ## The run folder
 
-`<slug>` is a short kebab-case name for the task (`fix-shoppinglist-hydration`). Create the folder
+`<slug>` is a short kebab-case name for the task (`fix-list-hydration`). Create the folder
 when it doesn't exist; `deliver` reuses it across stages and rounds.
 
 ```
-.flow/<slug>/            gitignored; may hold snapshot data, never quote it on GitHub
+.flow/<slug>/            gitignored; may hold private data, never quote it on GitHub
   state.json             owned by deliver: stage, round, base SHA, branch, PR, mode
   brief.md               this skill
   questions.md           open questions while waiting on the user (headless runs)
@@ -32,12 +32,13 @@ without guessing, that guess is your first question.
 
 ## 2. Look before you ask
 
-- `CLAUDE.md`, and the feature files in `.claude/skills/verify-home-project/features/` for the
-  features the task touches.
+- `CLAUDE.md`, `.claude/flow/profile.md` (including the docs under Repo → Read first), the
+  feature files for the features the task touches (profile → Verify → Feature map), and the
+  `## Lessons` in profile → Verifier notes.
 - The code: grep the names the request uses, read the components, hooks, routes and server modules
   on the path. `git log -p` on the area when "it used to work".
-- **The running app**, when the task is about behaviour: start a fixture instance
-  (`verify-home-project`), do what the request describes, and write what happens to
+- **The running app**, when the task is about behaviour: start a fixture instance (profile →
+  Verify), do what the request describes, and write what happens to
   `evidence/observed-today.txt` with a screenshot. A bug report becomes a reproduction here.
 - Read `.claude/skills/principle-model-the-domain/SKILL.md` when the task adds state or branching.
 
@@ -45,9 +46,9 @@ without guessing, that guess is your first question.
 
 | Kind | Examples | What to do |
 |---|---|---|
-| **Observable** | "does the planner show past days?", "which component renders this?" | Find out. Never ask. |
-| **Settled by convention** | file layout, naming, which helper, test style, query keys, colour tokens | Decide from CLAUDE.md and the existing code. Record under `## Assumptions`. |
-| **Behaviour choice** | what users see or can do, copy and UX the request leaves open, removing or changing existing behaviour, the shape of stored documents, anything hard to undo, splitting the task | Ask. |
+| **Observable** | "does the page show past days?", "which component renders this?" | Find out. Never ask. |
+| **Settled by convention** | file layout, naming, which helper, test style, query keys, colour tokens | Decide from CLAUDE.md, the profile and the existing code. Record under `## Assumptions`. |
+| **Behaviour choice** | what users see or can do, copy and UX the request leaves open, removing or changing existing behaviour, the shape of stored data, anything hard to undo, splitting the task | Ask. |
 
 ## 4. Ask with evidence
 

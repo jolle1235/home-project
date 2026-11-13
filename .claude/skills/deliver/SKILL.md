@@ -1,6 +1,6 @@
 ---
 name: deliver
-description: Take one task - a bug fix, refactor, feature or chore, small or big - from request to a merge-ready PR in this repo, through a fixed loop of stages - scope (ask only about behaviour), plan, independent critique, the user's approval, implementation with before/after proof on the real app, clean-code passes, the fallow commit gate, PR, and a three-reviewer merge verdict that routes problems back to the right stage. Stops at READY and waits for the user to say merge. Use when the user hands over a task to do end to end ("deliver ...", "fix ...", "build ...", "refactor ...") or says "deliver resume <slug>".
+description: Take one task - a bug fix, refactor, feature or chore, small or big - from request to a merge-ready PR in this repo, through a fixed loop of stages - scope (ask only about behaviour), plan, independent critique, the user's approval, implementation with before/after proof on the real app, clean-code passes, the commit gate, PR, and a three-reviewer merge verdict that routes problems back to the right stage. Stops at READY and waits for the user to say merge. Use when the user hands over a task to do end to end ("deliver ...", "fix ...", "build ...", "refactor ...") or says "deliver resume <slug>".
 argument-hint: '"<task>" | resume <slug> | --headless --issue <n> ["<task>"]'
 ---
 
@@ -8,6 +8,20 @@ argument-hint: '"<task>" | resume <slug> | --headless --issue <n> ["<task>"]'
 
 You run the loop; the stage skills do the work. Every stage reads `.flow/<slug>/state.json` first
 and writes it last, so any stage can be re-run and a stopped run can be resumed.
+
+## The project profile
+
+Every stage reads `.claude/flow/profile.md` for the project's commands and rules: base branch,
+verify instance commands, gates, commit gate, merge, conventions. "profile → X" below means
+section `## X` there. **No profile?** Stop, copy [`references/profile-template.md`](references/profile-template.md)
+to `.claude/flow/profile.md`, fill in what the repo shows, ask the user only what it doesn't, and
+let them review it before the first run. profile → Verify is "none"? Offer `setup-verify` first.
+No `.claude/flow/verifier-notes.md`? Copy
+[`references/verifier-notes-template.md`](references/verifier-notes-template.md) there.
+
+Project-specific knowledge lives only in `.claude/flow/` (the profile and the files it names).
+Never create or edit a skill inside the project; a rule for every project goes to the shared skills
+repo instead.
 
 ## Stages
 
@@ -20,32 +34,35 @@ and writes it last, so any stage can be re-run and a stopped run can be resumed.
 | 4 | approval | Show the plan; the user approves (below). | Approved. |
 | 5 | build | `before-after` | BEFORE red (or pinned), AFTER green (or identical). |
 | 6 | clean | Below. | Gates green, reviews applied, AFTER still green. |
-| 7 | commit | `commit` | Committed through the fallow hook. |
+| 7 | commit | `commit` | Committed through the project's gate. |
 | 8 | publish | Below. | PR open and up to date. |
 | 9 | verdict | `merge-verdict` | READY, FIX, HUMAN or REBASE. |
+
+`<base>` below is profile → Repo → Base branch.
 
 ## 0. Setup
 
 - New run: pick `<slug>` (kebab-case, a few words). Require a clean tree; if it isn't clean, stop and
-  say what is uncommitted. `git fetch origin`, `git switch -c flow/<slug> origin/master`.
+  say what is uncommitted. `git fetch origin`, `git switch -c flow/<slug> origin/<base>`.
 - Resume (`deliver resume <slug>`): read `.flow/<slug>/state.json`. If it is gone (another machine),
   find the PR for branch `flow/<slug>` and rebuild the state from the `<!-- flow-state ... -->`
   block in its body and the `<!-- flow-verdict ... -->` comments. Continue at the recorded stage.
-- Check the tools once: `npx playwright --version`, `npx fallow --version`, and that `gh` can
-  reach the repo (`gh repo view`; if PR commands fail with "must be a collaborator", use
-  `GH_TOKEN="$(gh auth token --user <repo owner>)"` for `gh` from then on and note it in state).
+- Check the tools once: the commands in profile → Verify and → Gates exist, and `gh repo view`
+  works (if PR commands fail with "must be a collaborator", use
+  `GH_TOKEN="$(gh auth token --user <owner>)"` for `gh` from then on and note it in state).
+- Make sure `.flow/` is gitignored.
 - Write `state.json`:
 
 ```json
 {
-  "slug": "fix-shoppinglist-hydration",
+  "slug": "fix-list-hydration",
   "task": "the request, verbatim",
   "mode": "interactive",
   "issue": null,
   "stage": "scope",
   "round": 1,
-  "base": "<origin/master sha at start>",
-  "branch": "flow/fix-shoppinglist-hydration",
+  "base": "<origin/<base> sha at start>",
+  "branch": "flow/fix-list-hydration",
   "pr": null,
   "proof": null,
   "verdicts": [],
@@ -68,8 +85,8 @@ request goes back to stage 2 (or 1 if it changes behaviour). Nothing is built be
 
 ## 6. Clean
 
-1. Gates: `npx tsc --noEmit`, ESLint on changed files, `npm test`,
-   `npx fallow audit --base origin/master`. Fix failures with the `fallow` skill.
+1. Gates: every command in profile → Gates, on the changed code. Fix failures (with the skill the
+   profile names for the static gate).
 2. `/simplify` on the changed code.
 3. Spawn two read-only agents in one message: one follows
    `.claude/skills/thermonuclear-review/SKILL.md`, one follows
@@ -82,9 +99,11 @@ request goes back to stage 2 (or 1 if it changes behaviour). Nothing is built be
 
 ## 8. Publish
 
+First do profile → After each task, if any, and commit it through `commit`.
+
 Push (`git push -u origin flow/<slug>`; after a rebase, `--force-with-lease`). Create the PR, or
-update its body if one exists. Never open it as a draft. Base `master`, unless the user stacked
-the work on another branch.
+update its body if one exists. Never open it as a draft. Base: profile → Repo → PR base, unless the
+user stacked the work on another branch.
 
 - **Title:** short and imperative, naming what changes for the user.
 - **Body:** `## Why` (the problem, 1-3 sentences) · `## What changed` (1-3 bullets) · `## Scope`
@@ -96,25 +115,32 @@ the work on another branch.
 <!-- flow-state {"slug":"...","base":"...","round":1,"stage":"verdict"} -->
 ```
 
-The repo is public: nothing from the production snapshot goes into the PR.
+When profile → Repo says the repo is public, nothing from private data goes into the PR.
 
 ## 9. Verdict and the loop
 
 Run `merge-verdict` with the PR number and the round. Then:
 
 - **READY** → stop. Tell the user: the PR link, the verdict summary, the proof in one line, and
-  "say merge to squash-merge". On "merge": `gh pr merge <n> --squash --delete-branch`,
-  `git switch master && git pull`, `npm run verify:down -- --all`, add the `find-verifier` log
-  line if one is due, set `stage: "merged"`.
+  "say merge to merge". On "merge": profile → Merge → Command, `git switch <base> && git pull`,
+  profile → Merge → After merge, add the `find-verifier` log line if one is due,
+  set `stage: "merged"`.
 - **FIX** → `round += 1` and go to the earliest stage any finding is routed to:
   **understanding** → 1, and then 2, 3 and 4 again (the user re-approves changed behaviour);
   **behaviour** → 5; **structure** → 6. Every round then runs 6 (with AFTER), 7, 8 and 9.
-- **REBASE** → `git rebase origin/master`, then 6, 7, 8 (force-with-lease), 9 in the same round.
+- **REBASE** → `git rebase origin/<base>`, then 6, 7, 8 (force-with-lease), 9 in the same round.
 - **HUMAN**, or a FIX in round 3 → ask the user with the findings and the options; continue where
   the answer points.
 
 Never merge on your own, never skip a stage because a round "only" touched a little, and never
 pass `--no-verify`.
+
+## Lessons
+
+Whenever a run hits something the next session should know, append a line to `## Lessons` in
+profile → Verifier notes, in the same branch: a FIX verdict and its cause, a brief the user
+corrected, a check that could not fail, a wrong assumption about the app, a gate that surprised.
+Format and rules in the template. `scope-task` and `find-verifier` read them before starting.
 
 ## Asking the user
 
