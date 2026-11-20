@@ -2,7 +2,7 @@
   "name": "Home Project",
   "short_name": "Home Project",
   "description": "A home project application with recipe and shopping list management",
-  "start_url": "/",
+  "start_url": "/recipes",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#000000",

@@ -33,7 +33,7 @@ Preconditions:
   `app.api("/api/shopping-list")` has 5 more items.
 - **Nothing ticked.** Uncheck all and press the button: the toast `Vælg mindst én ingrediens.`
   appears, nothing is saved, and the button stays enabled.
-- **Edit.** `page.getByRole("button", { name: "Rediger" }).click()` → `/add-recipe?id=<id>`.
+- **Edit.** `page.getByRole("link", { name: "Rediger" }).click()` → `/add-recipe?id=<id>`.
 - **Proof.** `app.shot("recipe-detail")` plus the shopping list read back.
 
 ## Gotchas

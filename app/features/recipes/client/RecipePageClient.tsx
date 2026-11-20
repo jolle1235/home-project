@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Filter, Plus } from "lucide-react";
 
@@ -56,8 +55,6 @@ export default function RecipePageClient({ initialRecipes, initialKind }: Props)
 
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
-  const router = useRouter();
-
   const {
     data: recipes = [],
     isLoading,
@@ -70,9 +67,6 @@ export default function RecipePageClient({ initialRecipes, initialKind }: Props)
   });
 
   const { isRefreshing } = useScrollRefresh(refetch);
-
-  const handleOpen = () =>
-    router.push(kind === "drink" ? "/add-recipe?type=drink" : "/add-recipe");
 
   const filteredRecipes = useMemo(() => {
     const lowerCaseSearchTerm = searchTerm.toLowerCase();
@@ -173,7 +167,7 @@ export default function RecipePageClient({ initialRecipes, initialKind }: Props)
                   variant="primary"
                   size="md"
                   aria-label={kind === "drink" ? "Tilføj drink" : "Tilføj opskrift"}
-                  onClick={handleOpen}
+                  href={kind === "drink" ? "/add-recipe?type=drink" : "/add-recipe"}
                 />
               </div>
             </div>

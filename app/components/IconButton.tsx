@@ -2,6 +2,7 @@
 
 import type { ButtonHTMLAttributes } from "react";
 import type { LucideIcon } from "lucide-react";
+import { ButtonOrLink } from "./ButtonOrLink";
 
 type IconButtonVariant = "primary" | "secondary" | "danger" | "ghost";
 type IconButtonSize = "xs" | "sm" | "md" | "lg";
@@ -15,6 +16,8 @@ interface IconButtonProps
   size?: IconButtonSize;
   fullWidth?: boolean;
   type?: "button" | "submit" | "reset";
+  // Renders a link styled as this button.
+  href?: string;
 }
 
 export function IconButton({
@@ -67,7 +70,7 @@ export function IconButton({
   const computedAriaLabel = ariaLabel ?? label;
 
   return (
-    <button
+    <ButtonOrLink
       type={type}
       aria-label={computedAriaLabel}
       className={mergedClassName}
@@ -75,6 +78,6 @@ export function IconButton({
     >
       <Icon className={iconSizes[size]} aria-hidden={!!label} />
       {label && <span>{label}</span>}
-    </button>
+    </ButtonOrLink>
   );
 }

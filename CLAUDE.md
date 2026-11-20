@@ -5,8 +5,8 @@ Personal recipe / meal-plan / shopping-list PWA (drinks are recipes too). Next.j
 ## Commands
 
 ```bash
-npm run dev                 # next dev --turbopack (PWA/service worker disabled in dev)
-npm run build && npm start  # needed to test PWA / service worker
+npm run dev                 # next dev --turbopack (service worker unregistered in dev)
+npm run build && npm start  # needed to test the service worker and timings
 npm run lint                # ESLint 9 flat config (eslint.config.mjs)
 npm run generate-pwa-icons  # regenerates public/icon/* via sharp
 npm test                    # vitest: unit tests for pure utils (app/**/*.test.ts)
@@ -69,7 +69,7 @@ Thin handlers. They delegate to a feature's `server/` module where one exists an
 
 ## Global state
 
-`app/features/layout.tsx` nests `ReactQueryProvider` → `RecipeProvider` → `ConstantsProvider` → `NavBar` + page for every feature page. `app/layout.tsx` only holds the document, toasts and the service-worker script, so `/login` (in `app/login`) gets no shell and makes no API calls.
+`app/features/layout.tsx` nests `ReactQueryProvider` → `RecipeProvider` → `ConstantsProvider` → `NavBar` + page for every feature page. `app/features/layout.tsx` also renders `components/ServiceWorker` (registers `public/sw.js` in production). `app/layout.tsx` only holds the document and toasts, so `/login` (in `app/login`) gets no shell and makes no API calls.
 
 - `ReactQueryProvider`: staleTime 5 min, gcTime 30 min, no refetch on focus, retry 1
 - `RecipeProvider` (`context/RecipeContext.tsx`): despite its name, it holds the **week plan**
@@ -95,10 +95,12 @@ The whole app is behind one shared code; there are no user accounts. Two layers 
 
 The session is a stateless signed cookie (`hp_session`, `app/lib/session.ts`): HMAC with `AUTH_SECRET` over its expiry and a hash of the code, valid 365 days. Changing `HOUSEHOLD_CODE` logs every device out. If either env var is missing or too short, nothing is accepted (fail closed).
 
+- **Region:** `vercel.json` pins functions to `cdg1` (Paris), next to the Atlas cluster (GCP europe-west1). The default (iad1, Washington) put an Atlantic crossing on every database round trip; check `x-vercel-id` (`…::cdg1::…`) after a deploy.
 - **Deploying:** set `HOUSEHOLD_CODE` and `AUTH_SECRET` on Vercel for Production *and* Preview; a new value takes effect after a redeploy. Pick a long code: the 1-second delay on wrong codes doesn't stop parallel guessing.
 - **New API route:** export its handlers through `withSession`. **New server page that reads Mongo:** call `requireSession()` first. Client pages are covered by their API routes.
 - **Images** are served unoptimized (`images.unoptimized` in `next.config.ts`): Next's optimizer fetches its source without the user's cookie, so the browser loads `/api/images/<id>` itself (cached a year, privately).
 - On iOS an installed PWA keeps its own cookies: the code is entered once in Safari and once in the app.
+- Logging in empties the service worker's page cache. A device logged out by a new code briefly shows its last-seen recipe list on launch, then lands on `/login`.
 
 ## Task flow
 
@@ -123,8 +125,10 @@ Every commit runs `fallow audit` (`.githooks/pre-commit`, enabled by `npm instal
 
 ## Gotchas
 
-- The PWA uses `next-pwa` (see `runtimeCaching` in `next.config.ts`). `public/sw.js` and `public/workbox-*.js` are build output; don't hand-edit them.
-- The README and PWA_README describe IndexedDB offline sync, but no IndexedDB code exists. Offline support is only service-worker caching.
+- **Service worker** (`public/sw.js`, hand-written source, no build step; registered by `components/ServiceWorker.tsx` in production only, unregistered in dev). Only `/recipes` is served from its last-seen copy (stale-while-revalidate); the page is told `fresh` (refetch `["recipes"]`), `reload` (new deploy) or `gone` (redirected) over a MessageChannel. `/_next/static/*` is cache-first. A page whose server render failed still streams as 200 (React marks it with `$RX(`); the worker never stores it, so the last good copy stays. Never cache forms or the shopping list. `/sw.js` is served `no-cache`; bump the cache names (`pages-v1`, `static-v1`) when their contents change meaning. Emergency: copy `public/sw-kill.js` over `public/sw.js` and deploy (deletes all caches, unregisters, never reloads pages). Test installed on a real iPhone; Chrome's emulation differs.
+- **Client cache:** `experimental.staleTimes.dynamic = 30`, so tab switches within 30 s don't hit the server. Data lives in TanStack Query: after a write, update or invalidate the query (the editor `setQueryData`s the saved recipe) rather than relying on the page's `initialData`, which can be 30 s old.
+- **Loading:** `features/loading.tsx` is the skeleton for every feature page; a segment entered below a shared one (e.g. `recipes/[id]`) needs its own `loading.tsx`, and only shows instantly when reached through a prefetched `<Link>` (`Button`/`IconButton` take `href`), not `router.push`.
+- The README and PWA_README describe IndexedDB offline sync and next-pwa, but neither exists. Offline support is only the service worker above.
 - `app/utils/apiHelperFunctions.ts` starts with a `"use cliet"` typo, so the directive does nothing.
 - `getRecipes()` caps results at 50.
 - A production build (`npm run build && npm start`, or `verify:up --mode prod`) logs 404s for `/_vercel/speed-insights/script.js` locally; only Vercel serves it.

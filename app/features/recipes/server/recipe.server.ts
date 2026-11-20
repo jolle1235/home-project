@@ -44,6 +44,16 @@ export async function getRecipes(): Promise<Recipe[]> {
   }
 }
 
+// null for an id that isn't an ObjectId or a recipe that doesn't exist.
+export async function getRecipe(id: string): Promise<Recipe | null> {
+  if (!ObjectId.isValid(id)) return null;
+  const db = await getDb();
+  const recipe = await db
+    .collection<RecipeDocument>("recipes")
+    .findOne({ _id: new ObjectId(id) });
+  return recipe ? mapRecipe(recipe) : null;
+}
+
 export async function createRecipe(recipe: Recipe): Promise<Recipe> {
   try {
     const db = await getDb();

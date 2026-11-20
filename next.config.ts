@@ -1,66 +1,12 @@
 // next.config.ts
 import type { NextConfig } from "next";
 
-// ---- your runtimeCaching stays the same ----
-
-const runtimeCaching = [
-  {
-    urlPattern: /^\/_next\/static\/.*/i,
-    handler: "StaleWhileRevalidate",
-    options: {
-      cacheName: "next-static",
-      expiration: { maxEntries: 100, maxAgeSeconds: 30 * 24 * 60 * 60 },
-    },
-  },
-  {
-    urlPattern: /^\/icon\/.*\.(?:png|jpg|svg|webp|ico)$/i,
-    handler: "StaleWhileRevalidate",
-    options: {
-      cacheName: "icons-cache",
-      expiration: { maxEntries: 20, maxAgeSeconds: 60 * 24 * 60 * 60 },
-      cacheableResponse: { statuses: [0, 200] },
-    },
-  },
-  {
-    urlPattern: /^\/api\/admin\/unitTypes.*$/i,
-    handler: "StaleWhileRevalidate",
-    options: {
-      cacheName: "api-cache",
-      expiration: { maxEntries: 50, maxAgeSeconds: 24 * 60 * 60 },
-      cacheableResponse: { statuses: [0, 200] },
-    },
-  },
-  {
-    urlPattern: /^\/api\/admin\/recipeCategories.*$/i,
-    handler: "StaleWhileRevalidate",
-    options: {
-      cacheName: "api-cache",
-      expiration: { maxEntries: 50, maxAgeSeconds: 24 * 60 * 60 },
-      cacheableResponse: { statuses: [0, 200] },
-    },
-  },
-  {
-    urlPattern: /.*\.(?:png|jpg|jpeg|svg|gif|webp)$/i,
-    handler: "StaleWhileRevalidate",
-    options: {
-      cacheName: "images-cache",
-      expiration: { maxEntries: 200, maxAgeSeconds: 30 * 24 * 60 * 60 },
-      cacheableResponse: { statuses: [0, 200] },
-    },
-  },
-];
-
-const withPWA = require("next-pwa")({
-  dest: "public",
-  register: true,
-  skipWaiting: true,
-  disable: process.env.NODE_ENV === "development",
-  runtimeCaching,
-});
-
-// ---- Final merged config ----
-
 const nextConfig: NextConfig = {
+  experimental: {
+    // Tab switches within 30 s come from the client cache. Data lives in TanStack Query, so
+    // your own edits still show at once (see the recipe editor's setQueryData).
+    staleTimes: { dynamic: 30 },
+  },
   // Images are behind the login. The optimizer fetches its source without the
   // user's cookie (on Vercel from Vercel's own servers), so the browser loads
   // /api/images/<id> itself; that route sends a year-long private cache header.
@@ -104,19 +50,15 @@ const nextConfig: NextConfig = {
       headers: [
         {
           key: "Cache-Control",
-          value: "public, max-age=0, must-revalidate",
+          // The hand-written service worker; always check for a new one.
+          value: "no-cache",
         },
       ],
     },
   ],
-  webpack: (config) => {
-    // your custom webpack changes here
-    return config;
-  },
   turbopack: {
     resolveExtensions: [".ts", ".tsx", ".js", ".jsx", ".json", ".mjs", ".cjs"],
   },
 };
 
-// Wrap with PWA plugin
-export default withPWA(nextConfig);
+export default nextConfig;

@@ -54,6 +54,9 @@ this section has the facts.
   - Saves go through optimistic TanStack Query updates and debounced PUTs; read state back after a
     short wait instead of trusting the UI.
   - `--mode prod` logs 404s for `/_vercel/speed-insights/script.js`; only Vercel serves it.
+  - `--mode prod` registers the service worker: from the second load on, `/recipes` comes from its
+    cache first (one load behind) and refreshes a moment later. Use `serviceWorkers: "block"` in a
+    Playwright context when a check must read `/recipes` fresh.
 
 ## Check script
 
@@ -97,7 +100,7 @@ process.exit(results.every((r) => r.ok) && problems.length === 0 ? 0 : 1);
 - Hooks: `.githooks/pre-commit` (fallow audit, enabled by `npm install`), and for Claude
   `.claude/hooks/fallow-gate.sh` on `git commit` / `git push`; `--no-verify` is denied in
   `.claude/settings.json`.
-- Never stage: `.env*`, `public/sw.js`, `public/workbox-*.js`, `.verify/`, `.flow/`.
+- Never stage: `.env*`, `.verify/`, `.flow/`. (`public/sw.js` is hand-written source since fast-app.)
 - Rules: dead code and duplication must be 0 in changed files (threshold 0). Never regenerate
   `.fallow-health-baseline.json`; never loosen `.fallowrc.jsonc`. A `fallow-ignore` needs the
   user's OK and a reason. Unused files that Next loads by convention go to `entry` in

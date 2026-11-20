@@ -15,7 +15,7 @@ from a link and deleted.
 
 ## How to get to it (user POV)
 
-- `Tilføj opskrift` / `Tilføj drink` on the recipe list.
+- `Tilføj opskrift` / `Tilføj drink` on the recipe list (links: `page.getByRole("link", { name: "Tilføj opskrift" })`).
 - `Rediger` on a recipe page.
 - `/add-recipe`, `/add-recipe?type=drink`, `/add-recipe?id=<id>`.
 

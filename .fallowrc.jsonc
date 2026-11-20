@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
-  // Build output from next-pwa; never hand-edited.
-  "ignorePatterns": ["public/sw.js", "public/sw-register.js", "public/workbox-*.js"],
+  // Service workers: the browser loads them by URL, nothing imports them.
+  "entry": ["public/sw.js", "public/sw-kill.js"],
   "duplicates": {
     // Report every duplicate pair and fail on any duplication at all.
     "threshold": 0

@@ -1,4 +1,5 @@
 import type { ButtonHTMLAttributes } from "react";
+import { ButtonOrLink } from "./ButtonOrLink";
 
 interface ButtonProps
   extends Omit<
@@ -15,6 +16,8 @@ interface ButtonProps
   isLoading?: boolean;
   loadingText?: string;
   className?: string;
+  // Renders a link styled as this button.
+  href?: string;
 }
 
 export default function Button({
@@ -71,7 +74,7 @@ export default function Button({
   };
 
   return (
-    <button
+    <ButtonOrLink
       onClick={onClick}
       type={type}
       disabled={isDisabled}
@@ -111,6 +114,6 @@ export default function Button({
       ) : (
         children
       )}
-    </button>
+    </ButtonOrLink>
   );
 }

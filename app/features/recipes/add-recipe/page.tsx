@@ -339,7 +339,9 @@ function RecipeForm({ recipeId, recipe, newType }: RecipeFormProps) {
       clearDraft();
       await queryClient.invalidateQueries({ queryKey: ["recipes"] });
       if (recipeId) {
-        queryClient.removeQueries({ queryKey: ["recipe", recipeId] });
+        // The recipe page can come from Next's 30 s client cache with the old recipe as
+        // initialData; a cached query wins over it, so store the saved one.
+        queryClient.setQueryData<Recipe>(["recipe", recipeId], await res.json());
       }
       toast.success(
         recipeId ? "Opskriften blev opdateret 🎉" : "Opskriften blev gemt 🎉",

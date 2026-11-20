@@ -21,6 +21,6 @@ export function proxy(request: NextRequest) {
 // Static files the PWA needs before login never reach the proxy.
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/webpack-hmr|__nextjs|icon/|manifest\\.json|sw\\.js|sw-register\\.js|workbox-|favicon\\.ico).*)",
+    "/((?!_next/static|_next/webpack-hmr|__nextjs|icon/|manifest\\.json|sw\\.js|sw-kill\\.js|favicon\\.ico).*)",
   ],
 };
