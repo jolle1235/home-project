@@ -243,4 +243,5 @@ date       | task | what went wrong or was misunderstood → what to do instead
 2026-11-20 | fast-app | Playwright `framenavigated` also fires on Next's history.replaceState → count full loads with `request.isNavigationRequest()` instead
 2026-11-20 | fast-app | a check that serves a planted cache entry triggers the worker's background refresh, which replaces the plant → plant right before the step under test and check it is still stored
 2026-11-20 | fast-app | a check that edits fixture data can't be re-run on the same instance → `verify:down` + `verify:up` before every rerun
+2026-11-20 | fast-app | FIX round 1: a loading.tsx makes the page stream, so a failed server render answers 200 OK and a cache keyed on `response.ok` stores the error page → anything that caches HTML must reject React's failed-boundary marker (`$RX("`), and a DB-down check must wait out the Mongo driver's ~30 s server selection before asserting
 ```
