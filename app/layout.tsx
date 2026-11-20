@@ -1,6 +1,5 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Script from "next/script";
 import type { Metadata, Viewport } from "next";
 import { ToastContainer } from "react-toastify";
 
@@ -19,7 +18,6 @@ export const metadata: Metadata = {
   description:
     "A home project application with recipe and shopping list management",
   manifest: "/manifest.json",
-  themeColor: "#000000",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -42,6 +40,7 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: "cover",
+  themeColor: "#000000",
 };
 
 // The app shell (providers, navigation) is in app/features/layout.tsx, so /login
@@ -71,7 +70,6 @@ export default function RootLayout({
       >
         {children}
         <ToastContainer position="bottom-center" autoClose={2500} />
-        <Script src="/sw-register.js" strategy="afterInteractive" />
       </body>
     </html>
   );

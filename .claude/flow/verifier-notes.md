@@ -134,6 +134,14 @@ recipe here wins. Tools: `npm run verify:up -- --id <id> [--ref <sha>] [--data f
   limits the number before trusting it.
 - **Cost:** about 10 minutes.
 - **Blind spots:** dev mode is not production; build and start for real numbers (see 13).
+- **Database round trips:** run a second `next start` from a `--mode prod` instance's worktree with `MONGODB_URI` through a TCP proxy
+  that adds 100 ms per database reply; `(delayed − plain) / 100` = sequential round trips per route,
+  plus browser time-to-content per page. Local numbers hide the network: production adds the
+  phone↔function and function↔Atlas legs (check `x-vercel-id` for the function region).
+- **Slow server:** an HTTP proxy in front of the instance that holds `text/html` and
+  `text/x-component` responses 3 s shows what the user sees while a
+  cold function answers: skeletons, the service worker's cached start page.
+- **Proven:** 2026-11-20, fast-app: every route ≤ 1 trip; the time went to region and client hops.
 
 ### 11. Fake clock and time zone
 
@@ -164,8 +172,11 @@ recipe here wins. Tools: `npm run verify:up -- --id <id> [--ref <sha>] [--data f
   `.verify/runs/<id>/logs/next.log` shows "Compiled successfully" and the route list.
 - **Expected noise:** every page 404s on `/_vercel/speed-insights/script.js` (only Vercel serves it).
 - **Cost:** about 15 seconds to build here, plus the checks.
-- **Blind spots:** Vercel-specific behaviour (its image optimizer, edge, env per environment); the
-  service worker (the committed `public/sw.js` is stale since the Next 16 upgrade).
+- **Service worker:** a context with `serviceWorkers: "allow"`; the first load installs it, the
+  second fills the page cache; read caches with `page.evaluate(() => caches.keys())`. Plant a marker
+  page into the cache right before the step under test to prove what is served.
+- **Blind spots:** Vercel-specific behaviour (its image optimizer, edge, env per environment, region);
+  iOS Safari's service worker (Chromium only here: test installed on a real iPhone).
 - **Proven:** 2026-11-09, require-login: the Secure cookie flag only appears in this mode.
 
 ### 13b. Anonymous request matrix (access control)
@@ -214,6 +225,7 @@ One line per task that chose a verifier (`find-verifier`) or ran `before-after`.
 date       | task slug | kind | technique | caught something | note
 2026-11-08 | fv-parser (skill test) | refactor | 2 golden replay | yes | 17,290 generated lines through linesToRows, deterministic; removing the `ltr` alias in a base copy changed 696 lines. Catalog entry 2 corrected: the snapshot stores parsed results, not raw lines.
 2026-11-08 | fix-editor-hydration | bug | 1 UI drive | yes | stopped at approval; BEFORE on base red on /shoppinglist (warning, aria-controls, Enter). Drives found the hydration timing trap and two wrong feature-map selectors; lessons added to entry 1.
+2026-11-20 | fast-app | feature | 13 production build + 10 performance numbers + 1 UI drive | yes | BEFORE 16 FAIL/7 PASS, AFTER 23/23. Six deliberate breaks each turned their check red. Caught: a kill switch that reloaded pages would loop with the app's re-registration; skeletons need a loading.tsx in the entered segment plus a prefetching Link; a planted cache marker is refreshed away as soon as it's served.
 2026-11-09 | require-login | feature | 13b anonymous request matrix + 13 production build + 5 unit | yes | BEFORE 72/110 red; AFTER dev 130/130, prod 112/112 (Secure only in prod). Caught: login redirect used Next's host (localhost) instead of the browser's; a `/.//host` path that normalizes to `//host`. Breaks proved each layer separately.
 ```
 
@@ -228,4 +240,7 @@ date       | task | what went wrong or was misunderstood → what to do instead
 2026-11-08 | fix-editor-hydration | two selectors in the feature map matched the wrong element → fixed in `.claude/flow/features/`; drive a feature once before trusting its file
 2026-11-09 | require-login | the Secure cookie flag never shows in dev → anything about cookies or headers runs on `--mode prod` too (folded into recipe 13)
 2026-11-09 | require-login | expected 401 on `//`, `\` and trailing-slash paths; Next answers them with 308 before the proxy runs → follow redirects for bypass shapes (folded into recipe 13b)
+2026-11-20 | fast-app | Playwright `framenavigated` also fires on Next's history.replaceState → count full loads with `request.isNavigationRequest()` instead
+2026-11-20 | fast-app | a check that serves a planted cache entry triggers the worker's background refresh, which replaces the plant → plant right before the step under test and check it is still stored
+2026-11-20 | fast-app | a check that edits fixture data can't be re-run on the same instance → `verify:down` + `verify:up` before every rerun
 ```

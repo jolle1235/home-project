@@ -1,7 +1,6 @@
 "use client";
 import { Recipe } from "../types/Recipe";
 import { useRecipeContext } from "../../../context/RecipeContext";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useState } from "react";
 import Button from "../../../components/Button";
@@ -9,11 +8,8 @@ import { ArrowRight, Clock, Plus, Users } from "lucide-react";
 import CalendarDialog from "../../../components/CalenderDialog";
 
 export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
-  const router = useRouter();
-
   const { addRecipesToWeekPlan, getDatesForNext4Weeks } = useRecipeContext();
 
-  const [loadingRecipeId, setLoadingRecipeId] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
 
@@ -25,18 +21,6 @@ export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
         Der er i øjeblikket ingen opskrifter
       </p>
     );
-  }
-
-  async function handleRouter(id?: string) {
-    if (!id) return;
-
-    setLoadingRecipeId(id);
-    try {
-      router.push(`/recipes/${id}`);
-    } catch (error) {
-      console.error("Navigation error:", error);
-      setLoadingRecipeId(null);
-    }
   }
 
   const handleDialogDone = (selectedDates: string[]) => {
@@ -55,8 +39,6 @@ export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 px-0"
       >
         {recipes.map((recipe) => {
-          const isLoading = loadingRecipeId === recipe._id;
-
           return (
             <article key={recipe._id} className="w-full">
               <div
@@ -143,11 +125,7 @@ export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
                     variant="secondary"
                     size="sm"
                     fullWidth
-                    isLoading={isLoading}
-                    loadingText="Indlæser..."
-                    onClick={() => {
-                      handleRouter(recipe._id);
-                    }}
+                    href={`/recipes/${recipe._id}`}
                     className="min-h-[44px]"
                   >
                     <span className="inline-flex items-center justify-center gap-2">
@@ -156,10 +134,6 @@ export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
                     </span>
                   </Button>
                 </div>
-
-                {isLoading && (
-                  <div className="absolute inset-0 pointer-events-none bg-black/5" />
-                )}
               </div>
             </article>
           );

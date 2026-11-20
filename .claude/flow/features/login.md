@@ -10,6 +10,8 @@ the code logs every device out.
 - `login-wrong` shows "Forkert kode. Prøv igen." and sets no cookie.
 - `login-right` sets `hp_session` (httpOnly, SameSite=Lax, 365 days, Secure in production) and loads
   the page the visitor came from, or `/recipes` for anything off-site.
+- `login-clears-cache` (production): logging in empties the service worker's page cache, so the
+  page after login is never a copy from before it.
 - `login-gate` sends anonymous page requests to `/login?next=…` and answers 401 on `/api/*`.
 - `login-not-set-up` locks everything and says "Husstandskoden er ikke sat op" when the code (≥12)
   or `AUTH_SECRET` (≥32) is missing or too short.

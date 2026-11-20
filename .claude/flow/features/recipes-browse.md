@@ -10,10 +10,12 @@ filters, opens a recipe, or adds it to the meal plan for one or more of the next
 - `browse-search` narrows the cards by name.
 - `browse-plan` adds a recipe to chosen dates through the `Vælg datoer` dialog.
 - `browse-open` opens the recipe detail.
+- `browse-instant-start` (production, installed): opening `/recipes` shows the last-seen list at
+  once, then the fresh list a moment later; a new deploy reloads the page once.
 
 ## How to get to it (user POV)
 
-- Open the app (`/` redirects to `/recipes`) or tap the book icon in the top bar.
+- Open the app (the installed app starts on `/recipes`; `/` redirects there) or tap the book icon in the top bar.
 - `/drinks` redirects to `/recipes?type=drink`.
 
 ## Driving it with openDriver
@@ -32,7 +34,7 @@ Preconditions:
   (positional: the dates have no stable names) and `page.getByRole("button", { name: "Færdig" }).click()`.
   `app.api("/api/weekPlan")` then holds an entry for that recipe dated two days from today, in
   local time (`YYYY-MM-DD`).
-- **Open.** `await page.getByRole("button", { name: /Se opskrift/ }).first().click()`. The URL
+- **Open.** `await page.getByRole("link", { name: /Se opskrift/ }).first().click()`. The URL
   becomes `/recipes/<id>`.
 - **Proof.** `await app.shot("recipes-browse")` and the week plan read back.
 

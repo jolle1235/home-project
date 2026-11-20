@@ -1,9 +1,7 @@
 import { withSession } from "@/app/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
-import clientPromise from "../../../lib/mongodb";
 import { ObjectId } from "mongodb";
-
-const databaseName = process.env.MONGO_DATABASE_NAME;
+import { getRecipe } from "@/app/features/recipes/server/recipe.server";
 
 async function handleGet(
   request: NextRequest,
@@ -12,30 +10,16 @@ async function handleGet(
   try {
     const { id } = await context.params;
 
-    // Validate the ID format
     if (!id || !ObjectId.isValid(id)) {
       return NextResponse.json({ error: "Invalid recipe ID" }, { status: 400 });
     }
 
-    const client = await clientPromise;
-    const db = client.db(databaseName);
-
-    // Try to find the recipe by ID
-    const recipe = await db
-      .collection("recipes")
-      .findOne({ _id: new ObjectId(id) });
-
+    const recipe = await getRecipe(id);
     if (!recipe) {
       return NextResponse.json({ error: "Recipe not found" }, { status: 404 });
     }
 
-    // Convert ObjectId to string for JSON serialization
-    const serializedRecipe = {
-      ...recipe,
-      _id: recipe._id.toString(),
-    };
-
-    return NextResponse.json(serializedRecipe);
+    return NextResponse.json(recipe);
   } catch (error) {
     console.error("Failed to fetch recipe:", error);
     return NextResponse.json(
