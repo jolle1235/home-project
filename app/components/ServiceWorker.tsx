@@ -16,7 +16,7 @@ export default function ServiceWorker() {
       void removeWorkers();
       return;
     }
-    void navigator.serviceWorker.register("/sw.js");
+    registerAfterLoad();
     const channel = new MessageChannel();
     channel.port1.onmessage = (event: MessageEvent<{ type: "fresh" | "reload" | "gone" }>) => {
       if (event.data.type === "fresh") {
@@ -30,6 +30,13 @@ export default function ServiceWorker() {
   }, [queryClient]);
 
   return null;
+}
+
+// After the page's own load, so the worker's download and install don't compete with it.
+function registerAfterLoad() {
+  const register = () => void navigator.serviceWorker.register("/sw.js");
+  if (document.readyState === "complete") register();
+  else window.addEventListener("load", register, { once: true });
 }
 
 async function removeWorkers() {

@@ -38,14 +38,12 @@ export default function RecipeDetailPageClient({
   return <RecipeDetails key={recipe._id} recipe={recipe} />;
 }
 
-// A ticked ingredient as a new shopping-list row, scaled to the chosen persons;
-// without an amount it becomes 1 stk. (null/undefined > 0 is false.)
+// A ticked ingredient scaled to the chosen persons; without an amount it becomes
+// 1 stk. (null/undefined > 0 is false.) addIngredients gives it its id and marked.
 function toShoppingRow(ing: Ingredient, scalingFactor: number): Ingredient {
   const hasAmount = ing.quantity > 0;
   return {
     ...ing,
-    _id: crypto.randomUUID(),
-    marked: false,
     quantity: hasAmount ? parseFloat((ing.quantity * scalingFactor).toFixed(1)) : 1,
     unit: (hasAmount && ing.unit) || "stk",
   };
