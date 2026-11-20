@@ -105,10 +105,19 @@ async function staleWhileRevalidate(event) {
   return cached;
 }
 
-// Navigations don't follow redirects, so a redirect arrives as "opaqueredirect".
-const isStorable = (response) =>
+const isHtml = (response) =>
   response.ok && String(response.headers.get("content-type")).includes("text/html");
+// Navigations don't follow redirects, so a redirect arrives as "opaqueredirect".
 const isGone = (response) => response.type === "opaqueredirect" || response.status === 404;
+
+// The page streams (loading.tsx), so a render that failed on the server (say, the
+// database was down) still arrives as 200 OK; React marks the failed boundary with
+// its $RX( instruction. Such a page must never replace the last good copy.
+async function goodHtml(response) {
+  if (!isHtml(response)) return null;
+  const html = await response.clone().text();
+  return html.includes("$RX(") ? null : html;
+}
 
 // Stores a fresh /recipes (unless the cache was emptied meanwhile) or deletes a gone one.
 async function keep(response, started) {
@@ -117,8 +126,8 @@ async function keep(response, started) {
     await pages.delete(START_PAGE);
     return { notice: "gone" };
   }
-  if (!isStorable(response)) return { notice: null };
-  const html = await response.clone().text();
+  const html = await goodHtml(response);
+  if (!html) return { notice: null };
   if (generation === started) await pages.put(START_PAGE, response);
   return { notice: "fresh", html };
 }
