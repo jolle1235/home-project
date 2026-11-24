@@ -22,6 +22,18 @@ profile → Verify (`../profile.md`); the rules for driving are in the shared `v
 - Prefer roles, labels, placeholders and the visible Danish text named here.
 - Read saved state back through the API (`app.api("/api/...")`), not only from the screen.
 
+## Shared UI
+
+- Navigation links (icons): `Opskrifter` (also current on `/add-recipe`), `Indkøbsliste`, `Madplan`,
+  `Indstillinger`; the current one has `aria-current="page"`. The first Tab stop is the link
+  `Spring til indhold`, which moves focus to `main#indhold`.
+- Every page has `<html lang="da">` and one h1.
+- Confirmation dialogs are `page.getByRole("dialog", { name: <title> })`; Escape closes them without acting.
+- Undo toasts carry `page.getByRole("button", { name: "Fortryd" })` for 5 s; other toasts last 2.5 s.
+- An unknown URL (`/nope`) answers 404 with h1 `Siden findes ikke`, the navigation and `Til opskrifterne`.
+- A page that crashes shows h1 `Noget gik galt`, `Prøv igen` and `Til opskrifterne` (inside the
+  navigation for feature pages); the error's text is never shown.
+
 ## Proof and skip reporting
 
 - Proof = a screenshot via `app.shot(name)` plus the state read back, with an empty `problems` list.
@@ -44,4 +56,4 @@ sections in order: `Sub-features`, `How to get to it (user POV)`, `Driving it wi
 - [Recipe editor](./recipe-editor.md): create, edit, delete, import from a link, ingredient editor.
 - [Shopping list](./shopping-list.md): add items, tick off, store, price, notes, persistence.
 - [Week planner](./week-planner.md): the next weeks' grid, planned recipes, remove, open recipe.
-- [Admin](./admin.md): the household code to share, recipe categories and unit types.
+- [Indstillinger (admin)](./admin.md): the household code to share, recipe categories and unit types (`/admin`).

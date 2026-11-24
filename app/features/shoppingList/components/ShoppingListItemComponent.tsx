@@ -30,6 +30,7 @@ export function ShoppingListItemComponent({
   } = useShoppingList();
 
   const unit = ingredient.unit || "stk";
+  const name = ingredient.item.name || "Unavngiven vare";
 
   const [notes, setNotes] = useState(ingredient.notes ?? "");
   const [quantityInput, setQuantityInput] = useState(
@@ -65,6 +66,7 @@ export function ShoppingListItemComponent({
       <input
         type="checkbox"
         checked={ingredient.marked}
+        aria-label={`Købt: ${name}`}
         className="w-5 h-5 sm:w-7 sm:h-7"
         onChange={() => toggleMarked(ingredient._id)}
       />
@@ -72,7 +74,7 @@ export function ShoppingListItemComponent({
       {/* NAME + QUANTITY */}
       <div className="flex flex-grow flex-col min-w-0 flex-1">
         <p className="font-bold text-base sm:text-lg truncate">
-          {ingredient.item.name || "Unnamed Item"}
+          {name}
         </p>
 
         <div className="flex items-center gap-1 mt-1">
@@ -80,6 +82,7 @@ export function ShoppingListItemComponent({
             type="number"
             min={0}
             step={0.1}
+            aria-label={`Antal: ${name}`}
             className="p-0.5 rounded-lg w-10 sm:w-14 border text-sm"
             value={quantityInput}
             onChange={(e) => {
@@ -124,6 +127,7 @@ export function ShoppingListItemComponent({
         <select
           className="col-span-4 p-1 rounded-lg bg-background"
           value={ingredient.center ?? ""}
+          aria-label={`Butik: ${name}`}
           onChange={(e) => updateCenter(ingredient._id, e.target.value)}
         >
           <option value="">Vælg butik</option>
@@ -141,6 +145,7 @@ export function ShoppingListItemComponent({
             min={0}
             step={1}
             placeholder="Pris"
+            aria-label={`Pris: ${name}`}
             className="w-full p-0.5 rounded-lg text-sm"
             value={priceInput}
             onChange={(e) => {
@@ -157,6 +162,7 @@ export function ShoppingListItemComponent({
         <input
           className="col-span-6 p-1 rounded-lg text-sm bg-background mt-1"
           placeholder="Noter..."
+          aria-label={`Note: ${name}`}
           value={notes}
           onChange={(e) => {
             const value = e.target.value;

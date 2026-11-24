@@ -18,6 +18,8 @@ export function CategorySelector({ value, onChange }: Props) {
     <>
       {/* Button to open modal if no category */}
       <button
+        type="button"
+        aria-label={value ? `Kategori: ${value}` : "Vælg kategori"}
         onClick={() => setModalOpen(true)}
         className="text-sm px-2 py-1 rounded-lg bg-background hover:bg-muted/70 text-muted-foreground transition"
       >

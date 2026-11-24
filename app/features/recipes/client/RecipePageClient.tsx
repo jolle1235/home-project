@@ -36,7 +36,7 @@ const fetchRecipes = async (): Promise<Recipe[]> => {
   const response = await fetch("/api/recipe");
 
   if (!response.ok) {
-    throw new Error("Failed to fetch recipes");
+    throw new Error("Opskrifterne kunne ikke hentes");
   }
 
   return response.json();
@@ -226,8 +226,7 @@ export default function RecipePageClient({ initialRecipes, initialKind }: Props)
             </div>
           ) : error ? (
             <div className="py-12 text-center text-red-600">
-              Der opstod en fejl ved indlæsning af opskrifter:{" "}
-              {error instanceof Error ? error.message : "Unknown error"}
+              Der opstod en fejl ved indlæsning af opskrifter.
             </div>
           ) : resultsCount === 0 ? (
             <div className="py-12 text-center space-y-3">

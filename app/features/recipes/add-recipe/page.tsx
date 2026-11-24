@@ -45,12 +45,11 @@ function numberField(value: number): number {
   return value || ("" as unknown as number);
 }
 
-async function readError(res: Response, fallback: string): Promise<string> {
-  const text = await res.text();
-  try {
-    return JSON.parse(text).error || fallback;
-  } catch {
-    return text || fallback;
+// A failed response as a Danish message for the toast. The server's error texts (and the
+// browser's network errors) are not for the user; name the one case they can fix.
+class ResponseError extends Error {
+  constructor(res: Response, fallback: string) {
+    super(res.status === 401 ? "Du er logget ud – log ind igen" : fallback);
   }
 }
 
@@ -326,13 +325,11 @@ function RecipeForm({ recipeId, recipe, newType }: RecipeFormProps) {
       });
 
       if (!res.ok) {
-        throw new Error(
-          await readError(
-            res,
-            recipeId
-              ? "Opskriften kunne ikke opdateres."
-              : "Opskriften kunne ikke gemmes.",
-          ),
+        throw new ResponseError(
+          res,
+          recipeId
+            ? "Opskriften kunne ikke opdateres."
+            : "Opskriften kunne ikke gemmes.",
         );
       }
 
@@ -350,7 +347,7 @@ function RecipeForm({ recipeId, recipe, newType }: RecipeFormProps) {
     } catch (error) {
       console.error("Fejl i form submission:", error);
       toast.error(
-        error instanceof Error
+        error instanceof ResponseError
           ? error.message
           : "Noget gik galt. Opskriften blev ikke gemt.",
       );
@@ -398,7 +395,7 @@ function RecipeForm({ recipeId, recipe, newType }: RecipeFormProps) {
       });
 
       if (!res.ok) {
-        throw new Error(await readError(res, "Opskriften kunne ikke slettes."));
+        throw new ResponseError(res, "Opskriften kunne ikke slettes.");
       }
 
       clearDraft();
@@ -408,7 +405,7 @@ function RecipeForm({ recipeId, recipe, newType }: RecipeFormProps) {
     } catch (error) {
       console.error("Fejl ved sletning af opskrift:", error);
       toast.error(
-        error instanceof Error
+        error instanceof ResponseError
           ? error.message
           : "Noget gik galt. Opskriften blev ikke slettet.",
       );
@@ -427,9 +424,9 @@ function RecipeForm({ recipeId, recipe, newType }: RecipeFormProps) {
     <div className="w-full min-h-screen bg-background px-4 pt-4">
       <div className="max-w-4xl mx-auto space-y-4">
         <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold">
+          <h1 className="text-2xl font-bold">
             {recipeId ? "Rediger" : "Tilføj ny"} {isDrinkForm ? "drink" : "opskrift"}
-          </h2>
+          </h1>
           <Button
             variant="ghost"
             size="sm"
@@ -643,8 +640,11 @@ function RecipeForm({ recipeId, recipe, newType }: RecipeFormProps) {
           open={showDeleteDialog}
           onClose={() => setShowDeleteDialog(false)}
           onConfirm={handleDeleteRecipe}
-          title="Slet opskrift"
-          message="Er du sikker på, at du vil slette denne opskrift? Denne handling kan ikke fortrydes."
+          title={`Slet «${recipe?.recipeName ?? ""}»?`}
+          message="Opskriften slettes for alle i husstanden. Står den på madplanen, bliver navnet stående, men opskriften kan ikke åbnes. Det kan ikke fortrydes."
+          confirmLabel="Slet"
+          cancelLabel="Behold den"
+          tone="danger"
         />
         <ConfirmationDialog
           open={showCancelDialog}

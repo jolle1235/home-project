@@ -5,6 +5,8 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { toast } from "react-toastify";
+import { showUndoToast } from "../components/undoToast";
+import { removeWhere, restoreAt, type Removed } from "../utils/listUndo";
 
 // A list the server stores as one document and replaces on every save (the shopping list,
 // the week plan). Every change builds on the stored list, never on an empty placeholder;
@@ -22,9 +24,17 @@ type Options<T> = {
   initialData?: T[];
 };
 
+// What to show once a change is saved: a text, or a text with a "Fortryd" action.
+type Notice = string | { message: string; undo: () => void };
+
 // The toast texts travel with the mutation, not with the calling component, so they still
 // show when that component has unmounted (e.g. the user left the page during a slow load).
-type Change<T> = { list: T[]; success?: string };
+type Change<T> = { list: T[]; success?: Notice };
+
+const showNotice = (notice: Notice) =>
+  typeof notice === "string"
+    ? toast.success(notice)
+    : showUndoToast(notice.message, notice.undo);
 
 export function useServerList<T>({
   queryKey,
@@ -46,7 +56,7 @@ export function useServerList<T>({
     scope: { id: JSON.stringify(queryKey) },
     mutationFn: (change: Change<T>) => save(change.list),
     onSuccess: (saved, change) => {
-      if (change.success) toast.success(change.success);
+      if (change.success) showNotice(change.success);
       if (saved && isLastSave()) queryClient.setQueryData(queryKey, saved);
     },
     onError: () => {
@@ -57,8 +67,9 @@ export function useServerList<T>({
 
   // The stored list: the cache when it is fresh, otherwise fetched (or the fetch already in
   // flight). After a failed save the cache is invalidated, so the next change waits for the
-  // server's list instead of building on the rejected one.
-  const update = async (updater: (list: T[]) => T[], success?: string) => {
+  // server's list instead of building on the rejected one. `notice` is called right after the
+  // updater has run, so its text and undo can use what the updater found.
+  const apply = async (updater: (list: T[]) => T[], notice?: () => Notice) => {
     let stored: T[];
     try {
       stored = await queryClient.query({ queryKey, queryFn, retry: false });
@@ -71,7 +82,32 @@ export function useServerList<T>({
     // reads the list the previous tap wrote.
     const list = updater(queryClient.getQueryData<T[]>(queryKey) ?? stored);
     queryClient.setQueryData(queryKey, list);
-    mutation.mutate({ list, success });
+    mutation.mutate({ list, success: notice?.() });
+  };
+
+  // `success` is the toast shown once the change is saved.
+  const update = (updater: (list: T[]) => T[], success?: string) =>
+    apply(updater, success === undefined ? undefined : () => success);
+
+  // Removes the rows that match and toasts `message(removed rows)` with "Fortryd", which
+  // puts them back at their positions (`key` tells rows apart, so nothing is added twice).
+  const removeWithUndo = (
+    isRemoved: (item: T) => boolean,
+    key: (item: T) => string,
+    message: (removed: T[]) => string,
+  ) => {
+    let removed: Removed<T> = [];
+    return apply(
+      (list) => {
+        const result = removeWhere(list, isRemoved);
+        removed = result.removed;
+        return result.kept;
+      },
+      () => ({
+        message: message(removed.map(({ item }) => item)),
+        undo: () => update((list) => restoreAt(list, removed, key)),
+      }),
+    );
   };
 
   // Pull-to-refresh waits while saves are queued: a refetch would hide their changes on screen.
@@ -85,6 +121,7 @@ export function useServerList<T>({
     isLoading: query.isLoading,
     isError: query.isError,
     update,
+    removeWithUndo,
     refresh,
   };
 }

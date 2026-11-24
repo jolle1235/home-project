@@ -96,8 +96,8 @@ await step("week-planner", async () => {
 
 await step("admin", async () => {
   await app.goto("/admin");
-  await visible(page.getByRole("heading", { name: "Admin Panel" }));
-  await app.hydrated(page.getByRole("heading", { name: "Admin Panel" }));
+  await visible(page.getByRole("heading", { name: "Indstillinger" }));
+  await app.hydrated(page.getByRole("heading", { name: "Indstillinger" }));
   if (categories[0]) await visible(page.getByText(categories[0].name, { exact: true }));
   await app.shot("smoke-admin");
   return `${categories.length} categories`;

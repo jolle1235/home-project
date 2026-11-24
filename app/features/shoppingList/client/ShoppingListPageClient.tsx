@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { ArrowUpDown, Trash2 } from "lucide-react";
 
+import ConfirmationDialog from "../../../components/ConfirmationDialog";
 import { IconButton } from "../../../components/IconButton";
 import { PullToRefreshIndicator } from "../../../components/PullToRefreshIndicator";
 import { useScrollRefresh } from "../../../hooks/useScrollRefresh";
@@ -11,6 +12,9 @@ import { Ingredient } from "../../../model/Ingredient";
 import { AddItemsPanel } from "../components/AddItemsPanel";
 import { ShoppingListItemComponent } from "../components/ShoppingListItemComponent";
 import { useShoppingList } from "../hooks/useShoppinglist";
+
+const clearListMessage = (count: number) =>
+  `${count === 1 ? "Den ene vare på listen fjernes" : `Alle ${count} varer fjernes`} for alle i husstanden. Det kan ikke fortrydes.`;
 
 type Props = {
   initialShoppingList: Ingredient[];
@@ -28,7 +32,7 @@ export default function ShoppingListPageClient({
     clearMarked,
     clearList,
   } = useShoppingList({ initialData: initialShoppingList });
-
+  const [isConfirmingClear, setIsConfirmingClear] = useState(false);
 
   const { isRefreshing } = useScrollRefresh(refresh);
 
@@ -103,7 +107,7 @@ export default function ShoppingListPageClient({
                 icon={Trash2}
                 variant="danger"
                 ariaLabel="Tøm listen"
-                onClick={clearList}
+                onClick={() => setIsConfirmingClear(true)}
               />
 
               <span className="hidden sm:inline-flex text-sm text-muted-foreground opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-150">
@@ -132,6 +136,17 @@ export default function ShoppingListPageClient({
           ))}
         </div>
       )}
+
+      <ConfirmationDialog
+        open={isConfirmingClear}
+        onClose={() => setIsConfirmingClear(false)}
+        onConfirm={clearList}
+        title="Tøm indkøbslisten?"
+        message={clearListMessage(shoppingList.length)}
+        confirmLabel="Tøm listen"
+        cancelLabel="Behold listen"
+        tone="danger"
+      />
     </div>
   );
 }

@@ -27,6 +27,7 @@ export function useWeekPlan() {
   const {
     data: weekPlan,
     update,
+    removeWithUndo,
     refresh,
   } = useServerList<WeekPlan>({
     queryKey: WEEK_PLAN_QUERY_KEY,
@@ -41,13 +42,12 @@ export function useWeekPlan() {
       `Opskrift tilføjet til ${dates.length} ${dates.length === 1 ? "dato" : "datoer"}`,
     );
 
-  const removeRecipe = (date: string, recipeId: string) =>
-    update(
-      (plan) =>
-        plan.filter(
-          (entry) => !(entry.date === date && entry.recipeId === recipeId),
-        ),
-      "Opskrift fjernet fra madplan",
+  // `dayName` is the weekday as the page names it ("mandag").
+  const removeRecipe = (date: string, recipeId: string, dayName: string) =>
+    removeWithUndo(
+      (entry) => entry.date === date && entry.recipeId === recipeId,
+      (entry) => `${entry.date} ${entry.recipeId}`,
+      ([entry]) => `«${entry?.recipeName ?? "Opskriften"}» fjernet fra ${dayName}`,
     );
 
   return { weekPlan, addRecipe, removeRecipe, refresh };

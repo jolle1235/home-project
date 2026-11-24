@@ -22,10 +22,9 @@ adds the rest to the shopping list with scaled amounts.
 Preconditions:
 - Fixture instance; `Testlasagne` is `/recipes/6650000000000000000000a1` (4 persons, 6 ingredients).
 
-- **View.** `await app.goto("/recipes/6650000000000000000000a1")`. Headings `Testlasagne` and
+- **View.** `await app.goto("/recipes/6650000000000000000000a1")`. Headings `Testlasagne` (the h1) and
   `Ingredienser` are visible; section headings `Kødsovs` and `Bechamel` are shown.
-- **Scale.** The stepper buttons have no names: use
-  `page.locator("div.inline-flex.items-center.rounded-xl button").last().click()` for +.
+- **Scale.** `page.getByRole("button", { name: "Flere personer" })` (− is `Færre personer`).
   `4 personer` becomes `5 personer` and `500.0 g` becomes `625.0 g`.
 - **Tick.** `page.locator('input[type="checkbox"]')` has 6 boxes, all checked. Uncheck the first.
 - **Add.** `await page.getByRole("button", { name: "Tilføj valgte til indkøbslisten" }).click()`.
@@ -34,6 +33,8 @@ Preconditions:
 - **Nothing ticked.** Uncheck all and press the button: the toast `Vælg mindst én ingrediens.`
   appears, nothing is saved, and the button stays enabled.
 - **Edit.** `page.getByRole("link", { name: "Rediger" }).click()` → `/add-recipe?id=<id>`.
+- **Not found.** `/recipes/000000000000000000000000` shows h1 `Opskriften findes ikke` and the link
+  `Til opskrifterne` inside the navigation (status 200: the page streams).
 - **Proof.** `app.shot("recipe-detail")` plus the shopping list read back.
 
 ## Gotchas

@@ -2,7 +2,20 @@
 import { useState } from "react";
 import { useConstants } from "../../../context/ConstantsContext";
 import Button from "../../../components/Button";
+import ConfirmationDialog from "../../../components/ConfirmationDialog";
 import { Trash2 } from "lucide-react";
+
+// What the delete dialog asks about: set when a trash button is tapped.
+type PendingDelete = {
+  name: string;
+  consequence: string;
+  remove: (name: string) => Promise<void>;
+};
+
+const CATEGORY_CONSEQUENCE =
+  "Opskrifter med kategorien beholder den, men den kan ikke vælges længere. Det kan ikke fortrydes.";
+const UNIT_CONSEQUENCE =
+  "Ingredienser med enheden beholder den, men den kan ikke vælges længere. Det kan ikke fortrydes.";
 
 // Recipe categories and unit types.
 export default function AdminPageClient() {
@@ -17,6 +30,9 @@ export default function AdminPageClient() {
 
   const [newCategory, setNewCategory] = useState("");
   const [newUnit, setNewUnit] = useState("");
+  const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(
+    null,
+  );
 
   return (
     <>
@@ -29,6 +45,7 @@ export default function AdminPageClient() {
             onChange={(e) => setNewCategory(e.target.value)}
             className="border rounded p-2 mr-2"
             placeholder="Tilføj ny kategori"
+            aria-label="Ny kategori"
           />
           <Button
             onClick={() => {
@@ -53,7 +70,13 @@ export default function AdminPageClient() {
                 variant="ghost"
                 size="sm"
                 aria-label={`Fjern kategori: ${c.name}`}
-                onClick={() => removeCategory(c.name)}
+                onClick={() =>
+                  setPendingDelete({
+                    name: c.name,
+                    consequence: CATEGORY_CONSEQUENCE,
+                    remove: removeCategory,
+                  })
+                }
                 className="min-h-[44px] min-w-[44px] px-3 text-red-700 hover:bg-red-100"
               >
                 <Trash2 className="h-4 w-4" aria-hidden="true" />
@@ -72,6 +95,7 @@ export default function AdminPageClient() {
             onChange={(e) => setNewUnit(e.target.value)}
             className="border rounded p-2 mr-2"
             placeholder="Tilføj ny enhed"
+            aria-label="Ny enhed"
           />
           <Button
             onClick={() => {
@@ -96,7 +120,13 @@ export default function AdminPageClient() {
                 variant="ghost"
                 size="sm"
                 aria-label={`Fjern enhed: ${u.name}`}
-                onClick={() => removeUnit(u.name)}
+                onClick={() =>
+                  setPendingDelete({
+                    name: u.name,
+                    consequence: UNIT_CONSEQUENCE,
+                    remove: removeUnit,
+                  })
+                }
                 className="min-h-[44px] min-w-[44px] px-3 text-red-700 hover:bg-red-100"
               >
                 <Trash2 className="h-4 w-4" aria-hidden="true" />
@@ -105,6 +135,19 @@ export default function AdminPageClient() {
           ))}
         </ul>
       </div>
+
+      {pendingDelete && (
+        <ConfirmationDialog
+          open
+          onClose={() => setPendingDelete(null)}
+          onConfirm={() => pendingDelete.remove(pendingDelete.name)}
+          title={`Slet «${pendingDelete.name}»?`}
+          message={pendingDelete.consequence}
+          confirmLabel="Slet"
+          cancelLabel="Behold den"
+          tone="danger"
+        />
+      )}
     </>
   );
 }
