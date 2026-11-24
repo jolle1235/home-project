@@ -33,7 +33,9 @@ Preconditions:
 - **Create.** Fill `getByLabel("Navn")`, `getByLabel("Tid (minutter)")`, `getByLabel("Antal personer")`,
   add an ingredient through `page.getByRole("combobox", { name: "Ingrediens", exact: true })` (`getByLabel("Ingrediens")` also matches the "Ingredienser" section), then
   `page.getByRole("button", { name: "Gem opskrift" }).click()`. `app.api("/api/recipe")` contains it.
-- **Delete.** On the edit page, `page.getByRole("button", { name: "Slet", exact: true })` opens
+- **Delete.** On the edit page, the form's last "Slet" (ingredient rows have one too):
+  `page.locator("form").getByRole("button", { name: "Slet", exact: true }).last()`; in dev the Next badge
+  covers it at 390 px, so click it with `.evaluate((b) => b.click())`. It opens
   `page.getByRole("dialog", { name: "Slet «Testlasagne»?" })`; its `Slet` deletes. The recipe is gone from
   `/api/recipe`. A failed save toasts "Opskriften kunne ikke opdateres." / "…gemmes.".
 - **Import.** Needs network to the source site; prefer recorded HTML (see the scrape tests) over

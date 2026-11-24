@@ -1,5 +1,6 @@
 "use client";
-import { useId, useState } from "react";
+import { useCallback, useId, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Button from "./Button";
 
 interface ConfirmationDialogProps {
@@ -34,29 +35,40 @@ function OpenDialog({
   tone = "primary",
 }: Omit<ConfirmationDialogProps, "open">) {
   const [isBusy, setIsBusy] = useState(false);
+  const dialogRef = useRef<HTMLDialogElement | null>(null);
   const titleId = useId();
   const messageId = useId();
+
+  // Opens the dialog once it is in the DOM. A stable callback, so React attaches it once and
+  // a re-render while the dialog is closing can't open it again.
+  const openModal = useCallback((dialog: HTMLDialogElement | null) => {
+    dialogRef.current = dialog;
+    if (dialog && !dialog.open) dialog.showModal();
+  }, []);
+
+  // Closing through the element lets the browser put focus back on the button that opened
+  // the dialog; its close event then tells the parent.
+  const close = () => dialogRef.current?.close();
 
   const handleConfirm = async () => {
     setIsBusy(true);
     try {
       await onConfirm();
     } finally {
-      setIsBusy(false);
-      onClose();
+      // Stays busy until the close event unmounts it: the dialog always closes after confirm.
+      close();
     }
   };
 
-  return (
+  // Rendered into <body>: a parent's layout (e.g. space-y-* margins) must not move it.
+  return createPortal(
     <dialog
-      ref={(dialog) => {
-        if (dialog && !dialog.open) dialog.showModal();
-      }}
+      ref={openModal}
       aria-labelledby={titleId}
       aria-describedby={messageId}
       onCancel={(e) => {
         e.preventDefault();
-        if (!isBusy) onClose();
+        if (!isBusy) close();
       }}
       // Chromium may close a modal on a repeated Escape without a cancel event.
       onClose={onClose}
@@ -76,7 +88,7 @@ function OpenDialog({
           variant="secondary"
           size="sm"
           type="button"
-          onClick={onClose}
+          onClick={close}
           disabled={isBusy}
         >
           {cancelLabel}
@@ -91,6 +103,7 @@ function OpenDialog({
           {confirmLabel}
         </Button>
       </div>
-    </dialog>
+    </dialog>,
+    document.body,
   );
 }

@@ -44,7 +44,7 @@ Recent refactors moved code toward this layout. `recipes` and `shoppingList` fol
 - `page.tsx`: an async server component that calls `server/*.server.ts` directly and passes `initialData` to `client/*PageClient.tsx`
 - `server/*.server.ts`: Mongo access via a local `getDb()`; maps `ObjectId` ⇄ string `_id`. No `"use server"`: only server code imports these, and a `"use server"` module would be callable from the browser past the route checks
 - `api/*.client.ts`: `fetch` wrappers for the API routes
-- `hooks/`: TanStack Query hooks. A list the server stores as one document and replaces on every save (shopping list, week plan) goes through `app/hooks/useServerList.ts`: every change first loads the stored list (never builds on an empty placeholder), updates the cache at once, saves in order (mutation `scope`); when a save fails it toasts in Danish, and if it was the last pending save it invalidates the list, which is the rollback. A successful last save shows the list the server returns, if any (PUT `/api/shopping-list` returns it with categories filled in); it never refetches. Success toasts are passed to `update(…, success)` so they show only after saving. References: `features/shoppingList/hooks/useShoppinglist.tsx`, `features/weekplanner/hooks/useWeekPlan.ts`
+- `hooks/`: TanStack Query hooks. A list the server stores as one document and replaces on every save (shopping list, week plan) goes through `app/hooks/useServerList.ts`: every change first loads the stored list (never builds on an empty placeholder), updates the cache at once, saves in order (mutation `scope`); when a save fails it toasts in Danish, and if it was the last pending save it invalidates the list, which is the rollback. A successful last save shows the list the server returns, if any (PUT `/api/shopping-list` returns it with categories filled in); it never refetches. Success toasts are passed to `update(…, success)` so they show only after saving; `removeWithUndo` removes matching rows and shows a 5 s "Fortryd" toast that puts them back where they were (`app/utils/listUndo.ts`). References: `features/shoppingList/hooks/useShoppinglist.tsx`, `features/weekplanner/hooks/useWeekPlan.ts`
 - `components/`, `types/`, `utils/`, `constants.ts` (query keys, API paths)
 
 Older areas: `weekplanner` is still a `"use client"` page (on `useWeekPlan`); `admin` uses `ConstantsProvider`.
@@ -69,13 +69,15 @@ Thin handlers. They delegate to a feature's `server/` module where one exists an
 
 ## Global state
 
-`app/features/layout.tsx` nests `ReactQueryProvider` → `ConstantsProvider` → `NavBar` + page for every feature page. `app/features/layout.tsx` also renders `components/ServiceWorker` (registers `public/sw.js` in production). `app/layout.tsx` only holds the document and toasts, so `/login` (in `app/login`) gets no shell and makes no API calls.
+`app/features/layout.tsx` nests `ReactQueryProvider` → `ConstantsProvider` → `AppFrame` (skip link "Spring til indhold", `NavBar`, `main#indhold`) + page for every feature page. Errors inside the shell render `app/features/error.tsx` (re-exports `app/error.tsx`, Danish, `retry`); unmatched URLs render `app/not-found.tsx`, which brings its own `AppFrame`. `app/features/layout.tsx` also renders `components/ServiceWorker` (registers `public/sw.js` in production). `app/layout.tsx` only holds the document and toasts, so `/login` (in `app/login`) gets no shell and makes no API calls.
 
 - `ReactQueryProvider`: staleTime 5 min, gcTime 30 min, no refetch on focus, retry 1
 - `ConstantsProvider`: recipe categories and unit types (add/remove toast in Danish when the server refuses, then refetch)
 - The week plan is `useWeekPlan()` (no provider); it loads where it is used (`/recipes` cards, `/weekPlanner`)
 
 Prefer TanStack Query hooks over adding new contexts.
+
+Destructive actions that can't be undone ask first through `components/ConfirmationDialog` (native `<dialog>`: "Slet «Navn»?", the consequence, a `tone="danger"` action and "Behold den"; pass an async `onConfirm` and it stays busy until done). Actions that can be undone act at once with `removeWithUndo` instead.
 
 ## Conventions
 
