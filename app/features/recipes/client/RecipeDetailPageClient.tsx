@@ -20,6 +20,7 @@ import {
   Users,
 } from "lucide-react";
 import { IconButton } from "@/app/components/IconButton";
+import PageContainer from "@/app/components/PageContainer";
 
 // The server page passes the recipe in; the query keeps it in the TanStack cache, where the
 // editor writes a saved recipe, so a 30 s-old server payload never hides your own edit.
@@ -87,118 +88,116 @@ function RecipeDetails({ recipe }: { recipe: Recipe }) {
   };
 
   return (
-    <div className="w-full bg-background">
-      <div className="mx-auto w-full max-w-4xl p-2 sm:px-4">
-        <div className="flex flex-col md:flex-row gap-6">
-          {/* Left column: image, title, meta, ingredients */}
-          <div className="flex flex-col md:w-1/2 w-full gap-4">
-            {/* Hero card */}
-            <section className="bg-surface rounded-2xl shadow-sm overflow-hidden">
-              <RecipeHero recipe={recipe} />
-              <div className="p-4 sm:p-5 flex flex-col gap-3">
-                <h1 className="text-xl sm:text-2xl font-semibold text-foreground">
-                  {recipe.recipeName}
-                </h1>
-                <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary">
-                    <Clock className="h-4 w-4" aria-hidden="true" />
-                    <span>{recipe.time} min</span>
-                  </div>
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary">
-                    <Users className="h-4 w-4" aria-hidden="true" />
-                    <span>{recommendedPersonAmount} personer</span>
-                  </div>
+    <PageContainer>
+      <div className="flex flex-col md:flex-row gap-section">
+        {/* Left column: image, title, meta, ingredients */}
+        <div className="flex flex-col md:w-1/2 w-full gap-4">
+          {/* Hero card */}
+          <section className="bg-surface rounded-2xl shadow-raised overflow-hidden">
+            <RecipeHero recipe={recipe} />
+            <div className="p-card flex flex-col gap-stack">
+              <h1 className="text-page-title text-foreground">
+                {recipe.recipeName}
+              </h1>
+              <div className="flex flex-wrap items-center gap-3 text-body-sm text-muted-foreground">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary">
+                  <Clock className="h-4 w-4" aria-hidden="true" />
+                  <span>{recipe.time} min</span>
                 </div>
-                {recipe.sourceUrl && (
-                  <a
-                    href={recipe.sourceUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex w-fit items-center gap-2 rounded-lg border border-secondary px-3 py-2 text-sm text-foreground hover:bg-secondary transition-colors"
-                  >
-                    <ExternalLink className="h-4 w-4" aria-hidden="true" />
-                    Gå til kilde
-                  </a>
-                )}
-                <div className="flex items-center gap-3 mt-1 -">
-                  <span className="text-sm text-muted-foreground">
-                    Justér antal personer:
-                  </span>
-                  <div className="inline-flex items-center rounded-xl bg-secondary p-1  gap-1.5">
-                    <IconButton
-                      icon={Minus}
-                      ariaLabel="Færre personer"
-                      variant="primary"
-                      size="xs"
-                      onClick={() =>
-                        setRecommendedPersonAmount((prev) =>
-                          Math.max(prev - 1, 1),
-                        )
-                      }
-                    ></IconButton>
-                    <span className="w-fit px-2 text-center text-sm font-semibold text-foreground">
-                      {recommendedPersonAmount}
-                    </span>
-                    <IconButton
-                      icon={Plus}
-                      ariaLabel="Flere personer"
-                      variant="primary"
-                      size="xs"
-                      onClick={() =>
-                        setRecommendedPersonAmount((prev) =>
-                          prev < maxRecipePersons ? prev + 1 : prev,
-                        )
-                      }
-                    ></IconButton>
-                  </div>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary">
+                  <Users className="h-4 w-4" aria-hidden="true" />
+                  <span>{recommendedPersonAmount} personer</span>
                 </div>
               </div>
-            </section>
-
-            {/* Ingredients */}
-            <section
-              id="recipe_Items"
-              className="flex flex-col w-full rounded-2xl bg-surface p-4 sm:p-5 shadow-sm"
-            >
-              <h3 className="text-lg font-semibold text-foreground mb-3">
-                Ingredienser
-              </h3>
-              <div className="flex flex-col w-full h-fit justify-start items-start gap-1">
-                <IngredientList
-                  ingredients={recipe.ingredients}
-                  scalingFactor={scalingFactor}
-                  checkedIngredients={checkedIngredients}
-                  onToggle={toggleCheckedIngredient}
-                />
-              </div>
-              <div className="mt-4 flex flex-col md:flex-row justify-between items-center gap-3">
-                <Button
-                  type="button"
-                  variant="primary"
-                  size="md"
-                  fullWidth
-                  onClick={handleAddCheckedToShoppingList}
+              {recipe.sourceUrl && (
+                <a
+                  href={recipe.sourceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hit-area inline-flex w-fit items-center gap-2 rounded-lg border border-secondary px-3 py-2 text-body-sm text-foreground hover:bg-secondary transition-colors"
                 >
-                  Tilføj valgte til indkøbslisten
-                </Button>
+                  <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                  Gå til kilde
+                </a>
+              )}
+              <div className="flex items-center gap-3 mt-1 -">
+                <span className="text-body-sm text-muted-foreground">
+                  Justér antal personer:
+                </span>
+                <div className="inline-flex items-center rounded-xl bg-secondary p-1  gap-1.5">
+                  <IconButton
+                    icon={Minus}
+                    ariaLabel="Færre personer"
+                    variant="primary"
+                    size="xs"
+                    onClick={() =>
+                      setRecommendedPersonAmount((prev) =>
+                        Math.max(prev - 1, 1),
+                      )
+                    }
+                  ></IconButton>
+                  <span className="w-fit px-2 text-center text-body-sm font-semibold text-foreground">
+                    {recommendedPersonAmount}
+                  </span>
+                  <IconButton
+                    icon={Plus}
+                    ariaLabel="Flere personer"
+                    variant="primary"
+                    size="xs"
+                    onClick={() =>
+                      setRecommendedPersonAmount((prev) =>
+                        prev < maxRecipePersons ? prev + 1 : prev,
+                      )
+                    }
+                  ></IconButton>
+                </div>
               </div>
-            </section>
-          </div>
+            </div>
+          </section>
 
-          {/* Right column (Description) */}
-          <section className="flex flex-col md:w-1/2 w-full min-h-80">
-            <div className="flex-1 rounded-2xl p-5 bg-surface shadow-sm">
-              <h3 className="text-lg font-semibold text-foreground mb-3">
-                Beskrivelse
-              </h3>
-              <p className="whitespace-pre-wrap break-words text-sm sm:text-base leading-relaxed text-foreground">
-                {recipe.description}
-              </p>
+          {/* Ingredients */}
+          <section
+            id="recipe_Items"
+            className="flex flex-col w-full rounded-2xl bg-surface p-card shadow-raised"
+          >
+            <h3 className="text-card-title text-foreground mb-3">
+              Ingredienser
+            </h3>
+            <div className="flex flex-col w-full h-fit justify-start items-start gap-1">
+              <IngredientList
+                ingredients={recipe.ingredients}
+                scalingFactor={scalingFactor}
+                checkedIngredients={checkedIngredients}
+                onToggle={toggleCheckedIngredient}
+              />
+            </div>
+            <div className="mt-4 flex flex-col md:flex-row justify-between items-center gap-3">
+              <Button
+                type="button"
+                variant="primary"
+                size="md"
+                fullWidth
+                onClick={handleAddCheckedToShoppingList}
+              >
+                Tilføj valgte til indkøbslisten
+              </Button>
             </div>
           </section>
         </div>
+
+        {/* Right column (Description) */}
+        <section className="flex flex-col md:w-1/2 w-full min-h-80">
+          <div className="flex-1 rounded-2xl p-5 bg-surface shadow-raised">
+            <h3 className="text-card-title text-foreground mb-3">
+              Beskrivelse
+            </h3>
+            <p className="whitespace-pre-wrap break-words text-body-sm-loose md:text-body-loose text-foreground">
+              {recipe.description}
+            </p>
+          </div>
+        </section>
       </div>
-    </div>
+    </PageContainer>
   );
 }
 
@@ -243,7 +242,7 @@ function IngredientList({
       {sections.map((section) => (
         <div key={section} className="w-full">
           {section !== "none" && (
-            <h4 className="text-base font-semibold text-foreground mb-2 mt-4 first:mt-0">
+            <h4 className="text-body font-semibold text-foreground mb-2 mt-4 first:mt-0">
               {section}
             </h4>
           )}
@@ -254,16 +253,15 @@ function IngredientList({
               return (
                 <div
                   key={index}
-                  className="flex w-full items-center justify-between gap-3 rounded-xl bg-white/70 px-3 py-2 border border-secondary/30"
+                  className="flex w-full items-center justify-between gap-3 rounded-xl bg-neutral-faint px-3 py-2 border border-line"
                 >
                   <label className="flex items-center gap-3 flex-1">
                     <input
-                      className="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary"
                       type="checkbox"
                       checked={checkedIngredients.has(String(index))}
                       onChange={() => onToggle(index)}
                     />
-                    <span className="text-sm sm:text-base font-medium text-foreground">
+                    <span className="text-body-sm md:text-body font-medium text-foreground">
                       {ingredient.item.name}
                       {ingredient.notes && (
                         <span className="ml-1 font-normal text-muted-foreground">
@@ -272,7 +270,7 @@ function IngredientList({
                       )}
                     </span>
                   </label>
-                  <span className="inline-flex items-center justify-center rounded-full bg-soft px-3 py-1 text-xs sm:text-sm font-medium text-foreground whitespace-nowrap">
+                  <span className="inline-flex items-center justify-center rounded-full bg-soft px-3 py-0.5 md:py-1 text-control font-medium text-foreground whitespace-nowrap">
                     {adjustedWeight.toFixed(1)} {ingredient.unit}
                   </span>
                 </div>
@@ -287,7 +285,7 @@ function IngredientList({
 
 function RecipeHero({ recipe }: { recipe: Recipe }) {
   return (
-    <div className="relative w-full h-56 sm:h-64">
+    <div className="relative w-full h-56 md:h-64">
       <Image
         className="object-cover"
         src={recipe.image || "/fallback.jpg"}
@@ -300,7 +298,7 @@ function RecipeHero({ recipe }: { recipe: Recipe }) {
       <div className="absolute top-3 left-3 right-3 flex justify-between items-center">
         <Link
           href="/recipes"
-          className="flex flex-row justify-center items-center gap-2 bg-black/40 backdrop-blur-sm text-white rounded-lg p-2 text-sm"
+          className="flex flex-row justify-center items-center gap-2 hit-area bg-scrim backdrop-blur-sm text-scrim-foreground rounded-lg p-2 text-body-sm"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />
           <span>Tilbage</span>
@@ -310,7 +308,6 @@ function RecipeHero({ recipe }: { recipe: Recipe }) {
           href={`/add-recipe?id=${recipe._id}`}
           variant="secondary"
           size="sm"
-          className="inline-flex items-center gap-2 text-foreground"
         >
           <Edit2 className="h-4 w-4" aria-hidden="true" />
           Rediger

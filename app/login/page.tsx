@@ -1,4 +1,5 @@
 import Button from "@/app/components/Button";
+import PageContainer from "@/app/components/PageContainer";
 import { isConfigured } from "@/app/lib/session";
 
 type Search = { next?: string | string[]; error?: string | string[] };
@@ -13,12 +14,12 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   const wrongCode = first(params.error) === "1";
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="w-full max-w-sm rounded-2xl bg-surface p-6 shadow-sm flex flex-col gap-4">
-        <h1 className="text-2xl font-semibold text-foreground">Home Project</h1>
+    <PageContainer className="min-h-screen flex items-center justify-center">
+      <div className="w-full max-w-sm rounded-2xl bg-surface p-6 shadow-raised flex flex-col gap-4">
+        <h1 className="text-page-title text-foreground">Home Project</h1>
         {isConfigured() ? (
           <form method="post" action="/api/login" className="flex flex-col gap-4">
-            <label htmlFor="code" className="text-sm font-medium text-foreground">
+            <label htmlFor="code" className="text-body-sm font-medium text-foreground">
               Husstandskode
             </label>
             <input
@@ -28,11 +29,11 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
               autoComplete="current-password"
               required
               autoFocus
-              className="w-full rounded-xl border border-muted bg-background px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full rounded-xl px-4 py-3"
             />
             <input type="hidden" name="next" value={next} />
             {wrongCode && (
-              <p role="alert" className="text-sm text-danger">
+              <p role="alert" className="text-body-sm text-danger-ink">
                 Forkert kode. Prøv igen.
               </p>
             )}
@@ -41,11 +42,11 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
             </Button>
           </form>
         ) : (
-          <p role="alert" className="text-sm text-danger">
+          <p role="alert" className="text-body-sm text-danger-ink">
             Husstandskoden er ikke sat op. Sæt HOUSEHOLD_CODE og AUTH_SECRET på serveren.
           </p>
         )}
       </div>
-    </div>
+    </PageContainer>
   );
 }

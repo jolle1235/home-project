@@ -18,6 +18,7 @@ import { ToggleChip } from "../../../components/ToggleChip";
 
 import { useScrollRefresh } from "../../../hooks/useScrollRefresh";
 import { PullToRefreshIndicator } from "../../../components/PullToRefreshIndicator";
+import PageContainer from "../../../components/PageContainer";
 
 type Kind = RecipeType | "all";
 
@@ -111,39 +112,39 @@ export default function RecipePageClient({ initialRecipes, initialKind }: Props)
 
   return (
     <div className="w-full bg-background overflow-hidden">
-      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 py-6">
+      <PageContainer>
         <PullToRefreshIndicator isRefreshing={isRefreshing} />
 
         {/* Header */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex flex-row justify-between items-center">
             <div className="flex flex-col gap-1">
               <div className="flex items-baseline gap-3">
-                <h1 className="text-xl sm:text-2xl font-semibold text-foreground">
+                <h1 className="text-page-title text-foreground">
                   {kind === "drink" ? "Drinks" : "Opskrifter"}
                 </h1>
 
                 {!isLoading && !error && (
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-body-sm text-muted-foreground">
                     {resultsCount} resultat
                     {resultsCount === 1 ? "" : "er"}
                   </span>
                 )}
               </div>
 
-              <p className="text-sm text-muted-foreground max-w-xl">
+              <p className="text-body-sm text-muted-foreground max-w-xl">
                 Find, filtrer og tilføj opskrifter til din madplan.
               </p>
             </div>
           </div>
 
-          <div className="w-full sm:max-w-md flex items-center gap-2">
+          <div className="w-full md:max-w-md flex items-center gap-2">
             <div className="relative flex-1">
               <input
                 type="search"
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Søg efter opskrifter..."
-                className="w-full rounded-xl border border-gray-300 bg-background p-2 text-sm sm:text-base shadow-sm focus:outline-none focus:ring-2 focus:ring-secondary-hover"
+                className="w-full min-h-11 rounded-xl text-body-sm md:text-body shadow-raised"
                 aria-label="Søg efter opskrifter"
               />
             </div>
@@ -157,7 +158,7 @@ export default function RecipePageClient({ initialRecipes, initialKind }: Props)
                 onClick={() => setIsFilterSettingsOpen(!isFilterSettingsOpen)}
               />
 
-              <span className="hidden sm:inline-flex text-sm text-foreground opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-150">
+              <span className="hidden md:inline-flex text-body-sm text-foreground opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-150">
                 {isFilterSettingsOpen ? "Skjul filtre" : "Vis filtre"}
               </span>
 
@@ -189,11 +190,11 @@ export default function RecipePageClient({ initialRecipes, initialKind }: Props)
         {isFilterSettingsOpen && (
           <section
             aria-label="Filtre"
-            className="mt-4 rounded-2xl bg-surface p-4 sm:p-5 shadow-sm"
+            className="mt-4 rounded-2xl bg-surface p-card shadow-raised"
           >
             <div className="flex flex-col gap-4 md:flex-row md:items-stretch md:gap-6">
               <div className="flex-1">
-                <h2 className="text-sm font-medium text-foreground mb-2">
+                <h2 className="text-body-sm font-medium text-foreground mb-2">
                   Kategorier
                 </h2>
 
@@ -205,7 +206,7 @@ export default function RecipePageClient({ initialRecipes, initialKind }: Props)
               </div>
 
               <div className="flex-1">
-                <h2 className="text-sm font-medium text-foreground mb-2">
+                <h2 className="text-body-sm font-medium text-foreground mb-2">
                   Tid (minutter)
                 </h2>
 
@@ -225,7 +226,7 @@ export default function RecipePageClient({ initialRecipes, initialKind }: Props)
               Indlæser opskrifter...
             </div>
           ) : error ? (
-            <div className="py-12 text-center text-red-600">
+            <div className="py-12 text-center text-danger-ink">
               Der opstod en fejl ved indlæsning af opskrifter.
             </div>
           ) : resultsCount === 0 ? (
@@ -234,7 +235,7 @@ export default function RecipePageClient({ initialRecipes, initialKind }: Props)
                 Ingen opskrifter matcher dine filtre.
               </p>
 
-              <p className="text-sm text-muted-foreground">
+              <p className="text-body-sm text-muted-foreground">
                 Prøv at justere søgning eller filtre for at se flere resultater.
               </p>
 
@@ -255,8 +256,7 @@ export default function RecipePageClient({ initialRecipes, initialKind }: Props)
             <RecipeCardComponent recipes={filteredRecipes} />
           )}
         </div>
-      </div>
-
+      </PageContainer>
     </div>
   );
 }

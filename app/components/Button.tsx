@@ -1,5 +1,17 @@
 import type { ButtonHTMLAttributes } from "react";
 import { ButtonOrLink } from "./ButtonOrLink";
+import { BUTTON_BASE, BUTTON_VARIANTS, type ButtonVariant } from "./buttonStyles";
+
+type ButtonSize = "xs" | "sm" | "md" | "lg";
+
+// xs is a small control (week plan ✕, "Opskrift"): small look, 44×44 tap area. The others
+// are at least 44 px tall.
+const SIZE_STYLES: Record<ButtonSize, string> = {
+  xs: "min-h-8 px-2 text-body-sm hit-area",
+  sm: "min-h-11 px-2 text-body-sm",
+  md: "min-h-11 px-4 text-body",
+  lg: "min-h-12 px-6 text-body",
+};
 
 interface ButtonProps
   extends Omit<
@@ -9,8 +21,8 @@ interface ButtonProps
   children: React.ReactNode;
   onClick?: (e?: React.MouseEvent<HTMLButtonElement>) => void | Promise<void>;
   type?: "button" | "submit" | "reset";
-  variant?: "primary" | "secondary" | "ghost" | "danger";
-  size?: "sm" | "md" | "lg";
+  variant?: ButtonVariant;
+  size?: ButtonSize;
   fullWidth?: boolean;
   disabled?: boolean;
   isLoading?: boolean;
@@ -35,57 +47,15 @@ export default function Button({
 }: ButtonProps) {
   const isDisabled = disabled || isLoading;
 
-  const baseStyles = `
-    inline-flex items-center justify-center gap-2
-    font-medium
-    rounded-xl
-    transition-all duration-200
-    active:translate-y-[1px]
-    disabled:opacity-60
-    disabled:cursor-not-allowed
-    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40
-    focus-visible:ring-offset-2 focus-visible:ring-offset-background
-  `;
-
-  const sizeStyles = {
-    sm: "min-h-[32px] px-2 text-sm",
-    md: "min-h-[40px] px-4 text-base",
-    lg: "min-h-[48px] px-6 text-lg",
-  };
-
-  const variantStyles = {
-    primary: `
-      bg-primary text-white
-      hover:bg-primary-hover
-      shadow-sm
-    `,
-    secondary: `
-      bg-secondary text-foreground
-      hover:bg-secondary-hover
-    `,
-    ghost: `
-      bg-transparent text-foreground
-      hover:bg-soft
-    `,
-    danger: `
-      bg-red-600 text-white
-      hover:bg-red-700
-    `,
-  };
-
   return (
     <ButtonOrLink
       onClick={onClick}
       type={type}
       disabled={isDisabled}
       {...rest}
-      className={`
-        ${baseStyles}
-        ${sizeStyles[size]}
-        ${variantStyles[variant]}
-        ${fullWidth ? "w-full" : ""}
-        ${className}
-      `}
+      className={`${BUTTON_BASE} gap-2 rounded-xl disabled:opacity-60 ${SIZE_STYLES[size]} ${
+        BUTTON_VARIANTS[variant]
+      } ${fullWidth ? "w-full" : ""} ${className}`}
     >
       {isLoading ? (
         <>

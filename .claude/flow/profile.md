@@ -122,7 +122,7 @@ none
 - Server state through TanStack Query hooks with optimistic `onMutate` + rollback + `invalidateQueries`; no new contexts.
 - Feature layout: async `page.tsx` server component → `server/*.server.ts` → `initialData` → `client/*PageClient.tsx`.
 - Every API handler wrapped in `withSession`; every server page reading Mongo calls `requireSession()` first.
-- Tailwind semantic tokens only (no hex); icons from `lucide-react`; mobile-first.
+- Tailwind roles only (theme replaced: no palette, raw shadows or text sizes; guarded by `npm test`); `md` the only breakpoint; icons from `lucide-react`; mobile-first.
 - Danish user-facing copy.
 
 ## Layers
@@ -152,8 +152,16 @@ none
 | Query keys | `SHOPPING_LIST_QUERY_KEY` (`features/shoppingList/constants.ts`), `WEEK_PLAN_QUERY_KEY` (`features/weekplanner/constants.ts`), `["recipes"]`, `["recipe", id]`, `["constants"]` |
 | Whole-list documents saved by PUT/POST (load first, ordered saves, rollback) | `app/hooks/useServerList.ts` |
 | Buttons, dialogs, pull-to-refresh | `app/components/` (`Button`, `IconButton`, `ConfirmationDialog`, `CalenderDialog`, `PullToRefreshIndicator`) and `app/hooks/useScrollRefresh` |
+| Button styles (base, focus ring, variants incl. `danger-ghost`) | `app/components/buttonStyles.ts`; sizes in `Button`/`IconButton` (`xs` = small control with a 44 px tap area) |
+| Dialog look (backdrop, panel) | `app/components/dialogStyles.ts` |
+| Page container (width, page inset; skeleton too) | `app/components/PageContainer.tsx` |
+| Tap areas ≥ 44×44 for small controls | `.hit-area` in `app/globals.css` (not on positioned elements; checkboxes have it built in) |
 | Validation limits and schemas | `app/utils/validationVariables.ts`, `app/utils/validationSchema.ts` |
-| Colours | the semantic tokens in `tailwind.config.js`, never hex |
+| Colours | values in `app/globals.css` (`:root, ::backdrop`, the only hexes), role names in `tailwind.config.js` (`theme.colors` replaced) |
+| Typography | text roles `page-title` … `caption` (+ variants `body-loose`, `body-sm-loose`; alias `control`): values in `app/globals.css` (+ `md` block), names in `tailwind.config.js` `theme.fontSize` |
+| Spacing | `page`, `section`, `card`, `stack` in `app/globals.css` (`--space-*`), exposed via `theme.extend.spacing` |
+| Shadows | `raised`, `floating`, `overlay`, `selected` (the pressed-chip outline) (`--shadow-*` in `app/globals.css`) |
+| Design guards and their exemptions | `app/design/design.test.ts`, `app/design/exemptions.ts` |
 
 ## Size hotspots
 
@@ -168,6 +176,8 @@ none
 - Server/client render differences (hydration).
 - Debounced saves that lose or duplicate a write.
 - Quantities and unit conversion.
+- Tailwind class order: there is no class-merge helper (`cn`/`tailwind-merge`), and Tailwind emits utilities in its own order, not the `className` order. A call site's class that competes with a component's own size or colour class loses at random; use a prop.
+- Opacity modifiers on `var()` colours (`bg-primary/40`) emit no CSS at all in Tailwind 3; the guard rejects them. Translucent colours are roles (`overlay`, `scrim`, `neutral-faint`).
 
 ## Security sinks
 

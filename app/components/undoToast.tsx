@@ -1,7 +1,8 @@
 import { toast } from "react-toastify";
 
 // A success toast with a "Fortryd" button, shown a little longer than other toasts so
-// there is time to tap it.
+// there is time to tap it. No close button: toastify's ✕ would cover "Fortryd"; the toast
+// still closes on "Fortryd", after 5 s or by swipe.
 export function showUndoToast(message: string, undo: () => void) {
   toast.success(
     ({ closeToast }) => (
@@ -9,7 +10,7 @@ export function showUndoToast(message: string, undo: () => void) {
         <span>{message}</span>
         <button
           type="button"
-          className="font-semibold text-primary underline"
+          className="hit-area font-semibold text-primary-ink underline"
           onClick={() => {
             closeToast();
             undo();
@@ -19,6 +20,6 @@ export function showUndoToast(message: string, undo: () => void) {
         </button>
       </div>
     ),
-    { autoClose: 5000 },
+    { autoClose: 5000, closeButton: false },
   );
 }

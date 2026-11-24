@@ -1,5 +1,6 @@
 import { requireSession } from "@/app/lib/auth";
 import { householdCode } from "@/app/lib/session";
+import PageContainer from "@/app/components/PageContainer";
 import AdminPageClient from "./client/AdminPageClient";
 import HouseholdCodeCard from "./components/HouseholdCodeCard";
 
@@ -9,10 +10,10 @@ export default async function AdminPage() {
   await requireSession();
 
   return (
-    <div className="p-8">
-      <h1 className="text-3xl font-bold mb-6">Indstillinger</h1>
+    <PageContainer>
+      <h1 className="text-page-title mb-6">Indstillinger</h1>
       <HouseholdCodeCard code={householdCode()} />
       <AdminPageClient />
-    </div>
+    </PageContainer>
   );
 }

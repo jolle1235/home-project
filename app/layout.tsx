@@ -1,17 +1,6 @@
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import type { Metadata, Viewport } from "next";
 import { ToastContainer } from "react-toastify";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "Home Project",
@@ -56,9 +45,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="da" style={{ colorScheme: "light" }}>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
-      >
+      <body className="antialiased min-h-screen flex flex-col">
         {children}
         <ToastContainer position="bottom-center" autoClose={2500} />
       </body>

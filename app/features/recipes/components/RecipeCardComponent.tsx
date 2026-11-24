@@ -34,7 +34,7 @@ export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
     <>
       <div
         id="recipes"
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 px-0"
+        className="grid grid-cols-1 md:grid-cols-2 gap-section px-0"
       >
         {recipes.map((recipe) => {
           return (
@@ -47,14 +47,14 @@ export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
                 bg-surface
                 rounded-2xl
                 overflow-hidden
-                shadow-sm
-                ring-1 ring-black/5
-                hover:shadow-md
+                shadow-raised
+                ring-1 ring-edge
+                hover:shadow-floating
                 transition-all duration-200
               "
               >
                 {/* Image */}
-                <div className="relative w-full h-44 sm:h-48">
+                <div className="relative w-full h-44 md:h-48">
                   <Image
                     src={
                       recipe.image && recipe.image.trim() !== ""
@@ -63,11 +63,11 @@ export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
                     }
                     alt={recipe.recipeName || "Opskrift"}
                     fill
-                    sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                    sizes="(min-width: 768px) 50vw, 100vw"
                     className="object-cover"
                     priority
                   />
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 via-black/0 to-black/0" />
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-shade via-transparent to-transparent" />
                 </div>
 
                 {/* Content */}
@@ -78,7 +78,7 @@ export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
                         {recipe.categories.slice(0, 4).map((category) => (
                           <span
                             key={category}
-                            className="bg-secondary text-muted-foreground text-xs px-3 py-1 rounded-full font-medium"
+                            className="bg-secondary text-muted-foreground text-label px-3 py-0.5 rounded-full font-medium"
                           >
                             {category}
                           </span>
@@ -86,11 +86,11 @@ export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
                       </div>
                     )}
 
-                  <h2 className="text-lg sm:text-xl font-semibold text-foreground line-clamp-2">
+                  <h2 className="text-card-title text-foreground line-clamp-2">
                     {recipe.recipeName}
                   </h2>
 
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-body-sm text-muted-foreground">
                     <div className="inline-flex items-center gap-1.5">
                       <Clock className="h-4 w-4" />
                       <span>{recipe.time} min</span>
@@ -113,7 +113,6 @@ export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
                       setSelectedRecipe(recipe);
                       setDialogOpen(true);
                     }}
-                    className="min-h-[44px]"
                   >
                     <Plus className="h-4 w-4" />
                     Tilføj til madplan
@@ -124,7 +123,6 @@ export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
                     size="sm"
                     fullWidth
                     href={`/recipes/${recipe._id}`}
-                    className="min-h-[44px]"
                   >
                     <span className="inline-flex items-center justify-center gap-2">
                       Se opskrift

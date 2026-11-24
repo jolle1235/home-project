@@ -21,7 +21,7 @@ export function CategorySelector({ value, onChange }: Props) {
         type="button"
         aria-label={value ? `Kategori: ${value}` : "Vælg kategori"}
         onClick={() => setModalOpen(true)}
-        className="text-sm px-2 py-1 rounded-lg bg-background hover:bg-muted/70 text-muted-foreground transition"
+        className="hit-area text-body-sm px-2 py-1 rounded-lg bg-background text-muted-foreground transition"
       >
         {categoryIcon || "+"}
       </button>

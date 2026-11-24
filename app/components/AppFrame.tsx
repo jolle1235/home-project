@@ -10,7 +10,7 @@ export default function AppFrame({ children }: { children: React.ReactNode }) {
     <>
       <a
         href={`#${MAIN_ID}`}
-        className="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-50 focus:rounded-lg focus:bg-background focus:px-4 focus:py-2 focus:text-foreground focus:shadow-md"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-50 focus:rounded-lg focus:bg-background focus:px-4 focus:py-2 focus:text-foreground focus:shadow-floating"
       >
         Spring til indhold
       </a>

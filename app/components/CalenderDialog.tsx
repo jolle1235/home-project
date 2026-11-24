@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import Button from "./Button";
+import { DIALOG_BACKDROP, DIALOG_PANEL } from "./dialogStyles";
 import { toDateKey } from "../utils/dateUtils";
 
 interface CalendarDialogProps {
@@ -53,12 +54,12 @@ export default function CalendarDialog({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
-      <div className="w-full max-w-md bg-surface rounded-2xl shadow-xl p-6">
+    <div className={DIALOG_BACKDROP}>
+      <div className={`${DIALOG_PANEL} p-6`}>
         {/* Header */}
         <div className="mb-5 text-center">
-          <h2 className="text-xl font-semibold text-foreground">Vælg datoer</h2>
-          <p className="text-sm text-muted-foreground mt-1">
+          <h2 className="text-section-title text-foreground">Vælg datoer</h2>
+          <p className="text-body-sm text-muted-foreground mt-1">
             Vælg en eller flere dage
           </p>
         </div>
@@ -76,7 +77,7 @@ export default function CalendarDialog({
                 onClick={() => toggleDate(date)}
                 className={`
                   w-full
-                  min-h-[48px]
+                  min-h-12
                   rounded-xl
                   border
                   text-center
@@ -84,7 +85,7 @@ export default function CalendarDialog({
                   font-medium
                   ${
                     isSelected
-                      ? "bg-primary text-white border-primary"
+                      ? "bg-primary text-primary-foreground border-primary"
                       : "bg-background text-foreground border-secondary hover:bg-soft"
                   }
                 `}

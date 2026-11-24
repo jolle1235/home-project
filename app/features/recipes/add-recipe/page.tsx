@@ -19,6 +19,7 @@ import { copyImageFromUrl, uploadImageFile } from "../../../utils/apiHelperFunct
 import { isRemoteUrl } from "../../../utils/stringUtils";
 import { Ingredient } from "../../../model/Ingredient";
 import ImageUploader from "../../../components/ImageUploader";
+import PageContainer from "../../../components/PageContainer";
 import Button from "../../../components/Button";
 import ConfirmationDialog from "../../../components/ConfirmationDialog";
 import { useConstants } from "@/app/context/ConstantsContext";
@@ -38,7 +39,7 @@ import { tidyRecipeText } from "../utils/tidyRecipeText";
 
 type RecipeFormType = Yup.InferType<typeof recipeSchema>;
 
-const labelClass = "block text-gray-700 text-sm font-bold mb-2";
+const labelClass = "block text-neutral-ink text-body-sm font-bold mb-2";
 
 // Number inputs hold "" when empty; the schema turns "" into "missing".
 function numberField(value: number): number {
@@ -96,9 +97,9 @@ function DescriptionField({
         {...register("description")}
         onPaste={handlePaste}
         rows={rows}
-        className="w-full p-3 border rounded-lg leading-relaxed [field-sizing:content] min-h-48 max-h-[70vh]"
+        className="w-full p-3 border rounded-lg text-body-loose field-sizing-content min-h-48 max-h-field"
       />
-      {error && <p className="text-red-500 text-xs">{error}</p>}
+      {error && <p className="text-danger-ink text-caption">{error}</p>}
     </div>
   );
 }
@@ -421,263 +422,261 @@ function RecipeForm({ recipeId, recipe, newType }: RecipeFormProps) {
   const ingredientError = errors.ingredients?.message;
 
   return (
-    <div className="w-full min-h-screen bg-background px-4 pt-4">
-      <div className="max-w-4xl mx-auto space-y-4">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold">
-            {recipeId ? "Rediger" : "Tilføj ny"} {isDrinkForm ? "drink" : "opskrift"}
-          </h1>
-          <Button
-            variant="ghost"
-            size="sm"
-            type="button"
-            onClick={handleCancel}
-            aria-label="Luk"
-            className="w-10 h-10 p-0"
-          >
-            ✕
-          </Button>
+    <PageContainer className="min-h-screen space-y-4">
+      <div className="flex justify-between items-center">
+        <h1 className="text-page-title">
+          {recipeId ? "Rediger" : "Tilføj ny"} {isDrinkForm ? "drink" : "opskrift"}
+        </h1>
+        <Button
+          variant="ghost"
+          size="sm"
+          type="button"
+          onClick={handleCancel}
+          aria-label="Luk"
+          className="w-11"
+        >
+          ✕
+        </Button>
+      </div>
+
+      {savedDraft && (
+        <div
+          role="status"
+          className="flex flex-col md:flex-row md:items-center justify-between gap-3 rounded-xl bg-soft p-3"
+        >
+          <p className="text-body-sm text-foreground">
+            Du har en ikke-gemt kladde
+            {savedDraft.recipeName ? ` af "${savedDraft.recipeName}"` : ""}.
+          </p>
+          <div className="flex gap-2">
+            <Button variant="secondary" size="sm" onClick={discardDraft}>
+              Kassér
+            </Button>
+            <Button size="sm" onClick={restoreDraft}>
+              Gendan kladde
+            </Button>
+          </div>
+        </div>
+      )}
+
+      <RecipeImportBar
+        collapsed={Boolean(recipeId)}
+        onImported={handleImported}
+        onFailed={handleImportFailed}
+      />
+
+      <form onSubmit={submit} className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="w-full md:col-span-2">
+            <label className={labelClass} htmlFor="navn">
+              Navn
+            </label>
+            <input
+              id="navn"
+              type="text"
+              {...register("recipeName")}
+              className="w-full p-3 border rounded-lg"
+              placeholder="Indtast navn..."
+            />
+            {errors.recipeName && (
+              <p className="text-danger-ink text-caption">{errors.recipeName.message}</p>
+            )}
+          </div>
+
+          <div className="w-full">
+            <label className={labelClass} htmlFor="tid">
+              Tid (minutter)
+            </label>
+            <input
+              id="tid"
+              type="number"
+              inputMode="numeric"
+              {...register("time")}
+              className="w-full p-3 border rounded-lg"
+              placeholder="Indtast tid..."
+            />
+            {errors.time && (
+              <p className="text-danger-ink text-caption">{errors.time.message}</p>
+            )}
+          </div>
+
+          <div className="w-full">
+            <label className={labelClass} htmlFor="personer">
+              Antal personer
+            </label>
+            <input
+              id="personer"
+              type="number"
+              inputMode="numeric"
+              {...register("recommendedPersonAmount")}
+              className="w-full p-3 border rounded-lg"
+              placeholder="Indtast antal personer..."
+            />
+            {errors.recommendedPersonAmount && (
+              <p className="text-danger-ink text-caption">
+                {errors.recommendedPersonAmount.message}
+              </p>
+            )}
+          </div>
+
+          <div className="w-full md:col-span-2">
+            <label className={labelClass} htmlFor="kilde-link">
+              Kilde-link
+            </label>
+            <input
+              id="kilde-link"
+              type="url"
+              inputMode="url"
+              {...register("sourceUrl")}
+              className="w-full p-3 border rounded-lg"
+              placeholder="https://..."
+            />
+            {errors.sourceUrl && (
+              <p className="text-danger-ink text-caption">{errors.sourceUrl.message}</p>
+            )}
+          </div>
+
+          <div className="w-full">
+            <label className={labelClass} htmlFor="billede">
+              Billede
+            </label>
+            <ImageUploader
+              key={imageKey}
+              onFileSelected={handleImageSelected}
+              initialPreview={image}
+            />
+            {errors.image && (
+              <p className="text-danger-ink text-caption mt-1">{errors.image.message}</p>
+            )}
+          </div>
+
+          <label className="md:col-span-2 flex items-center gap-stack rounded-xl bg-surface p-3">
+            <input
+              type="checkbox"
+              checked={isDrinkForm}
+              onChange={(e) =>
+                setValue("type", e.target.checked ? "drink" : "recipe")
+              }
+            />
+            <span>
+              <span className="block font-bold text-body-sm text-neutral-ink">
+                Det er en drink
+              </span>
+              <span className="block text-body-sm text-muted-foreground">
+                Drinks vises under &quot;Drinks&quot; i opskriftslisten.
+              </span>
+            </span>
+          </label>
+
+          <div>
+            <span className={labelClass}>Kategorier</span>
+            <div className="grid grid-cols-2 gap-2">
+              {categories.map((category) => (
+                <label
+                  key={category._id}
+                  className="flex items-center space-x-2 p-2 border rounded"
+                >
+                  <input
+                    type="checkbox"
+                    value={category.name}
+                    onChange={handleChangeCategories}
+                    checked={selectedCategories.includes(category.name)}
+                    className="form-checkbox h-5 w-5"
+                  />
+                  <span>{category.name}</span>
+                </label>
+              ))}
+            </div>
+          </div>
         </div>
 
-        {savedDraft && (
-          <div
-            role="status"
-            className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl bg-soft p-3"
-          >
-            <p className="text-sm text-foreground">
-              Du har en ikke-gemt kladde
-              {savedDraft.recipeName ? ` af "${savedDraft.recipeName}"` : ""}.
-            </p>
-            <div className="flex gap-2">
-              <Button variant="secondary" size="sm" onClick={discardDraft}>
-                Kassér
-              </Button>
-              <Button size="sm" onClick={restoreDraft}>
-                Gendan kladde
-              </Button>
-            </div>
+        <IngredientEditor
+          rows={rows}
+          onChange={updateRows}
+          error={ingredientError}
+        />
+
+        <DescriptionField
+          control={control}
+          register={register}
+          setValue={setValue}
+          error={errors.description?.message}
+        />
+
+        <div className="sticky bottom-0 z-10 -mx-page flex items-center gap-2 border-t border-line px-page py-3 backdrop-blur">
+          {recipeId && (
+            <Button
+              onClick={() => setShowDeleteDialog(true)}
+              variant="secondary"
+              size="lg"
+              disabled={isSaving}
+            >
+              Slet
+            </Button>
+          )}
+          <div className="flex flex-1 justify-end gap-2">
+            <Button
+              onClick={handleCancel}
+              variant="secondary"
+              size="lg"
+              disabled={isSaving}
+            >
+              Annuller
+            </Button>
+            <Button
+              type="submit"
+              variant="primary"
+              size="lg"
+              isLoading={isSaving}
+              loadingText="Gemmer…"
+            >
+              {recipeId ? "Opdater opskrift" : "Gem opskrift"}
+            </Button>
           </div>
-        )}
+        </div>
+      </form>
 
-        <RecipeImportBar
-          collapsed={Boolean(recipeId)}
-          onImported={handleImported}
-          onFailed={handleImportFailed}
-        />
-
-        <form onSubmit={submit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="w-full md:col-span-2">
-              <label className={labelClass} htmlFor="navn">
-                Navn
-              </label>
-              <input
-                id="navn"
-                type="text"
-                {...register("recipeName")}
-                className="w-full p-3 border rounded-lg"
-                placeholder="Indtast navn..."
-              />
-              {errors.recipeName && (
-                <p className="text-red-500 text-xs">{errors.recipeName.message}</p>
-              )}
-            </div>
-
-            <div className="w-full">
-              <label className={labelClass} htmlFor="tid">
-                Tid (minutter)
-              </label>
-              <input
-                id="tid"
-                type="number"
-                inputMode="numeric"
-                {...register("time")}
-                className="w-full p-3 border rounded-lg"
-                placeholder="Indtast tid..."
-              />
-              {errors.time && (
-                <p className="text-red-500 text-xs">{errors.time.message}</p>
-              )}
-            </div>
-
-            <div className="w-full">
-              <label className={labelClass} htmlFor="personer">
-                Antal personer
-              </label>
-              <input
-                id="personer"
-                type="number"
-                inputMode="numeric"
-                {...register("recommendedPersonAmount")}
-                className="w-full p-3 border rounded-lg"
-                placeholder="Indtast antal personer..."
-              />
-              {errors.recommendedPersonAmount && (
-                <p className="text-red-500 text-xs">
-                  {errors.recommendedPersonAmount.message}
-                </p>
-              )}
-            </div>
-
-            <div className="w-full md:col-span-2">
-              <label className={labelClass} htmlFor="kilde-link">
-                Kilde-link
-              </label>
-              <input
-                id="kilde-link"
-                type="url"
-                inputMode="url"
-                {...register("sourceUrl")}
-                className="w-full p-3 border rounded-lg"
-                placeholder="https://..."
-              />
-              {errors.sourceUrl && (
-                <p className="text-red-500 text-xs">{errors.sourceUrl.message}</p>
-              )}
-            </div>
-
-            <div className="w-full">
-              <label className={labelClass} htmlFor="billede">
-                Billede
-              </label>
-              <ImageUploader
-                key={imageKey}
-                onFileSelected={handleImageSelected}
-                initialPreview={image}
-              />
-              {errors.image && (
-                <p className="text-red-500 text-xs mt-1">{errors.image.message}</p>
-              )}
-            </div>
-
-            <label className="md:col-span-2 flex items-center gap-3 rounded-xl bg-surface p-3">
-              <input
-                type="checkbox"
-                checked={isDrinkForm}
-                onChange={(e) =>
-                  setValue("type", e.target.checked ? "drink" : "recipe")
-                }
-              />
-              <span>
-                <span className="block font-bold text-sm text-gray-700">
-                  Det er en drink
-                </span>
-                <span className="block text-sm text-muted-foreground">
-                  Drinks vises under &quot;Drinks&quot; i opskriftslisten.
-                </span>
-              </span>
-            </label>
-
-            <div>
-              <span className={labelClass}>Kategorier</span>
-              <div className="grid grid-cols-2 gap-2">
-                {categories.map((category) => (
-                  <label
-                    key={category._id}
-                    className="flex items-center space-x-2 p-2 border rounded"
-                  >
-                    <input
-                      type="checkbox"
-                      value={category.name}
-                      onChange={handleChangeCategories}
-                      checked={selectedCategories.includes(category.name)}
-                      className="form-checkbox h-5 w-5"
-                    />
-                    <span>{category.name}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <IngredientEditor
-            rows={rows}
-            onChange={updateRows}
-            error={ingredientError}
-          />
-
-          <DescriptionField
-            control={control}
-            register={register}
-            setValue={setValue}
-            error={errors.description?.message}
-          />
-
-          <div className="sticky bottom-0 z-10 -mx-4 flex items-center gap-2 border-t border-secondary/30 bg-background/95 px-4 py-3 backdrop-blur">
-            {recipeId && (
-              <Button
-                onClick={() => setShowDeleteDialog(true)}
-                variant="secondary"
-                size="lg"
-                disabled={isSaving}
-              >
-                Slet
-              </Button>
-            )}
-            <div className="flex flex-1 justify-end gap-2">
-              <Button
-                onClick={handleCancel}
-                variant="secondary"
-                size="lg"
-                disabled={isSaving}
-              >
-                Annuller
-              </Button>
-              <Button
-                type="submit"
-                variant="primary"
-                size="lg"
-                isLoading={isSaving}
-                loadingText="Gemmer…"
-              >
-                {recipeId ? "Opdater opskrift" : "Gem opskrift"}
-              </Button>
-            </div>
-          </div>
-        </form>
-
-        <ConfirmationDialog
-          open={showDeleteDialog}
-          onClose={() => setShowDeleteDialog(false)}
-          onConfirm={handleDeleteRecipe}
-          title={`Slet «${recipe?.recipeName ?? ""}»?`}
-          message="Opskriften slettes for alle i husstanden. Står den på madplanen, bliver navnet stående, men opskriften kan ikke åbnes. Det kan ikke fortrydes."
-          confirmLabel="Slet"
-          cancelLabel="Behold den"
-          tone="danger"
-        />
-        <ConfirmationDialog
-          open={showCancelDialog}
-          onClose={() => setShowCancelDialog(false)}
-          onConfirm={() => {
-            clearDraft();
-            router.back();
-          }}
-          title="Kassér ændringer?"
-          message="Du har ændringer der ikke er gemt. Vil du kassere dem?"
-        />
-        <ConfirmationDialog
-          open={pendingImport !== null}
-          onClose={() => setPendingImport(null)}
-          onConfirm={() => {
-            if (pendingImport) applyImport(pendingImport);
-          }}
-          title="Erstat indhold?"
-          message="Importen erstatter det, du allerede har skrevet i formularen."
-        />
-      </div>
-    </div>
+      <ConfirmationDialog
+        open={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+        onConfirm={handleDeleteRecipe}
+        title={`Slet «${recipe?.recipeName ?? ""}»?`}
+        message="Opskriften slettes for alle i husstanden. Står den på madplanen, bliver navnet stående, men opskriften kan ikke åbnes. Det kan ikke fortrydes."
+        confirmLabel="Slet"
+        cancelLabel="Behold den"
+        tone="danger"
+      />
+      <ConfirmationDialog
+        open={showCancelDialog}
+        onClose={() => setShowCancelDialog(false)}
+        onConfirm={() => {
+          clearDraft();
+          router.back();
+        }}
+        title="Kassér ændringer?"
+        message="Du har ændringer der ikke er gemt. Vil du kassere dem?"
+      />
+      <ConfirmationDialog
+        open={pendingImport !== null}
+        onClose={() => setPendingImport(null)}
+        onConfirm={() => {
+          if (pendingImport) applyImport(pendingImport);
+        }}
+        title="Erstat indhold?"
+        message="Importen erstatter det, du allerede har skrevet i formularen."
+      />
+    </PageContainer>
   );
 }
 
 function Spinner({ text }: { text: string }) {
   return (
-    <div className="w-full min-h-screen bg-background p-4 flex items-center justify-center">
+    <PageContainer className="min-h-screen flex items-center justify-center">
       <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-action mx-auto"></div>
-        <p className="mt-4 text-gray-600">{text}</p>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto"></div>
+        <p className="mt-4 text-muted-foreground">{text}</p>
       </div>
-    </div>
+    </PageContainer>
   );
 }
 
@@ -702,12 +701,12 @@ function AddRecipePageContent() {
 
   if (recipeId && (isError || !recipe)) {
     return (
-      <div className="w-full min-h-screen bg-background p-4 flex flex-col items-center justify-center gap-4">
+      <PageContainer className="min-h-screen flex flex-col items-center justify-center gap-4">
         <p className="text-foreground">Kunne ikke indlæse opskriften til redigering.</p>
         <Button variant="secondary" onClick={() => router.back()}>
           Tilbage
         </Button>
-      </div>
+      </PageContainer>
     );
   }
 
