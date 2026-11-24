@@ -41,9 +41,19 @@ function sign(expiry: string, settings: { code: string; secret: string }): strin
   return crypto.createHmac("sha256", settings.secret).update(`${expiry}.${codeHash}`).digest("hex");
 }
 
-export function createSessionValue(now = Date.now()): string {
+function requiredConfig() {
   const settings = config();
   if (!settings) throw new Error("Household code is not configured");
+  return settings;
+}
+
+// Only for the admin page, after requireSession(): members already know the code.
+export function householdCode(): string {
+  return requiredConfig().code;
+}
+
+export function createSessionValue(now = Date.now()): string {
+  const settings = requiredConfig();
   const expiry = String(Math.floor(now / 1000) + SESSION_MAX_AGE);
   return `${expiry}.${sign(expiry, settings)}`;
 }

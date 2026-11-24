@@ -44,4 +44,4 @@ sections in order: `Sub-features`, `How to get to it (user POV)`, `Driving it wi
 - [Recipe editor](./recipe-editor.md): create, edit, delete, import from a link, ingredient editor.
 - [Shopping list](./shopping-list.md): add items, tick off, store, price, notes, persistence.
 - [Week planner](./week-planner.md): the next weeks' grid, planned recipes, remove, open recipe.
-- [Admin](./admin.md): recipe categories and unit types.
+- [Admin](./admin.md): the household code to share, recipe categories and unit types.
