@@ -12,7 +12,10 @@ export async function fetchShoppingList(): Promise<Ingredient[]> {
   return response.json();
 }
 
-export async function saveShoppingList(items: Ingredient[]): Promise<void> {
+// Resolves to the saved list as the server returns it (categories filled in).
+export async function saveShoppingList(
+  items: Ingredient[],
+): Promise<Ingredient[]> {
   const response = await fetch(SHOPPING_LIST_API, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
@@ -22,4 +25,6 @@ export async function saveShoppingList(items: Ingredient[]): Promise<void> {
   if (!response.ok) {
     throw new Error("Failed to save shopping list");
   }
+
+  return response.json();
 }

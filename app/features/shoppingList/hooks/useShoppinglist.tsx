@@ -1,10 +1,7 @@
 "use client";
 
 import { Ingredient } from "../../../model/Ingredient";
-import {
-  useServerList,
-  useServerListSaving,
-} from "../../../hooks/useServerList";
+import { useServerList } from "../../../hooks/useServerList";
 
 import {
   fetchShoppingList,
@@ -133,7 +130,3 @@ export function useShoppingList(options: UseShoppingListOptions = {}) {
     clearList,
   };
 }
-
-// True while a shopping-list save is pending (separate, so list rows don't re-render on saves).
-export const useShoppingListSaving = () =>
-  useServerListSaving(SHOPPING_LIST_QUERY_KEY);

@@ -10,17 +10,14 @@ import {
   emptyEditorRows,
   rowsToIngredients,
 } from "../../recipes/utils/ingredientRows";
-import {
-  useShoppingList,
-  useShoppingListSaving,
-} from "../hooks/useShoppinglist";
+import { useShoppingList } from "../hooks/useShoppinglist";
 
 // Inline "add items" box above the list. Its own component so typing here
 // doesn't re-render the whole shopping list.
 export function AddItemsPanel() {
   const { addIngredients } = useShoppingList();
-  const isSaving = useShoppingListSaving();
-  // Items being typed in, before they are added to the list.
+  // Items being typed in, before they are added to the list. Adding empties them, so the
+  // button can't add the same rows twice.
   const [rows, setRows] = useState<EditorRow[]>(emptyEditorRows);
   const newItems = rowsToIngredients(rows);
 
@@ -45,7 +42,7 @@ export function AddItemsPanel() {
           <Button variant="secondary" size="sm" onClick={reset}>
             Ryd
           </Button>
-          <Button size="sm" onClick={handleAdd} disabled={isSaving}>
+          <Button size="sm" onClick={handleAdd}>
             <Plus className="h-4 w-4" aria-hidden="true" />
             Tilføj {newItems.length} til listen
           </Button>

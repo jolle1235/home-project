@@ -1,6 +1,5 @@
 import {
   type QueryKey,
-  useIsMutating,
   useMutation,
   useQuery,
   useQueryClient,
@@ -10,12 +9,15 @@ import { toast } from "react-toastify";
 // A list the server stores as one document and replaces on every save (the shopping list,
 // the week plan). Every change builds on the stored list, never on an empty placeholder;
 // the screen updates at once; saves run one at a time in tap order, each carrying every
-// earlier tap; when the last save fails the list is fetched again, which undoes it (a
-// failed save followed by a queued one needs nothing: the queued save carries both).
+// earlier tap. When the last queued save fails the list is fetched again, which undoes it;
+// when it succeeds and the server answers with the saved list (the shopping list, with
+// categories filled in), that list is shown. A failed save followed by a queued one needs
+// nothing: the queued save carries both.
 type Options<T> = {
   queryKey: QueryKey;
   queryFn: () => Promise<T[]>;
-  save: (list: T[]) => Promise<void>;
+  // Resolves to the saved list when the server returns it, otherwise to nothing.
+  save: (list: T[]) => Promise<T[] | void>;
   errorMessage: string;
   initialData?: T[];
 };
@@ -43,8 +45,9 @@ export function useServerList<T>({
     mutationKey: queryKey,
     scope: { id: JSON.stringify(queryKey) },
     mutationFn: (change: Change<T>) => save(change.list),
-    onSuccess: (_result, change) => {
+    onSuccess: (saved, change) => {
       if (change.success) toast.success(change.success);
+      if (saved && isLastSave()) queryClient.setQueryData(queryKey, saved);
     },
     onError: () => {
       showError();
@@ -84,10 +87,4 @@ export function useServerList<T>({
     update,
     refresh,
   };
-}
-
-// True while a save for the list is pending; only for components that show it (rows don't,
-// so they don't re-render on every save).
-export function useServerListSaving(queryKey: QueryKey) {
-  return useIsMutating({ mutationKey: queryKey }) > 0;
 }

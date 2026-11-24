@@ -10,6 +10,8 @@ app offers in pickers: recipe categories and unit types.
   copies it ("Invitationen er kopieret") where there is no share sheet; a failure says "Kunne ikke dele invitationen".
 - `admin-categories` lists, adds and deletes recipe categories.
 - `admin-units` lists, adds and deletes unit types.
+- When the server refuses an add or delete, a toast says "Kunne ikke tilføje kategorien" / "Kunne ikke
+  slette kategorien" (and the same with "enheden"), and the list is fetched again, so it shows what is stored.
 
 ## How to get to it (user POV)
 
@@ -27,9 +29,11 @@ Preconditions:
   stub `Navigator.prototype.share` to see what is shared.
 - **Add category.** `page.getByPlaceholder("Tilføj ny kategori").fill("Suppe")`, then the first
   `Tilføj` button. `Suppe` appears and `app.api("/api/admin/recipeCategories")` has 6 entries.
-- **Delete.** Click the trash icon next to `Suppe` (no accessible name: it is the button in the
-  same row). The entry disappears from the list and the API.
+- **Delete.** `page.getByRole("button", { name: "Fjern kategori: Suppe" })` (units: `Fjern enhed: <navn>`).
+  The entry disappears from the list and the API.
 - **Units.** The same with `Tilføj ny enhed` and the second `Tilføj` button.
+- **Failure.** `page.route("**/api/admin/recipeCategories", …)` answering 500 for POST/DELETE (same for
+  `unitTypes`); expect the toasts above and the list unchanged (`.flow/no-data-loss/check.mjs`, check 6).
 - **Proof.** `app.shot("admin")` plus both lists read back.
 
 ## Gotchas
