@@ -1,6 +1,5 @@
 import NavBar from "../components/Navbar";
 import { ConstantsProvider } from "../context/ConstantsContext";
-import { RecipeProvider } from "../context/RecipeContext";
 import ReactQueryProvider from "../providers/ReactQueryProvider";
 import ServiceWorker from "../components/ServiceWorker";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -10,14 +9,12 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 export default function FeaturesLayout({ children }: { children: React.ReactNode }) {
   return (
     <ReactQueryProvider>
-      <RecipeProvider>
-        <ConstantsProvider>
-          <NavBar />
-          <main className="bg-background">{children}</main>
-          <SpeedInsights />
-          <ServiceWorker />
-        </ConstantsProvider>
-      </RecipeProvider>
+      <ConstantsProvider>
+        <NavBar />
+        <main className="bg-background">{children}</main>
+        <SpeedInsights />
+        <ServiceWorker />
+      </ConstantsProvider>
     </ReactQueryProvider>
   );
 }

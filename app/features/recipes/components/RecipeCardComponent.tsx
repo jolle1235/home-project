@@ -1,6 +1,6 @@
 "use client";
 import { Recipe } from "../types/Recipe";
-import { useRecipeContext } from "../../../context/RecipeContext";
+import { useWeekPlan } from "../../weekplanner/hooks/useWeekPlan";
 import Image from "next/image";
 import { useState } from "react";
 import Button from "../../../components/Button";
@@ -8,12 +8,10 @@ import { ArrowRight, Clock, Plus, Users } from "lucide-react";
 import CalendarDialog from "../../../components/CalenderDialog";
 
 export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
-  const { addRecipesToWeekPlan, getDatesForNext4Weeks } = useRecipeContext();
+  const { addRecipe } = useWeekPlan();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
-
-  const availableDates = getDatesForNext4Weeks();
 
   if (!recipes || recipes.length === 0) {
     return (
@@ -26,7 +24,7 @@ export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
   const handleDialogDone = (selectedDates: string[]) => {
     if (!selectedRecipe) return;
 
-    addRecipesToWeekPlan(selectedDates, selectedRecipe);
+    addRecipe(selectedDates, selectedRecipe);
 
     setDialogOpen(false);
     setSelectedRecipe(null);
@@ -145,7 +143,6 @@ export function RecipeCardComponent({ recipes }: { recipes: Recipe[] }) {
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
         onDone={handleDialogDone}
-        availableDates={availableDates}
       />
     </>
   );

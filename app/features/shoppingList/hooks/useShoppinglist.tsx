@@ -1,11 +1,12 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
 import { Ingredient } from "../../../model/Ingredient";
+import {
+  useServerList,
+  useServerListSaving,
+} from "../../../hooks/useServerList";
 
 import {
-  clearShoppingListApi,
   fetchShoppingList,
   saveShoppingList,
 } from "../api/shoppingList.client";
@@ -16,106 +17,53 @@ type UseShoppingListOptions = {
   initialData?: Ingredient[];
 };
 
+// Changes go through useServerList (see there).
 export function useShoppingList(options: UseShoppingListOptions = {}) {
-  const { initialData } = options;
-  const queryClient = useQueryClient();
-
   const {
-    data: shoppingList = [],
+    data: shoppingList,
     isLoading,
     isError,
-    error,
-    refetch,
-  } = useQuery({
+    update,
+    refresh,
+  } = useServerList<Ingredient>({
     queryKey: SHOPPING_LIST_QUERY_KEY,
     queryFn: fetchShoppingList,
-    initialData,
+    save: saveShoppingList,
+    errorMessage: "Kunne ikke gemme indkøbslisten – prøv igen",
+    initialData: options.initialData,
   });
-
-  const saveMutation = useMutation({
-    mutationFn: saveShoppingList,
-
-    onMutate: async (updatedList) => {
-      await queryClient.cancelQueries({ queryKey: SHOPPING_LIST_QUERY_KEY });
-      const previous = queryClient.getQueryData<Ingredient[]>(
-        SHOPPING_LIST_QUERY_KEY,
-      );
-      queryClient.setQueryData(SHOPPING_LIST_QUERY_KEY, updatedList);
-      return { previous };
-    },
-
-    onError: (_error, _variables, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(SHOPPING_LIST_QUERY_KEY, context.previous);
-      }
-    },
-
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: SHOPPING_LIST_QUERY_KEY });
-    },
-  });
-
-  const clearMutation = useMutation({
-    mutationFn: clearShoppingListApi,
-
-    onMutate: async () => {
-      await queryClient.cancelQueries({ queryKey: SHOPPING_LIST_QUERY_KEY });
-      const previous = queryClient.getQueryData<Ingredient[]>(
-        SHOPPING_LIST_QUERY_KEY,
-      );
-      queryClient.setQueryData(SHOPPING_LIST_QUERY_KEY, []);
-      return { previous };
-    },
-
-    onError: (_error, _variables, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(SHOPPING_LIST_QUERY_KEY, context.previous);
-      }
-    },
-
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: SHOPPING_LIST_QUERY_KEY });
-    },
-  });
-
-  const updateList = (updater: (list: Ingredient[]) => Ingredient[]) => {
-    const current =
-      queryClient.getQueryData<Ingredient[]>(SHOPPING_LIST_QUERY_KEY) ??
-      shoppingList;
-    saveMutation.mutate(updater(current));
-  };
-
-  const setList = (newList: Ingredient[]) => {
-    saveMutation.mutate(newList);
-  };
 
   const addIngredient = (ingredient: Ingredient) => {
-    updateList((list) => [...list, ingredient]);
+    update((list) => [...list, ingredient]);
   };
 
-  const addIngredients = (ingredients: Ingredient[]) => {
-    updateList((list) => [
-      ...list,
-      ...ingredients.map((ingredient) => ({
-        ...ingredient,
-        _id: crypto.randomUUID(),
-        marked: false,
-      })),
-    ]);
+  // `success` is the toast shown once the rows are saved.
+  const addIngredients = (ingredients: Ingredient[], success?: string) => {
+    update(
+      (list) => [
+        ...list,
+        ...ingredients.map((ingredient) => ({
+          ...ingredient,
+          _id: crypto.randomUUID(),
+          marked: false,
+        })),
+      ],
+      success,
+    );
   };
 
   const removeIngredient = (id: string) => {
-    updateList((list) => list.filter((item) => item._id !== id));
+    update((list) => list.filter((item) => item._id !== id));
   };
 
   const updateQuantity = (id: string, quantity: number) => {
-    updateList((list) =>
+    update((list) =>
       list.map((item) => (item._id === id ? { ...item, quantity } : item)),
     );
   };
 
   const toggleMarked = (id: string) => {
-    updateList((list) =>
+    update((list) =>
       list.map((item) =>
         item._id === id ? { ...item, marked: !item.marked } : item,
       ),
@@ -123,25 +71,25 @@ export function useShoppingList(options: UseShoppingListOptions = {}) {
   };
 
   const updateCenter = (id: string, center: string) => {
-    updateList((list) =>
+    update((list) =>
       list.map((item) => (item._id === id ? { ...item, center } : item)),
     );
   };
 
   const updatePrice = (id: string, price: number) => {
-    updateList((list) =>
+    update((list) =>
       list.map((item) => (item._id === id ? { ...item, price } : item)),
     );
   };
 
   const updateNotes = (id: string, notes: string) => {
-    updateList((list) =>
+    update((list) =>
       list.map((item) => (item._id === id ? { ...item, notes } : item)),
     );
   };
 
   const updateCategory = (id: string, category: string) => {
-    updateList((list) =>
+    update((list) =>
       list.map((item) =>
         item._id === id
           ? {
@@ -156,31 +104,18 @@ export function useShoppingList(options: UseShoppingListOptions = {}) {
     );
   };
 
-  const sortByStore = () => {
-    const current =
-      queryClient.getQueryData<Ingredient[]>(SHOPPING_LIST_QUERY_KEY) ??
-      shoppingList;
-    setList(sortByCenter(current));
-  };
+  const sortByStore = () => update(sortByCenter);
 
-  const clearMarked = () => {
-    const current =
-      queryClient.getQueryData<Ingredient[]>(SHOPPING_LIST_QUERY_KEY) ??
-      shoppingList;
-    setList(current.filter((item) => !item.marked));
-  };
+  const clearMarked = () =>
+    update((list) => list.filter((item) => !item.marked));
 
-  const clearList = () => {
-    clearMutation.mutate();
-  };
+  const clearList = () => update(() => []);
 
   return {
     shoppingList,
     isLoading,
     isError,
-    error,
-    isSaving: saveMutation.isPending || clearMutation.isPending,
-    refresh: refetch,
+    refresh,
 
     addIngredient,
     addIngredients,
@@ -193,9 +128,12 @@ export function useShoppingList(options: UseShoppingListOptions = {}) {
     updatePrice,
     updateNotes,
 
-    setList,
     sortByStore,
     clearMarked,
     clearList,
   };
 }
+
+// True while a shopping-list save is pending (separate, so list rows don't re-render on saves).
+export const useShoppingListSaving = () =>
+  useServerListSaving(SHOPPING_LIST_QUERY_KEY);

@@ -23,11 +23,3 @@ export async function saveShoppingList(items: Ingredient[]): Promise<void> {
     throw new Error("Failed to save shopping list");
   }
 }
-
-export async function clearShoppingListApi(): Promise<void> {
-  const response = await fetch(SHOPPING_LIST_API, { method: "DELETE" });
-
-  if (!response.ok) {
-    throw new Error("Failed to clear shopping list");
-  }
-}

@@ -1,7 +1,7 @@
 "use client";
 import React, { useMemo, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
-import { useRecipeContext } from "../../context/RecipeContext";
+import { useWeekPlan } from "./hooks/useWeekPlan";
 import Button from "../../components/Button";
 import { useScrollRefresh } from "../../hooks/useScrollRefresh";
 import { PullToRefreshIndicator } from "../../components/PullToRefreshIndicator";
@@ -53,10 +53,9 @@ function buildWeekGrid(today: Date): (Date | null)[] {
 
 export default function WeeklyRecipePlanner() {
   const router = useRouter();
-  const { weekPlan, removeRecipeFromWeekPlan, refreshWeekPlan } =
-    useRecipeContext();
+  const { weekPlan, removeRecipe, refresh } = useWeekPlan();
 
-  const { isRefreshing } = useScrollRefresh(refreshWeekPlan);
+  const { isRefreshing } = useScrollRefresh(refresh);
 
   // "Today" exists only on the client; the server renders an empty grid,
   // as it did before, so hydration still matches.
@@ -125,7 +124,7 @@ export default function WeeklyRecipePlanner() {
                             variant="ghost"
                             size="sm"
                             onClick={() =>
-                              removeRecipeFromWeekPlan(dateKey, entry.recipeId)
+                              removeRecipe(dateKey, entry.recipeId)
                             }
                             className="w-8 h-8 p-0"
                           >

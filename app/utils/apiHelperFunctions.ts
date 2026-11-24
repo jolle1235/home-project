@@ -1,7 +1,6 @@
 "use cliet";
 import { Item } from "../model/Item";
 import { Recipe } from "../features/recipes/types/Recipe";
-import { WeekPlan } from "../features/weekplanner/types/weekPlan";
 
 // API client function
 //------------------ ITEMs ------------------------//
@@ -60,25 +59,4 @@ export function copyImageFromUrl(url: string): Promise<string> {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ url }),
   });
-}
-
-//------------------ WEEK PLANNER ------------------------//
-export async function saveWeekPlanToDatabase(
-  weekPlanData: WeekPlan[],
-): Promise<void> {
-  const response = await fetch("/api/weekPlan", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      weekPlan: weekPlanData,
-    }),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error("WeekPlan API error:", errorText);
-    throw new Error("Failed to save week plan");
-  }
 }

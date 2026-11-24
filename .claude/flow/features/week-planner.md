@@ -7,7 +7,8 @@ planned for that day; a recipe can be opened or removed.
 
 - `plan-grid` shows day cards from today (the rest of this week plus 14 days).
 - `plan-entries` shows planned recipes on their local day.
-- `plan-remove` removes an entry with its `×` button.
+- `plan-remove` removes an entry with its `×` button; "Opskrift fjernet fra madplan" shows once it is saved.
+- `plan-save-error` a failed save puts the entry back and says "Kunne ikke gemme madplanen – prøv igen".
 - `plan-open` opens the recipe with `Opskrift`.
 
 ## How to get to it (user POV)
@@ -34,3 +35,5 @@ Preconditions:
 - Dates are stored as local `YYYY-MM-DD`; tests around midnight or in another time zone should set
   the browser's `timezoneId` explicitly.
 - The server renders an empty grid; the days appear after hydration. Wait for a day card.
+- The plan loads on the page itself (no layout provider): wait for an entry's text, not just the grid.
+- Adding from a recipe card waits for the stored plan before saving, so it never replaces the plan.

@@ -10,12 +10,16 @@ import {
   emptyEditorRows,
   rowsToIngredients,
 } from "../../recipes/utils/ingredientRows";
-import { useShoppingList } from "../hooks/useShoppinglist";
+import {
+  useShoppingList,
+  useShoppingListSaving,
+} from "../hooks/useShoppinglist";
 
 // Inline "add items" box above the list. Its own component so typing here
 // doesn't re-render the whole shopping list.
 export function AddItemsPanel() {
-  const { addIngredients, isSaving } = useShoppingList();
+  const { addIngredients } = useShoppingList();
+  const isSaving = useShoppingListSaving();
   // Items being typed in, before they are added to the list.
   const [rows, setRows] = useState<EditorRow[]>(emptyEditorRows);
   const newItems = rowsToIngredients(rows);
