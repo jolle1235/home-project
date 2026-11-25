@@ -1,7 +1,7 @@
 import clientPromise from "../../../lib/mongodb";
 
 import { Ingredient } from "../../../model/Ingredient";
-import { ObjectId } from "mongodb";
+import { type Db, ObjectId } from "mongodb";
 
 const databaseName = process.env.MONGO_DATABASE_NAME;
 
@@ -25,6 +25,50 @@ async function getDb() {
   return client.db(databaseName);
 }
 
+// Rows whose category is missing or "unknown" get the category stored on their item.
+async function withItemCategories(
+  db: Db,
+  items: Ingredient[],
+): Promise<Ingredient[]> {
+  const itemsCollection = db.collection("items");
+  return Promise.all(
+    items.map(async (ingredient) => {
+      const storedCategory = ingredient.item?.category;
+      if (storedCategory && storedCategory !== "unknown") {
+        return ingredient;
+      }
+
+      let dbItem = null;
+      if (
+        ingredient.item?._id &&
+        ingredient.item._id !== "unknown" &&
+        ObjectId.isValid(ingredient.item._id)
+      ) {
+        dbItem = await itemsCollection.findOne({
+          _id: new ObjectId(ingredient.item._id),
+        });
+      } else if (ingredient.item?.name) {
+        dbItem = await itemsCollection.findOne({
+          name: ingredient.item.name,
+        });
+      }
+
+      if (dbItem?.category) {
+        return {
+          ...ingredient,
+          item: {
+            ...ingredient.item,
+            category: dbItem.category,
+            _id: ingredient.item._id || String(dbItem._id),
+          },
+        };
+      }
+
+      return ingredient;
+    }),
+  );
+}
+
 export async function getShoppingList(): Promise<Ingredient[]> {
   try {
     const db = await getDb();
@@ -33,48 +77,7 @@ export async function getShoppingList(): Promise<Ingredient[]> {
       listId: LIST_ID,
     });
 
-    const items = doc?.items ?? [];
-    if (items.length === 0) return [];
-
-    const itemsCollection = db.collection("items");
-    const enriched = await Promise.all(
-      items.map(async (ingredient) => {
-        const storedCategory = ingredient.item?.category;
-        if (storedCategory && storedCategory !== "unknown") {
-          return ingredient;
-        }
-
-        let dbItem = null;
-        if (
-          ingredient.item?._id &&
-          ingredient.item._id !== "unknown" &&
-          ObjectId.isValid(ingredient.item._id)
-        ) {
-          dbItem = await itemsCollection.findOne({
-            _id: new ObjectId(ingredient.item._id),
-          });
-        } else if (ingredient.item?.name) {
-          dbItem = await itemsCollection.findOne({
-            name: ingredient.item.name,
-          });
-        }
-
-        if (dbItem?.category) {
-          return {
-            ...ingredient,
-            item: {
-              ...ingredient.item,
-              category: dbItem.category,
-              _id: ingredient.item._id || String(dbItem._id),
-            },
-          };
-        }
-
-        return ingredient;
-      }),
-    );
-
-    return enriched;
+    return await withItemCategories(db, doc?.items ?? []);
   } catch (error) {
     console.error(error);
 
@@ -82,7 +85,11 @@ export async function getShoppingList(): Promise<Ingredient[]> {
   }
 }
 
-export async function saveShoppingList(items: Ingredient[]): Promise<void> {
+// Returns the saved list as a read would return it (categories filled in), so the client
+// can show it without fetching again.
+export async function saveShoppingList(
+  items: Ingredient[],
+): Promise<Ingredient[]> {
   try {
     const db = await getDb();
 
@@ -120,6 +127,8 @@ export async function saveShoppingList(items: Ingredient[]): Promise<void> {
         $set: { category: item.category },
       });
     }
+
+    return await withItemCategories(db, items);
   } catch (error) {
     console.error(error);
 

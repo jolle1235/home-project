@@ -41,11 +41,7 @@ async function handlePut(request: NextRequest) {
       );
     }
 
-    await saveShoppingList(items);
-
-    return NextResponse.json({
-      success: true,
-    });
+    return NextResponse.json(await saveShoppingList(items));
   } catch (error) {
     console.error(error);
 

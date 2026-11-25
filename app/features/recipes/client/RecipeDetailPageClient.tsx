@@ -83,8 +83,7 @@ function RecipeDetails({ recipe }: { recipe: Recipe }) {
       toast.info("Vælg mindst én ingrediens.");
       return;
     }
-    addIngredients(toAdd);
-    toast.success(addedMessage(toAdd.length));
+    addIngredients(toAdd, addedMessage(toAdd.length));
   };
 
   return (

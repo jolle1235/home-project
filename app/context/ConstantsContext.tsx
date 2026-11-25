@@ -6,9 +6,12 @@ import {
   removeCategoryApi,
   addUnitApi,
   removeUnitApi,
+  CATEGORIES_API,
+  UNITS_API,
 } from "../utils/constantsApiHelperFunctions";
 import { Ingredient } from "../model/Ingredient";
 import { Constant } from "../model/Constant";
+import { toast } from "react-toastify";
 
 interface ConstantsContextType {
   categories: Constant[];
@@ -24,7 +27,7 @@ interface ConstantsContextType {
 }
 
 const ConstantsContext = createContext<ConstantsContextType | undefined>(
-  undefined
+  undefined,
 );
 
 async function fetchConstants(): Promise<{
@@ -32,8 +35,8 @@ async function fetchConstants(): Promise<{
   units: Constant[];
 }> {
   const [catRes, unitRes] = await Promise.all([
-    fetch("/api/admin/recipeCategories"),
-    fetch("/api/admin/unitTypes"),
+    fetch(CATEGORIES_API),
+    fetch(UNITS_API),
   ]);
   if (!catRes.ok || !unitRes.ok) throw new Error("Failed to fetch constants");
   return { categories: await catRes.json(), units: await unitRes.json() };
@@ -52,68 +55,88 @@ export function ConstantsProvider({ children }: { children: ReactNode }) {
     await refetch();
   }
 
-  async function addCategory(name: string) {
-    if (!name) return;
-    await addCategoryApi(name);
+  // Tells the user when the server refuses, and always shows what is stored afterwards.
+  async function runThenRefresh(
+    action: () => Promise<void>,
+    errorText: string,
+  ) {
+    try {
+      await action();
+    } catch {
+      toast.error(errorText);
+    }
     await fetchData();
+  }
+
+  async function addCategory(name: string) {
+    if (name)
+      await runThenRefresh(
+        () => addCategoryApi(name),
+        "Kunne ikke tilføje kategorien",
+      );
   }
 
   async function removeCategory(name: string) {
-    await removeCategoryApi(name);
-    await fetchData();
+    await runThenRefresh(
+      () => removeCategoryApi(name),
+      "Kunne ikke slette kategorien",
+    );
   }
 
   async function addUnit(name: string) {
-    if (!name) return;
-    await addUnitApi(name);
-    await fetchData();
+    if (name)
+      await runThenRefresh(
+        () => addUnitApi(name),
+        "Kunne ikke tilføje enheden",
+      );
   }
 
   async function removeUnit(name: string) {
-    await removeUnitApi(name);
-    await fetchData();
+    await runThenRefresh(
+      () => removeUnitApi(name),
+      "Kunne ikke slette enheden",
+    );
   }
 
   async function checkAndAddUnitType(
-    ingredients: Ingredient[]
+    ingredients: Ingredient[],
   ): Promise<string[]> {
     try {
       // 1. Fetch current units from DB (as Constant[])
-      const res = await fetch("/api/admin/unitTypes");
+      const res = await fetch(UNITS_API);
       if (!res.ok) {
-        console.error("Failed to fetch unit types:", res.status, res.statusText);
+        console.error(
+          "Failed to fetch unit types:",
+          res.status,
+          res.statusText,
+        );
         // Don't throw - allow recipe submission to continue even if unit sync fails
         return [];
       }
       const existingUnits: Constant[] = await res.json();
 
       const existingNames = new Set(
-        existingUnits.map((u) => u.name.toLowerCase())
+        existingUnits.map((u) => u.name.toLowerCase()),
       );
 
       // 2. Collect all distinct units from ingredients
       const ingredientUnits = new Set(
         ingredients
           .map((i) => i.unit?.trim().toLowerCase())
-          .filter((u): u is string => !!u)
+          .filter((u): u is string => !!u),
       );
 
       // 3. Find missing units
       const missingUnits = [...ingredientUnits].filter(
-        (u) => !existingNames.has(u)
+        (u) => !existingNames.has(u),
       );
 
       // 4. Add missing ones
       const addedUnits: string[] = [];
       for (const unit of missingUnits) {
         try {
-          const success = await addUnitApi(unit);
-          if (success) {
-            addedUnits.push(unit);
-            console.log(`Added new unit type: ${unit}`);
-          } else {
-            console.warn(`Failed to add unit type: ${unit}`);
-          }
+          await addUnitApi(unit);
+          addedUnits.push(unit);
         } catch (error) {
           console.error(`Error adding unit type ${unit}:`, error);
           // Continue with other units even if one fails

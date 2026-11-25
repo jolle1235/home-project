@@ -10,6 +10,7 @@ Recipes add their ingredients here too.
 - `list-tick` ticks an item off (its checkbox) and keeps it on the list.
 - `list-details` sets store (`Vælg butik`), `Pris` and `Noter...` on an item.
 - `list-persist` keeps every change after a reload.
+- `list-save-error` a failed save puts the change back and says "Kunne ikke gemme indkøbslisten – prøv igen".
 
 ## How to get to it (user POV)
 
@@ -31,5 +32,7 @@ Preconditions:
 
 - Known bug at the time of writing: the page logs a hydration mismatch because ingredient-editor
   row ids are time-based (`row-<time>-<n>`); smoke reports it as a problem until it is fixed.
-- Saves are debounced; read back after ~2 s.
+- Saves are debounced and run one at a time in tap order; read back after ~2 s.
+- Adding from a recipe waits for the stored list first; the "N ingredienser tilføjet" toast shows after saving.
+- Pull-to-refresh does nothing while a save is pending.
 - Saving also writes each item's category back to the item catalogue.

@@ -7,14 +7,12 @@ interface CalendarDialogProps {
   open: boolean;
   onClose: () => void;
   onDone: (selectedDates: string[]) => void;
-  availableDates: Date[];
 }
 
 export default function CalendarDialog({
   open,
   onClose,
   onDone,
-  availableDates,
 }: CalendarDialogProps) {
   const [selectedDates, setSelectedDates] = useState<Set<string>>(new Set());
 

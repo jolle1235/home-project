@@ -244,4 +244,6 @@ date       | task | what went wrong or was misunderstood → what to do instead
 2026-11-20 | fast-app | a check that serves a planted cache entry triggers the worker's background refresh, which replaces the plant → plant right before the step under test and check it is still stored
 2026-11-20 | fast-app | a check that edits fixture data can't be re-run on the same instance → `verify:down` + `verify:up` before every rerun
 2026-11-20 | fast-app | FIX round 1: a loading.tsx makes the page stream, so a failed server render answers 200 OK and a cache keyed on `response.ok` stores the error page → anything that caches HTML must reject React's failed-boundary marker (`$RX("`), and a DB-down check must wait out the Mongo driver's ~30 s server selection before asserting
+2026-11-24 | no-data-loss | in dev mode a page is sometimes in the DOM twice for a moment (smoke "12 checkboxes for 6 ingredients", two "Tilføj ny kategori" inputs), on master too → rerun before blaming the change; target the visible copy (`.first()` on a scoped locator) in checks; root cause not found yet
+2026-11-24 | no-data-loss | a check that resets fixtures through the API before each step keeps one check's data loss from breaking the next; a race check must compare against each row's starting value, not assume "both ticked"
 ```

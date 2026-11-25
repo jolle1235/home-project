@@ -149,7 +149,8 @@ none
 | Mongo client | `app/lib/mongodb.ts` → `clientPromise` (never a new `MongoClient`) |
 | Session checks | `app/lib/auth.ts` → `withSession`, `requireSession`; cookie in `app/lib/session.ts` |
 | Fetching a recipe | `app/features/recipes/api/recipe.client.ts` → `fetchRecipe` |
-| Query keys | `SHOPPING_LIST_QUERY_KEY` (`features/shoppingList/constants.ts`), `["recipes"]`, `["recipe", id]`, `["weekPlan"]`, `["constants"]` |
+| Query keys | `SHOPPING_LIST_QUERY_KEY` (`features/shoppingList/constants.ts`), `WEEK_PLAN_QUERY_KEY` (`features/weekplanner/constants.ts`), `["recipes"]`, `["recipe", id]`, `["constants"]` |
+| Whole-list documents saved by PUT/POST (load first, ordered saves, rollback) | `app/hooks/useServerList.ts` |
 | Buttons, dialogs, pull-to-refresh | `app/components/` (`Button`, `IconButton`, `ConfirmationDialog`, `CalenderDialog`, `PullToRefreshIndicator`) and `app/hooks/useScrollRefresh` |
 | Validation limits and schemas | `app/utils/validationVariables.ts`, `app/utils/validationSchema.ts` |
 | Colours | the semantic tokens in `tailwind.config.js`, never hex |
