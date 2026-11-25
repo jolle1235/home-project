@@ -66,13 +66,6 @@
   --muted-foreground: var(--gray-600);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
 /* Dark mode media query removed - always use light theme with black text */
 /* @media (prefers-color-scheme: dark) {
   :root {
@@ -96,7 +89,6 @@ body {
   /* Force black text regardless of system theme */
   color: var(--foreground);
 
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;

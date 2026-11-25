@@ -21,6 +21,7 @@ export function useShoppingList(options: UseShoppingListOptions = {}) {
     isLoading,
     isError,
     update,
+    removeWithUndo,
     refresh,
   } = useServerList<Ingredient>({
     queryKey: SHOPPING_LIST_QUERY_KEY,
@@ -104,7 +105,12 @@ export function useShoppingList(options: UseShoppingListOptions = {}) {
   const sortByStore = () => update(sortByCenter);
 
   const clearMarked = () =>
-    update((list) => list.filter((item) => !item.marked));
+    removeWithUndo(
+      (item) => item.marked,
+      (item) => item._id,
+      (removed) =>
+        removed.length === 1 ? "1 vare fjernet" : `${removed.length} varer fjernet`,
+    );
 
   const clearList = () => update(() => []);
 

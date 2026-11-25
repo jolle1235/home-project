@@ -96,9 +96,9 @@ function RecipeDetails({ recipe }: { recipe: Recipe }) {
             <section className="bg-surface rounded-2xl shadow-sm overflow-hidden">
               <RecipeHero recipe={recipe} />
               <div className="p-4 sm:p-5 flex flex-col gap-3">
-                <h2 className="text-xl sm:text-2xl font-semibold text-foreground">
+                <h1 className="text-xl sm:text-2xl font-semibold text-foreground">
                   {recipe.recipeName}
-                </h2>
+                </h1>
                 <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
                   <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary">
                     <Clock className="h-4 w-4" aria-hidden="true" />
@@ -114,7 +114,7 @@ function RecipeDetails({ recipe }: { recipe: Recipe }) {
                     href={recipe.sourceUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex w-fit items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm text-foreground hover:bg-secondary transition-colors"
+                    className="inline-flex w-fit items-center gap-2 rounded-lg border border-secondary px-3 py-2 text-sm text-foreground hover:bg-secondary transition-colors"
                   >
                     <ExternalLink className="h-4 w-4" aria-hidden="true" />
                     Gå til kilde
@@ -127,6 +127,7 @@ function RecipeDetails({ recipe }: { recipe: Recipe }) {
                   <div className="inline-flex items-center rounded-xl bg-secondary p-1  gap-1.5">
                     <IconButton
                       icon={Minus}
+                      ariaLabel="Færre personer"
                       variant="primary"
                       size="xs"
                       onClick={() =>
@@ -140,6 +141,7 @@ function RecipeDetails({ recipe }: { recipe: Recipe }) {
                     </span>
                     <IconButton
                       icon={Plus}
+                      ariaLabel="Flere personer"
                       variant="primary"
                       size="xs"
                       onClick={() =>
@@ -289,7 +291,7 @@ function RecipeHero({ recipe }: { recipe: Recipe }) {
       <Image
         className="object-cover"
         src={recipe.image || "/fallback.jpg"}
-        alt={recipe.recipeName || "Recipe image"}
+        alt={recipe.recipeName || "Opskriftsbillede"}
         fill
         sizes="(min-width: 1024px) 50vw, 100vw"
       />

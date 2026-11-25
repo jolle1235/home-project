@@ -10,7 +10,7 @@ export default async function AdminPage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-3xl font-bold mb-6">Admin Panel</h1>
+      <h1 className="text-3xl font-bold mb-6">Indstillinger</h1>
       <HouseholdCodeCard code={householdCode()} />
       <AdminPageClient />
     </div>

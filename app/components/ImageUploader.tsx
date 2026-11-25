@@ -34,11 +34,16 @@ export default function ImageUploader({
       {preview && (
         <img
           src={preview}
-          alt="Preview"
+          alt="Valgt billede"
           className="w-32 h-32 object-cover mb-2"
         />
       )}
-      <input type="file" accept="image/*" onChange={handleFileChange} />
+      <input
+        type="file"
+        accept="image/*"
+        aria-label="Vælg billede"
+        onChange={handleFileChange}
+      />
       {preview && (
         <Button
           type="button"

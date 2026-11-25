@@ -15,14 +15,15 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Home Project",
-  description:
-    "A home project application with recipe and shopping list management",
+  description: "Husstandens opskrifter, madplan og indkøbsliste",
+  applicationName: "Home Project",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
     title: "Home Project",
   },
+  formatDetection: { telephone: false },
   icons: {
     icon: [
       { url: "/icon/icon-192x192.png", sizes: "192x192", type: "image/png" },
@@ -32,15 +33,18 @@ export const metadata: Metadata = {
       { url: "/icon/icon-192x192.png", sizes: "192x192", type: "image/png" },
     ],
   },
+  // Next 16 renders appleWebApp.capable as mobile-web-app-capable only; iOS still reads
+  // this one for standalone mode.
+  other: { "apple-mobile-web-app-capable": "yes" },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
   viewportFit: "cover",
-  themeColor: "#000000",
+  // The navigation's background (--cream-100).
+  themeColor: "#fcfaee",
+  colorScheme: "light",
 };
 
 // The app shell (providers, navigation) is in app/features/layout.tsx, so /login
@@ -51,22 +55,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" style={{ colorScheme: "light" }}>
-      <head>
-        <link rel="manifest" href="/manifest.json" />
-        <meta name="application-name" content="Home Project" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Home Project" />
-        <meta name="format-detection" content="telephone=no" />
-        <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="theme-color" content="#000000" />
-        <meta name="color-scheme" content="light" />
-        <meta name="HandheldFriendly" content="true" />
-        <link rel="apple-touch-icon" href="/icon/icon-192x192.png" />
-      </head>
+    <html lang="da" style={{ colorScheme: "light" }}>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col bg-`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
         {children}
         <ToastContainer position="bottom-center" autoClose={2500} />

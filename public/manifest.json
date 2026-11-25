@@ -1,11 +1,14 @@
 {
   "name": "Home Project",
   "short_name": "Home Project",
-  "description": "A home project application with recipe and shopping list management",
+  "description": "Husstandens opskrifter, madplan og indkøbsliste",
+  "lang": "da",
+  "id": "/",
   "start_url": "/recipes",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#000000",
+  "background_color": "#fcfaee",
+  "theme_color": "#fcfaee",
   "icons": [
     {
       "src": "/icon/icon-192x192.png",
@@ -20,4 +23,4 @@
       "purpose": "any maskable"
     }
   ]
-} 
+}

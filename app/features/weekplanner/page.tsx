@@ -77,7 +77,7 @@ export default function WeeklyRecipePlanner() {
     <div className="p-4">
       <PullToRefreshIndicator isRefreshing={isRefreshing} />
 
-      <h5 className="text-2xl font-semibold mb-4">Madplan</h5>
+      <h1 className="text-2xl font-semibold mb-4">Madplan</h1>
 
       <div className="flex flex-col gap-4">
         {weekDates
@@ -89,6 +89,9 @@ export default function WeeklyRecipePlanner() {
               month: "short",
               day: "numeric",
               weekday: "short",
+            });
+            const dayName = date!.toLocaleDateString("da-DK", {
+              weekday: "long",
             });
 
             const entriesForDate = weekPlan.filter(
@@ -123,8 +126,9 @@ export default function WeeklyRecipePlanner() {
                           <Button
                             variant="ghost"
                             size="sm"
+                            aria-label={`Fjern «${entry.recipeName}» fra ${dayName}`}
                             onClick={() =>
-                              removeRecipe(dateKey, entry.recipeId)
+                              removeRecipe(dateKey, entry.recipeId, dayName)
                             }
                             className="w-8 h-8 p-0"
                           >
