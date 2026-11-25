@@ -2,6 +2,7 @@
 import { useCallback, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Button from "./Button";
+import { DIALOG_PANEL } from "./dialogStyles";
 
 interface ConfirmationDialogProps {
   open: boolean;
@@ -72,36 +73,40 @@ function OpenDialog({
       }}
       // Chromium may close a modal on a repeated Escape without a cancel event.
       onClose={onClose}
-      className="bg-white rounded-lg shadow-lg w-[calc(100%-1rem)] max-w-md p-4 backdrop:bg-black/40"
+      // A transparent full-width box around the shared panel, so its inset matches the
+      // other dialogs. The backdrop: classes copy DIALOG_BACKDROP (dialogStyles.ts).
+      className="w-full max-w-none p-4 bg-transparent backdrop:bg-overlay backdrop:backdrop-blur-sm"
     >
-      <h2
-        id={titleId}
-        className="text-xl font-bold mb-4 text-muted-foreground text-center"
-      >
-        {title}
-      </h2>
-      <p id={messageId} className="mb-6 text-center text-gray-700">
-        {message}
-      </p>
-      <div className="flex justify-end gap-2">
-        <Button
-          variant="secondary"
-          size="sm"
-          type="button"
-          onClick={close}
-          disabled={isBusy}
+      <div className={`${DIALOG_PANEL} mx-auto p-4`}>
+        <h2
+          id={titleId}
+          className="text-section-title mb-4 text-foreground text-center"
         >
-          {cancelLabel}
-        </Button>
-        <Button
-          variant={tone}
-          size="sm"
-          type="button"
-          onClick={handleConfirm}
-          isLoading={isBusy}
-        >
-          {confirmLabel}
-        </Button>
+          {title}
+        </h2>
+        <p id={messageId} className="mb-6 text-center text-neutral-ink">
+          {message}
+        </p>
+        <div className="flex justify-end gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            type="button"
+            onClick={close}
+            disabled={isBusy}
+          >
+            {cancelLabel}
+          </Button>
+          <Button
+            variant={tone}
+            size="sm"
+            type="button"
+            onClick={handleConfirm}
+            isLoading={isBusy}
+          >
+            {confirmLabel}
+          </Button>
+        </div>
       </div>
     </dialog>,
     document.body,

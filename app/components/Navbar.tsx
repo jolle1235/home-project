@@ -39,14 +39,16 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/admin", label: "Indstillinger", icon: Settings, match: ["/admin"] },
 ];
 
+// The active link also gets a dark inner outline (an inset ring, no layout), so it differs by
+// more than its fill.
 const linkBaseClasses =
-  "flex flex-col items-center justify-center gap-1 text-xs sm:text-sm py-2 px-3 rounded-lg transition-colors duration-200";
+  "hit-area flex flex-col items-center justify-center gap-1 py-2 px-3 rounded-lg transition-colors duration-200";
 
 export default function NavBar() {
   const pathname = usePathname();
 
   return (
-    <nav className="bg-background shadow-md sticky top-0 z-40 border-b border-secondary/30">
+    <nav className="bg-background shadow-floating sticky top-0 z-40 border-b border-line">
       <div className="flex justify-around max-w-xl mx-auto py-2">
         {NAV_ITEMS.map(({ href, label, icon: Icon, match }) => {
           const isActive = match.some((path) => pathname?.startsWith(path));
@@ -58,12 +60,12 @@ export default function NavBar() {
               aria-current={isActive ? "page" : undefined}
               className={`${linkBaseClasses} ${
                 isActive
-                  ? "bg-secondary text-foreground shadow-md"
-                  : "text-foreground hover:bg-secondary-hover hover:text-foreground/90"
+                  ? "bg-secondary text-secondary-foreground shadow-floating ring-1 ring-inset ring-secondary-ink"
+                  : "text-foreground hover:bg-secondary-hover"
               } group`}
             >
-              <Icon className="w-6 h-6 sm:w-5 sm:h-5" />
-              <span className="hidden md:inline-flex text-[10px] opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+              <Icon className="w-6 h-6 md:w-5 md:h-5" />
+              <span className="hidden md:inline-flex text-caption opacity-0 group-hover:opacity-100 transition-opacity duration-150">
                 {label}
               </span>
             </Link>

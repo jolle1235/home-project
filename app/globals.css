@@ -2,15 +2,197 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  input {
-    @apply p-2 border border-muted rounded-lg text-base bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary;
-  }
+/*
+ * Design tokens: the only place values live. tailwind.config.js names them (bg-primary,
+ * text-body, p-card, shadow-raised …) and replaces Tailwind's palette, shadows and text sizes,
+ * so components can use roles only. app/design/design.test.ts checks contrast and the type
+ * scale from these values. The roles are also declared on ::backdrop, which older Safari and
+ * Chrome don't let inherit custom properties.
+ */
+:root,
+::backdrop {
+  /* ---------- Primitives (the only hex values) ---------- */
+  --sage-300: #ccd5ae;
+  --sage-400: #bfc89e;
+  --sage-800: #55602f;
 
-  textarea {
-    @apply p-2 border border-muted rounded-lg text-base bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary;
+  --beige-200: #e9edc9;
+
+  --cream-100: #fcfaee;
+  --cream-200: #faedcd;
+
+  --bronze-400: #d4a373;
+  --bronze-500: #c08e5f;
+  --bronze-800: #8a5a2b;
+
+  --neutral-900: #212227;
+
+  --red-100: #fee2e2;
+  --red-600: #d62839;
+  --red-700: #b91c1c;
+
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+
+  --white: #ffffff;
+
+  /* ---------- Colour roles ---------- */
+  --background: var(--cream-100);
+  --foreground: var(--neutral-900);
+  --surface: var(--beige-200);
+  --soft: var(--cream-200);
+  --muted-foreground: var(--gray-600);
+
+  /* Each family: solid, -hover, -foreground (text on it), -subtle (light surface), -ink (coloured text). */
+  --primary: var(--bronze-400);
+  --primary-hover: var(--bronze-500);
+  --primary-foreground: var(--neutral-900);
+  --primary-subtle: var(--cream-200);
+  --primary-ink: var(--bronze-800);
+
+  --secondary: var(--sage-300);
+  --secondary-hover: var(--sage-400);
+  --secondary-foreground: var(--neutral-900);
+  --secondary-subtle: var(--beige-200);
+  --secondary-ink: var(--sage-800);
+
+  --danger: var(--red-600);
+  --danger-hover: var(--red-700);
+  --danger-foreground: var(--white);
+  --danger-subtle: var(--red-100);
+  --danger-ink: var(--red-700);
+
+  --neutral: var(--gray-500);
+  --neutral-hover: var(--gray-600);
+  --neutral-foreground: var(--white);
+  --neutral-subtle: var(--gray-100);
+  --neutral-ink: var(--gray-700);
+  --neutral-faint: rgb(255 255 255 / 0.7);
+
+  --placeholder: var(--gray-500);
+  --line: var(--gray-200);
+  --ring: var(--bronze-800);
+
+  /* Black layers: dialog backdrops, text chips on images, image gradients, hairlines. */
+  --overlay: rgb(0 0 0 / 0.4);
+  --scrim: rgb(0 0 0 / 0.55);
+  --scrim-foreground: var(--white);
+  --shade: rgb(0 0 0 / 0.3);
+  --edge: rgb(0 0 0 / 0.05);
+
+  /* ---------- Shadows ---------- */
+  /* selected: a 1 px inner outline that marks a pressed chip without changing its size. */
+  --shadow-selected: inset 0 0 0 1px var(--secondary-ink);
+  --shadow-raised: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-floating: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-overlay: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+  /* ---------- Text roles (size, line height, tracking) ----------
+   Line heights are rem, like Tailwind's own sizes: the 16 px input font on phones
+   (below) must not stretch them. */
+  --text-page-title: 1.5rem;
+  --leading-page-title: 2rem;
+  --tracking-page-title: -0.01em;
+  --text-section-title: 1.25rem;
+  --leading-section-title: 1.75rem;
+  --tracking-section-title: 0;
+  --text-card-title: 1.125rem;
+  --leading-card-title: 1.625rem;
+  --tracking-card-title: 0;
+  --text-body: 1rem;
+  --leading-body: 1.5rem;
+  --tracking-body: 0;
+  /* Loose variants: same size and tracking, longer lines for running text. */
+  --text-body-loose: var(--text-body);
+  --leading-body-loose: 1.625rem;
+  --tracking-body-loose: var(--tracking-body);
+  --text-body-sm: 0.875rem;
+  --leading-body-sm: 1.3125rem;
+  --tracking-body-sm: 0;
+  --text-body-sm-loose: var(--text-body-sm);
+  --leading-body-sm-loose: 1.421875rem;
+  --tracking-body-sm-loose: var(--tracking-body-sm);
+  --text-label: 0.8125rem;
+  --leading-label: 1.21875rem;
+  --tracking-label: 0;
+  /* control: an alias that steps at md (label, body-sm from md) for chips and pills. An alias
+     points at one role's three values and adds no size to the scale. */
+  --text-control: var(--text-label);
+  --leading-control: var(--leading-label);
+  --tracking-control: var(--tracking-label);
+  --text-caption: 0.75rem;
+  --leading-caption: 1.125rem;
+  --tracking-caption: 0;
+
+  /* ---------- Spacing ---------- */
+  --space-page: 1rem;
+  --space-section: 1.5rem;
+  --space-card: 1rem;
+  --space-stack: 0.75rem;
+}
+
+/* md, the only breakpoint (tailwind's screens.md). */
+@media (min-width: 768px) {
+  :root,
+  ::backdrop {
+    --text-page-title: 2.5rem;
+    --leading-page-title: 3rem;
+    --text-section-title: 1.5rem;
+    --leading-section-title: 2rem;
+    --text-card-title: 1.25rem;
+    --leading-card-title: 1.75rem;
+    --text-control: var(--text-body-sm);
+    --leading-control: var(--leading-body-sm);
+    --tracking-control: var(--tracking-body-sm);
+
+    --space-page: 2.5rem;
+    --space-section: 2rem;
+    --space-card: 1.25rem;
+    --space-stack: 1.25rem;
   }
 }
+
+@layer base {
+  input,
+  textarea {
+    @apply p-2 border border-neutral rounded-lg text-body bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring;
+  }
+
+  /* Preflight's own selector list, so this wins over its grey. */
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--placeholder);
+  }
+}
+
+/*
+ * An invisible tap area of at least 44×44 px, centred on a small control; it changes no
+ * layout. It sets position: relative, so never put it on a positioned element (absolute,
+ * fixed, sticky): wrap the control instead. Checkboxes don't take the class: they share the
+ * ::before rule below (their ::after is the tick).
+ */
+.hit-area {
+  position: relative;
+}
+
+.hit-area::before,
+input[type="checkbox"]::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: max(100%, 2.75rem);
+  height: max(100%, 2.75rem);
+  transform: translate(-50%, -50%);
+}
+
+.field-sizing-content {
+  field-sizing: content;
+}
+
 /* Hide scrollbar for Chrome, Safari and Opera */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
@@ -22,61 +204,6 @@
   scrollbar-width: none; /* Firefox */
 }
 
-:root {
-  /* ---------- PALETTE (raw colors) ---------- */
-
-  --sage-300: #ccd5ae;
-  --sage-400: #bfc89e;
-
-  --beige-200: #e9edc9;
-
-  --cream-100: #fcfaee;
-  --cream-200: #faedcd;
-
-  --bronze-400: #d4a373;
-  --bronze-500: #c08e5f;
-
-  --neutral-900: #212227;
-
-  --red-500: #e63946;
-  --red-600: #d62839;
-
-  --gray-500: #6b7280;
-  --gray-600: #4b5563;
-
-  /* ---------- SEMANTIC TOKENS ---------- */
-
-  --background: var(--cream-100);
-  --foreground: var(--neutral-900);
-
-  --primary: var(--bronze-400);
-  --primary-hover: var(--bronze-500);
-
-  --secondary: var(--sage-300);
-  --secondary-hover: var(--sage-400);
-
-  --surface: var(--beige-200);
-  --soft: var(--cream-200);
-
-  --secondary-surface: var(--bronze-400);
-  --danger: var(--red-500);
-  --danger-hover: var(--red-600);
-
-  --muted: var(--gray-500);
-  --muted-foreground: var(--gray-600);
-}
-
-/* Dark mode media query removed - always use light theme with black text */
-/* @media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-} */
-
 /* Base styles */
 html {
   -webkit-tap-highlight-color: transparent;
@@ -86,8 +213,6 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  /* Force black text regardless of system theme */
-  color: var(--foreground);
 
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -95,41 +220,7 @@ body {
   overflow-x: hidden;
 }
 
-/* Mobile-first container */
-.container {
-  width: 100%;
-  padding-right: 1rem;
-  padding-left: 1rem;
-  margin-right: auto;
-  margin-left: auto;
-}
-
-/* Responsive container sizes */
-@media (min-width: 640px) {
-  .container {
-    max-width: 640px;
-  }
-}
-
-@media (min-width: 768px) {
-  .container {
-    max-width: 768px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .container {
-    max-width: 1024px;
-  }
-}
-
-@media (min-width: 1280px) {
-  .container {
-    max-width: 1280px;
-  }
-}
-
-/* Keep inputs at 16px on mobile so iOS doesn't zoom in on focus */
+/* Keep inputs at 16px on mobile so iOS doesn't zoom in on focus (the twin of md). */
 @media (max-width: 767px) {
   input,
   select,
@@ -180,11 +271,9 @@ input[type="number"] {
   animation: slide-up 0.2s ease-out;
 }
 
-/* ...existing input/textarea styles... */
-
 input[type="checkbox"] {
   @apply appearance-none w-7 h-7 rounded-full border-2 cursor-pointer shrink-0;
-  border-color: var(--primary);
+  border-color: var(--ring);
   background-color: var(--background);
   transition: all 0.2s ease-in-out;
   position: relative;
@@ -203,11 +292,11 @@ input[type="checkbox"]:checked::after {
   transform: translate(-50%, -60%) rotate(45deg);
   width: 5px;
   height: 9px;
-  border-right: 2px solid white;
-  border-bottom: 2px solid white;
+  border-right: 2px solid var(--primary-foreground);
+  border-bottom: 2px solid var(--primary-foreground);
 }
 
 input[type="checkbox"]:focus {
   outline: none;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 30%, transparent);
+  box-shadow: 0 0 0 3px var(--ring);
 }

@@ -28,8 +28,13 @@ profile → Verify (`../profile.md`); the rules for driving are in the shared `v
   `Indstillinger`; the current one has `aria-current="page"`. The first Tab stop is the link
   `Spring til indhold`, which moves focus to `main#indhold`.
 - Every page has `<html lang="da">` and one h1.
+- Every page's content sits in one `[data-page-container]` (16 px side inset at 390, 40 px from 768);
+  the loading skeleton is the same element with `aria-busy="true"`. All h1s look the same (24 px, 40 px from 768, bold).
+- Small controls (chips, checkboxes, the recipe's −/+, the week plan's ✕ and `Opskrift`, the
+  shopping-list category) keep their look but take taps in a 44×44 area; everything else is at least
+  44 px. A shopping-list row's fields (Købt, Antal, Butik, Pris, Note) only guarantee 24×24.
 - Confirmation dialogs are `page.getByRole("dialog", { name: <title> })`; Escape closes them without acting.
-- Undo toasts carry `page.getByRole("button", { name: "Fortryd" })` for 5 s; other toasts last 2.5 s.
+- Undo toasts carry `page.getByRole("button", { name: "Fortryd" })` for 5 s and have no close ✕; other toasts last 2.5 s.
 - An unknown URL (`/nope`) answers 404 with h1 `Siden findes ikke`, the navigation and `Til opskrifterne`.
 - A page that crashes shows h1 `Noget gik galt`, `Prøv igen` and `Til opskrifterne` (inside the
   navigation for feature pages); the error's text is never shown.

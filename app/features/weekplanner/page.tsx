@@ -5,6 +5,7 @@ import { useWeekPlan } from "./hooks/useWeekPlan";
 import Button from "../../components/Button";
 import { useScrollRefresh } from "../../hooks/useScrollRefresh";
 import { PullToRefreshIndicator } from "../../components/PullToRefreshIndicator";
+import PageContainer from "../../components/PageContainer";
 import { toDateKey } from "../../utils/dateUtils";
 
 function subscribeNever() {
@@ -74,10 +75,10 @@ export default function WeeklyRecipePlanner() {
   }
 
   return (
-    <div className="p-4">
+    <PageContainer>
       <PullToRefreshIndicator isRefreshing={isRefreshing} />
 
-      <h1 className="text-2xl font-semibold mb-4">Madplan</h1>
+      <h1 className="text-page-title mb-4">Madplan</h1>
 
       <div className="flex flex-col gap-4">
         {weekDates
@@ -101,14 +102,14 @@ export default function WeeklyRecipePlanner() {
             return (
               <div
                 key={dateKey}
-                className="border rounded p-4 flex flex-col min-h-[120px]"
+                className="border rounded p-4 flex flex-col min-h-30"
               >
-                <h6 className="text-base font-semibold mb-2 text-center">
+                <h6 className="text-body font-semibold mb-2 text-center">
                   {displayText}
                 </h6>
 
                 {entriesForDate.length === 0 ? (
-                  <p className="text-gray-500 text-sm text-center">
+                  <p className="text-muted-foreground text-body-sm text-center">
                     Ingen opskrifter planlagt.
                   </p>
                 ) : (
@@ -118,19 +119,19 @@ export default function WeeklyRecipePlanner() {
                         key={`${entry.date}-${entry.recipeId}`}
                         className="flex flex-col items-center"
                       >
-                        <div className="flex flex-row w-full justify-center items-center bg-gray-100 rounded-lg m-1 p-1">
+                        <div className="flex flex-row w-full justify-center items-center bg-neutral-subtle rounded-lg m-1 p-1">
                           <p className="truncate flex-1 w-10/12">
                             {entry.recipeName}
                           </p>
 
                           <Button
                             variant="ghost"
-                            size="sm"
+                            size="xs"
                             aria-label={`Fjern «${entry.recipeName}» fra ${dayName}`}
                             onClick={() =>
                               removeRecipe(dateKey, entry.recipeId, dayName)
                             }
-                            className="w-8 h-8 p-0"
+                            className="w-8"
                           >
                             ✕
                           </Button>
@@ -138,8 +139,9 @@ export default function WeeklyRecipePlanner() {
 
                         <Button
                           variant="primary"
-                          size="sm"
+                          size="xs"
                           fullWidth
+                          className="mt-1"
                           onClick={() => handleRouter(entry.recipeId)}
                         >
                           Opskrift
@@ -152,6 +154,6 @@ export default function WeeklyRecipePlanner() {
             );
           })}
       </div>
-    </div>
+    </PageContainer>
   );
 }

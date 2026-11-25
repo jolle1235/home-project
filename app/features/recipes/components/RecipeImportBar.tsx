@@ -90,10 +90,10 @@ export function RecipeImportBar({
   return (
     <div className="rounded-xl bg-surface p-4 space-y-2">
       <label htmlFor="recipe-import-url" className="block">
-        <span className="block text-sm font-bold text-gray-700">
+        <span className="block text-body-sm font-bold text-neutral-ink">
           Importér fra link
         </span>
-        <span className="block text-sm text-muted-foreground">
+        <span className="block text-body-sm text-muted-foreground">
           Indsæt et link til en opskrift, så udfylder vi felterne for dig.
         </span>
       </label>
@@ -112,7 +112,7 @@ export function RecipeImportBar({
             }
           }}
           placeholder="https://…"
-          className="min-h-[44px] flex-1 min-w-0"
+          className="min-h-11 flex-1 min-w-0"
           disabled={isLoading}
         />
         <Button

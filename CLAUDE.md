@@ -9,7 +9,7 @@ npm run dev                 # next dev --turbopack (service worker unregistered 
 npm run build && npm start  # needed to test the service worker and timings
 npm run lint                # ESLint 9 flat config (eslint.config.mjs)
 npm run generate-pwa-icons  # regenerates public/icon/* via sharp
-npm test                    # vitest: unit tests for pure utils (app/**/*.test.ts)
+npm test                    # vitest: unit tests for pure utils + design guards (app/**/*.test.ts)
 npx fallow audit --base master  # the commit gate: dead code, duplication, new complexity
 npm run verify:up -- --id <id>  # isolated app instance (worktree + in-memory Mongo); then verify:doctor / verify:smoke / verify:down
                                 #   --mode prod: next build + start; --env KEY=VALUE: override env (KEY= sets it empty)
@@ -18,7 +18,7 @@ npm run verify:snapshot         # read-only copy of production into .verify/snap
 
 To prove a change on the real app, use the shared `verify` skill; this repo's harness, commands and gotchas are in `.claude/flow/profile.md` → Verify, and the user paths per feature in `.claude/flow/features/`. It never touches Atlas: instances run from a git worktree without `.env` files against an in-memory MongoDB seeded from `scripts/verify/fixtures/` (synthetic) or the local snapshot. The repo is public, so only fixture runs may be quoted on GitHub.
 
-Tests cover only pure logic (ingredient parsing, recipe scraping, text tidying, safeFetch). CI (`.github/workflows/lint.yml`) runs `npm ci`, `npm run lint`, `npm test` and `fallow audit` on Node 20.
+Tests cover pure logic (ingredient parsing, recipe scraping, text tidying, safeFetch) and the design guards (`app/design/`). CI (`.github/workflows/lint.yml`) runs `npm ci`, `npm run lint`, `npm test` and `fallow audit` on Node 20.
 
 Env (`.env.local`, git-ignored): `MONGODB_URI`, `MONGO_DATABASE_NAME`, `HOUSEHOLD_CODE` (≥12 characters), `AUTH_SECRET` (≥32). Without the last two the app stays locked; see **Login**.
 
@@ -82,7 +82,14 @@ Destructive actions that can't be undone ask first through `components/Confirmat
 ## Conventions
 
 - **Avoid unnecessary `useEffect`** (`.cursor/rules/no-unnecessary-effects.mdc`). Use effects only to sync with external systems. Derive values inline or with `useMemo`, put logic in event handlers, reset state with `key`, and fetch with TanStack Query. Lint enforces this through `eslint-plugin-react-you-might-not-need-an-effect` and React Hooks `set-state-in-effect`.
-- **Styling:** Tailwind with the semantic color tokens from `tailwind.config.js` (`background`, `foreground`, `primary`, `secondary`, `surface`, `soft`, `danger`, `muted`, each with a `-hover` variant where defined). They are backed by CSS variables in `app/globals.css`. Don't hard-code hex values. Icons come from `lucide-react`.
+- **Styling: roles only.** Values live in `app/globals.css` (`:root, ::backdrop`, plus one `md` block); their names in `tailwind.config.js`, whose `colors`, `boxShadow` and `fontSize` *replace* Tailwind's (no palette, no `shadow-sm`, no `text-sm`). Icons come from `lucide-react`.
+  - Colours: `background`, `foreground`, `surface`, `soft`, `muted-foreground`; families `primary`, `secondary`, `danger`, `neutral`, each with `-hover`, `-foreground` (text on it), `-subtle` (light surface), `-ink` (coloured text); plus `neutral-faint`, `placeholder`, `line` (default border), `ring` (focus), `overlay` (dialog backdrop), `scrim`/`scrim-foreground` (text on images), `shade`, `edge`. A new colour is a primitive plus a role in `globals.css` and its name in the config.
+  - Text: `text-page-title` (every h1), `section-title`, `card-title`, `body`, `body-sm`, `label`, `caption`; they step at `md` by themselves and the titles carry their weight. Variants `body-loose`, `body-sm-loose` (same size, longer line height) are for running text; the alias `text-control` (label on phones, body-sm from md) is for chips and pills. Shadows: `shadow-raised`, `shadow-floating`, `shadow-overlay`, and `shadow-selected` (inset outline). A selected state is drawn without layout: `shadow-selected` or `ring-1 ring-inset ring-secondary-ink`, never a border that appears.
+  - Spacing: `page`, `section`, `card`, `stack` (`px-page`, `gap-section`, `p-card` …); Tailwind's 4 px scale for small gaps. `md` is the only breakpoint (no `sm:`/`lg:`).
+  - Every page's outermost wrapper is `components/PageContainer` (the loading skeleton too). Dialogs use `components/dialogStyles.ts`; Button/IconButton variants live in `components/buttonStyles.ts`.
+  - Tap areas ≥ 44×44: Button/IconButton sizes `sm` and up are 44 px; small controls use size `xs` or the `hit-area` class (invisible, same look). `hit-area` sets `position: relative`, so never on a positioned element (absolute, fixed, sticky): wrap the control. Every checkbox has it already. Exception until bid M: a shopping-list row's packed fields (Købt, Antal, Butik, Pris, Note) keep 24×24.
+  - No class-merge helper: a `className` that competes with a component's own size or colour class loses at random (Tailwind's order, not the attribute's). Add a prop (`size`, `variant`, e.g. `danger-ghost`) instead; a width (`w-11`) is the only override.
+  - Guards (`app/design/design.test.ts`, part of `npm test`): no hex/`rgb()`, `dark:`, arbitrary values, palette colours, opacity modifiers on colours, raw shadows/text sizes, `leading-*`/`tracking-*` or `sm:`/`lg:` in `app/**/*.{ts,tsx}`; every role pair meets WCAG AA (4.5:1 text, 3:1 borders/focus); the text roles form a scale (a variant `<role>-loose` shares its role's size and tracking; an alias such as `control` points all three values at one role per breakpoint). The only exceptions sit in `app/design/exemptions.ts`, each with a reason.
 - **UI is mobile-first** (PWA, pull-to-refresh via `hooks/useScrollRefresh` + `components/PullToRefreshIndicator`). For design work, use the shared `ui-design-expert` skill.
 - **Validation:** limits live in `app/utils/validationVariables.ts` and Yup schemas in `app/utils/validationSchema.ts`.
 - **Ingredient input:** recipes (incl. drinks) and the shopping list both use `features/recipes/components/IngredientEditor.tsx`, which works on editor rows (`utils/ingredientRows.ts`: `rowsToIngredients` / `ingredientsToRows`). Pass `allowSections={false}` where sections and reordering make no sense.
@@ -129,7 +136,7 @@ Every commit runs `fallow audit` (`.githooks/pre-commit`, enabled by `npm instal
 
 - **Service worker** (`public/sw.js`, hand-written source, no build step; registered by `components/ServiceWorker.tsx` in production only, unregistered in dev). Only `/recipes` is served from its last-seen copy (stale-while-revalidate); the page is told `fresh` (refetch `["recipes"]`), `reload` (new deploy) or `gone` (redirected) over a MessageChannel. `/_next/static/*` is cache-first. A page whose server render failed still streams as 200 (React marks it with `$RX(`); the worker never stores it, so the last good copy stays. Never cache forms or the shopping list. `/sw.js` is served `no-cache`; bump the cache names (`pages-v1`, `static-v1`) when their contents change meaning. Emergency: copy `public/sw-kill.js` over `public/sw.js` and deploy (deletes all caches, unregisters, never reloads pages). Test installed on a real iPhone; Chrome's emulation differs.
 - **Client cache:** `experimental.staleTimes.dynamic = 30`, so tab switches within 30 s don't hit the server. Data lives in TanStack Query: after a write, update or invalidate the query (the editor `setQueryData`s the saved recipe) rather than relying on the page's `initialData`, which can be 30 s old.
-- **Loading:** `features/loading.tsx` is the skeleton for every feature page; a segment entered below a shared one (e.g. `recipes/[id]`) needs its own `loading.tsx`, and only shows instantly when reached through a prefetched `<Link>` (`Button`/`IconButton` take `href`), not `router.push`.
+- **Loading:** `features/loading.tsx` is the skeleton for every feature page (in `PageContainer`, so it sits where the page will); a segment entered below a shared one (e.g. `recipes/[id]`) needs its own `loading.tsx`, and only shows instantly when reached through a prefetched `<Link>` (`Button`/`IconButton` take `href`), not `router.push`.
 - The README and PWA_README describe IndexedDB offline sync and next-pwa, but neither exists. Offline support is only the service worker above.
 - `app/utils/apiHelperFunctions.ts` starts with a `"use cliet"` typo, so the directive does nothing.
 - `getRecipes()` caps results at 50.

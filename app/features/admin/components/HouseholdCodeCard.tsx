@@ -24,13 +24,13 @@ export default function HouseholdCodeCard({ code }: { code: string }) {
     );
 
   return (
-    <section className="mb-10 max-w-md rounded-2xl bg-surface p-4 shadow-sm">
-      <h2 className="text-xl font-semibold">Husstandskode</h2>
-      <p className="mt-1 text-sm text-muted-foreground">
+    <section className="mb-10 max-w-md rounded-2xl bg-surface p-card shadow-raised">
+      <h2 className="text-section-title">Husstandskode</h2>
+      <p className="mt-1 text-body-sm text-muted-foreground">
         Send koden til dem i husstanden, så de kan logge ind.
       </p>
       <div className="mt-3 flex items-center gap-2">
-        <span className="flex-1 break-all rounded-lg bg-background px-3 py-2 font-mono text-lg">
+        <span className="flex-1 break-all rounded-lg bg-background px-3 py-2 font-mono text-body">
           {view.text}
         </span>
         <Button variant="secondary" size="md" onClick={() => setShown(!shown)}>

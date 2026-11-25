@@ -34,7 +34,7 @@ interface IngredientEditorProps {
   allowSections?: boolean;
 }
 
-const fieldClass = "min-h-[44px] px-2 py-2";
+const fieldClass = "min-h-11 px-2 py-2";
 
 function splitLines(text: string): string[] {
   return text.split(/\r?\n/).filter((line) => line.trim());
@@ -143,7 +143,7 @@ export function IngredientEditor({
       <div className="flex items-center justify-between gap-2">
         <h3
           id="ingredienser-heading"
-          className="text-gray-700 text-sm font-bold"
+          className="text-neutral-ink text-body-sm font-bold"
         >
           {title}
           {ingredientCount ? ` (${ingredientCount})` : ""}
@@ -161,7 +161,7 @@ export function IngredientEditor({
 
       {isPasteOpen && (
         <div className="rounded-xl bg-surface p-3 space-y-2">
-          <label htmlFor="ingredient-paste" className="block text-sm">
+          <label htmlFor="ingredient-paste" className="block text-body-sm">
             Én ingrediens pr. linje.
             {allowSections &&
               ' En linje der slutter med kolon (fx "Til saucen:") bliver en sektion.'}
@@ -240,7 +240,7 @@ export function IngredientEditor({
         </Button>
       )}
 
-      {error && <p className="text-red-500 text-xs">{error}</p>}
+      {error && <p className="text-danger-ink text-caption">{error}</p>}
     </section>
   );
 }
@@ -273,7 +273,6 @@ function RowActions({
             ariaLabel="Flyt op"
             onClick={onMoveUp}
             disabled={!canMoveUp}
-            className="min-h-[44px] min-w-[44px]"
           />
           <IconButton
             icon={ArrowDown}
@@ -282,17 +281,15 @@ function RowActions({
             ariaLabel="Flyt ned"
             onClick={onMoveDown}
             disabled={!canMoveDown}
-            className="min-h-[44px] min-w-[44px]"
           />
         </>
       )}
       <IconButton
         icon={Trash2}
-        variant="ghost"
+        variant="danger-ghost"
         size="sm"
         ariaLabel="Slet"
         onClick={onRemove}
-        className="min-h-[44px] min-w-[44px] text-red-700 hover:bg-red-100"
       />
     </>
   );
@@ -449,7 +446,7 @@ function IngredientRowEditor({
   return (
     <div
       className={`rounded-xl border ${
-        isAddRow ? "border-dashed border-muted" : "border-secondary/40"
+        isAddRow ? "border-dashed border-neutral" : "border-line"
       } bg-background`}
     >
       <div className="flex items-center gap-1.5 p-1.5">
@@ -467,7 +464,7 @@ function IngredientRowEditor({
           value={row.unit}
           onChange={(e) => onChange({ unit: e.target.value })}
           aria-label="Enhed"
-          className={`${fieldClass} w-[4.75rem] shrink-0 rounded-lg border border-muted bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary`}
+          className={`${fieldClass} w-19 shrink-0 rounded-lg border border-neutral bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring`}
         >
           {options.map((unit) => (
             <option key={unit} value={unit}>
@@ -505,7 +502,7 @@ function IngredientRowEditor({
             <ul
               id={listboxId}
               role="listbox"
-              className="absolute left-0 right-0 top-full z-20 mt-1 max-h-60 overflow-auto rounded-lg border border-muted bg-background shadow-lg"
+              className="absolute left-0 right-0 top-full z-20 mt-1 max-h-60 overflow-auto rounded-lg border border-neutral bg-background shadow-floating"
             >
               {suggestions.map((item, i) => (
                 <li
@@ -517,13 +514,13 @@ function IngredientRowEditor({
                     e.preventDefault();
                     pick(item);
                   }}
-                  className={`cursor-pointer px-3 py-3 text-sm ${
+                  className={`cursor-pointer px-3 py-3 text-body-sm ${
                     i === highlighted ? "bg-soft" : "hover:bg-soft"
                   }`}
                 >
                   {item.name}
                   {item.category && item.category !== "unknown" && (
-                    <span className="ml-2 text-xs text-muted-foreground">
+                    <span className="ml-2 text-caption text-muted-foreground">
                       {item.category}
                     </span>
                   )}
@@ -540,13 +537,13 @@ function IngredientRowEditor({
             ariaLabel="Flere valg"
             aria-expanded={expanded}
             onClick={onToggleExpanded}
-            className="min-h-[44px] min-w-[44px] shrink-0"
+            className="shrink-0"
           />
         )}
       </div>
 
       {!expanded && row.notes && (
-        <p className="px-3 pb-2 -mt-0.5 text-xs text-muted-foreground">
+        <p className="px-3 pb-2 -mt-0.5 text-caption text-muted-foreground">
           {row.notes}
         </p>
       )}
@@ -560,7 +557,7 @@ function IngredientRowEditor({
             onKeyDown={(e) => preventSubmitOnEnter(e, onToggleExpanded)}
             placeholder="Note, fx hakket"
             aria-label="Note"
-            className={`${fieldClass} flex-1 min-w-0 text-sm`}
+            className={`${fieldClass} flex-1 min-w-0 text-body-sm`}
           />
           <RowActions {...moveProps} />
         </div>

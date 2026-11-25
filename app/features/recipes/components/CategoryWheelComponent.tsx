@@ -17,7 +17,7 @@ export function CategoryWheelComponent({
 }: CategoryWheelProps) {
   return (
     <div className="w-full">
-      <div className="flex gap-2 py-1 px-1 overflow-x-auto scrollbar-hide">
+      <div className="flex gap-2 py-2 -my-1 px-1 overflow-x-auto scrollbar-hide">
         {categories.map((category) => (
           <ToggleChip
             key={category._id}

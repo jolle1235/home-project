@@ -1,3 +1,7 @@
+// Selects get no base style (the shopping list's store select has no border), so both carry it here.
+const selectClass =
+  "w-full min-h-11 rounded-lg border border-neutral bg-background px-2 py-2 text-body-sm text-foreground shadow-raised focus:outline-none focus:ring-2 focus:ring-ring";
+
 interface TimeRangeSelectorProps {
   timeRange: number[];
   setTimeRange: (range: number[]) => void;
@@ -10,8 +14,8 @@ export function TimeRangeSelectorComponent({
   const timeOptions = [0, 10, 20, 30, 45, 60, 75, 90, 105, 120];
 
   return (
-    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch">
-      <label className="flex flex-col text-xs sm:text-sm text-muted-foreground gap-1 flex-1">
+    <div className="flex flex-col md:flex-row gap-3 md:gap-4 items-stretch">
+      <label className="flex flex-col text-caption md:text-body-sm text-muted-foreground gap-1 flex-1">
         Minimum
         <select
           value={timeRange[0]}
@@ -19,7 +23,7 @@ export function TimeRangeSelectorComponent({
             const newMin = parseInt(e.target.value, 10);
             setTimeRange([newMin, Math.max(newMin, timeRange[1])]);
           }}
-          className="w-full rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-secondary-hover"
+          className={selectClass}
         >
           {timeOptions.map((val) => (
             <option key={val} value={val}>
@@ -29,7 +33,7 @@ export function TimeRangeSelectorComponent({
         </select>
       </label>
 
-      <label className="flex flex-col text-xs sm:text-sm text-muted-foreground gap-1 flex-1">
+      <label className="flex flex-col text-caption md:text-body-sm text-muted-foreground gap-1 flex-1">
         Maksimum
         <select
           value={timeRange[1]}
@@ -37,7 +41,7 @@ export function TimeRangeSelectorComponent({
             const newMax = parseInt(e.target.value, 10);
             setTimeRange([Math.min(newMax, timeRange[0]), newMax]);
           }}
-          className="w-full rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-secondary-hover"
+          className={selectClass}
         >
           {timeOptions.map((val) => (
             <option key={val} value={val}>

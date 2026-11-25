@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { IconButton } from "../components/IconButton";
 import { X } from "lucide-react";
+import { DIALOG_BACKDROP, DIALOG_PANEL } from "./dialogStyles";
 import { shoppinglistCategories } from "../features/shoppingList/types/shoppinglistCategories";
 
 type Props = {
@@ -27,14 +28,14 @@ export function CategorySelectorModal({ value, onChange, onClose }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+      className={DIALOG_BACKDROP}
       aria-modal="true"
       role="dialog"
     >
-      <div className="bg-background w-full max-w-md rounded-2xl shadow-xl p-6 max-h-[50vh] overflow-y-auto animate-slide-up">
+      <div className={`${DIALOG_PANEL} p-6 max-h-dialog overflow-y-auto animate-slide-up`}>
         {/* Header */}
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-foreground">
+          <h2 className="text-section-title text-foreground">
             Vælg kategori
           </h2>
           <IconButton
@@ -56,7 +57,7 @@ export function CategorySelectorModal({ value, onChange, onClose }: Props) {
                 onChange(cat); // send text to hook/backend
                 onClose();
               }}
-              className="text-left px-4 py-2 hover:bg-muted/20 rounded transition text-sm"
+              className="hit-area text-left px-4 py-2 rounded transition text-body-sm"
             >
               {cat}
             </button>

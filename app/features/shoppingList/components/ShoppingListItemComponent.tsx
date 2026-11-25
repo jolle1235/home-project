@@ -67,13 +67,12 @@ export function ShoppingListItemComponent({
         type="checkbox"
         checked={ingredient.marked}
         aria-label={`Købt: ${name}`}
-        className="w-5 h-5 sm:w-7 sm:h-7"
         onChange={() => toggleMarked(ingredient._id)}
       />
 
       {/* NAME + QUANTITY */}
       <div className="flex flex-grow flex-col min-w-0 flex-1">
-        <p className="font-bold text-base sm:text-lg truncate">
+        <p className="font-bold text-body truncate">
           {name}
         </p>
 
@@ -83,7 +82,7 @@ export function ShoppingListItemComponent({
             min={0}
             step={0.1}
             aria-label={`Antal: ${name}`}
-            className="p-0.5 rounded-lg w-10 sm:w-14 border text-sm"
+            className="p-0.5 rounded-lg w-10 md:w-14 border text-body-sm"
             value={quantityInput}
             onChange={(e) => {
               const raw = e.target.value;
@@ -97,7 +96,7 @@ export function ShoppingListItemComponent({
           />
 
           {!(ingredient.quantity === 1 && unit === "stk") && (
-            <p className="text-muted-foreground text-sm">{unit}</p>
+            <p className="text-muted-foreground text-body-sm">{unit}</p>
           )}
           {/* CATEGORY ICON */}
           <div className="mx-1">
@@ -146,7 +145,7 @@ export function ShoppingListItemComponent({
             step={1}
             placeholder="Pris"
             aria-label={`Pris: ${name}`}
-            className="w-full p-0.5 rounded-lg text-sm"
+            className="w-full p-0.5 rounded-lg text-body-sm"
             value={priceInput}
             onChange={(e) => {
               const raw = e.target.value;
@@ -160,7 +159,7 @@ export function ShoppingListItemComponent({
 
         {/* NOTES */}
         <input
-          className="col-span-6 p-1 rounded-lg text-sm bg-background mt-1"
+          className="col-span-6 p-1 rounded-lg text-body-sm bg-background mt-1"
           placeholder="Noter..."
           aria-label={`Note: ${name}`}
           value={notes}

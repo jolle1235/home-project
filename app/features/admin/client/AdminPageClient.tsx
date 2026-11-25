@@ -38,7 +38,7 @@ export default function AdminPageClient() {
     <>
       {/* Opskriftskategorier */}
       <div className="mb-10">
-        <h2 className="text-xl font-semibold">Opskriftskategorier</h2>
+        <h2 className="text-section-title">Opskriftskategorier</h2>
         <div className="flex mt-2">
           <input
             value={newCategory}
@@ -67,7 +67,7 @@ export default function AdminPageClient() {
             >
               <label>{c.name}</label>
               <Button
-                variant="ghost"
+                variant="danger-ghost"
                 size="sm"
                 aria-label={`Fjern kategori: ${c.name}`}
                 onClick={() =>
@@ -77,7 +77,7 @@ export default function AdminPageClient() {
                     remove: removeCategory,
                   })
                 }
-                className="min-h-[44px] min-w-[44px] px-3 text-red-700 hover:bg-red-100"
+                className="w-11"
               >
                 <Trash2 className="h-4 w-4" aria-hidden="true" />
               </Button>
@@ -88,7 +88,7 @@ export default function AdminPageClient() {
 
       {/* Enhedstyper */}
       <div>
-        <h2 className="text-xl font-semibold">Enhedstyper</h2>
+        <h2 className="text-section-title">Enhedstyper</h2>
         <div className="flex mt-2">
           <input
             value={newUnit}
@@ -117,7 +117,7 @@ export default function AdminPageClient() {
             >
               <label>{u.name}</label>
               <Button
-                variant="ghost"
+                variant="danger-ghost"
                 size="sm"
                 aria-label={`Fjern enhed: ${u.name}`}
                 onClick={() =>
@@ -127,7 +127,7 @@ export default function AdminPageClient() {
                     remove: removeUnit,
                   })
                 }
-                className="min-h-[44px] min-w-[44px] px-3 text-red-700 hover:bg-red-100"
+                className="w-11"
               >
                 <Trash2 className="h-4 w-4" aria-hidden="true" />
               </Button>
